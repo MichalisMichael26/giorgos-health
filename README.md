@@ -1,23 +1,9 @@
 # Giorgos Health
 
-Private Django health-tracking application.
+Private Django app for recording meals, glucose readings and growth measurements.
 
-## Local setup
+## Main schedule
+01:30, 04:30, 07:30, 10:30, 13:30, 16:30, 19:30, 22:30.
 
-```bash
-python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-```
-
-Then open http://127.0.0.1:8000/
-
-## Important
-
-Do not store passwords, medical records, API keys, or other private data in GitHub.
-Use environment variables for production secrets.
+## Security
+Do not commit passwords, medical reports, API keys or private health data to GitHub.

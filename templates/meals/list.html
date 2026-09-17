@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Γεύματα{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>Γεύματα</h1>
+        <p class="muted">Προγραμματισμένη και πραγματική ώρα χωριστά.</p>
+    </div>
+    <a class="btn primary" href="{% url 'meal_create' %}">+ Νέο γεύμα</a>
+</div>
+
+<div class="panel table-wrap">
+<table>
+<thead>
+<tr>
+    <th>Ημερομηνία</th><th>Πρόγραμμα</th><th>Πραγματική ώρα</th>
+    <th>Προσφέρθηκαν</th><th>Ήπιε</th><th>Formula</th><th></th>
+</tr>
+</thead>
+<tbody>
+{% for meal in meals %}
+<tr>
+    <td>{{ meal.date|date:"d/m/Y" }}</td>
+    <td>{{ meal.scheduled_time|time:"H:i" }}</td>
+    <td>{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
+    <td>{% if meal.offered_ml != None %}{{ meal.offered_ml }} ml{% else %}—{% endif %}</td>
+    <td>{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
+    <td>{{ meal.formula|default:"—" }}</td>
+    <td class="row-actions">
+        <a href="{% url 'meal_edit' meal.pk %}">Edit</a>
+        <a class="danger-link" href="{% url 'meal_delete' meal.pk %}">Delete</a>
+    </td>
+</tr>
+{% empty %}
+<tr><td colspan="7">Δεν υπάρχουν καταχωρήσεις.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

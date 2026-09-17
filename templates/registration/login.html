@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Σύνδεση{% endblock %}
+{% block content %}
+<div class="form-card narrow">
+    <h1>Σύνδεση</h1>
+    <p class="muted">Ιδιωτική πρόσβαση στο Giorgos Health.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn primary" type="submit">Σύνδεση</button>
+    </form>
+</div>
+{% endblock %}

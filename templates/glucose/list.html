@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Γλυκόζη{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>Γλυκόζη</h1>
+        <p class="muted">Η ημερομηνία, η ώρα και η τιμή μπορούν να διορθωθούν με Edit.</p>
+    </div>
+    <a class="btn primary" href="{% url 'glucose_create' %}">+ Νέα μέτρηση</a>
+</div>
+
+<div class="panel table-wrap">
+<table>
+<thead>
+<tr><th>Ημερομηνία</th><th>Ώρα</th><th>Τιμή</th><th>Σχέση</th><th>Γεύμα</th><th></th></tr>
+</thead>
+<tbody>
+{% for item in readings %}
+<tr>
+    <td>{{ item.date|date:"d/m/Y" }}</td>
+    <td>{{ item.time|time:"H:i" }}</td>
+    <td><strong>{{ item.value|floatformat:0 }}</strong> mg/dL</td>
+    <td>{{ item.get_context_display }}</td>
+    <td>
+        {% if item.related_meal %}
+            {{ item.related_meal.date|date:"d/m" }} · {{ item.related_meal.scheduled_time|time:"H:i" }}
+        {% else %}—{% endif %}
+    </td>
+    <td class="row-actions">
+        <a href="{% url 'glucose_edit' item.pk %}">Edit</a>
+        <a class="danger-link" href="{% url 'glucose_delete' item.pk %}">Delete</a>
+    </td>
+</tr>
+{% empty %}
+<tr><td colspan="6">Δεν υπάρχουν μετρήσεις.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}
