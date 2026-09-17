@@ -1,8 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Σύνδεση{% endblock %}
 {% block content %}
-<div class="form-card narrow">
-    <h1>Σύνδεση</h1>
+<div class="hero-banner">
+    <div>
+        <h1>Καλωσήρθατε στο Giorgos Health</h1>
+        <p class="muted large-text">Ένα γλυκό και οργανωμένο ημερολόγιο για γεύματα, γλυκόζη και ανάπτυξη.</p>
+    </div>
+</div>
+
+<div class="form-card narrow login-card">
+    <h2>Σύνδεση</h2>
     <p class="muted">Ιδιωτική πρόσβαση στο Giorgos Health.</p>
     <form method="post">
         {% csrf_token %}

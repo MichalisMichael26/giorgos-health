@@ -18,6 +18,7 @@ manage.py
 render.yaml
 requirements.txt
 static/css/app.css
+static/images/logo.png
 templates/base.html
 templates/confirm_delete.html
 templates/dashboard.html

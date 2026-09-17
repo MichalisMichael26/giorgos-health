@@ -7,9 +7,20 @@
     <title>{% block title %}Giorgos Health{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body>
+<body class="kids-bg">
+<div class="floating-shape shape-1"></div>
+<div class="floating-shape shape-2"></div>
+<div class="floating-shape shape-3"></div>
+
 <header class="topbar">
-    <a class="brand" href="{% url 'dashboard' %}">👶 Giorgos Health</a>
+    <a class="brand" href="{% url 'dashboard' %}">
+        <img src="{% static 'images/logo.png' %}" alt="Giorgos Health Logo" class="brand-logo">
+        <div class="brand-text">
+            <span class="brand-title">Giorgos Health</span>
+            <span class="brand-subtitle">Healthy Days · Brighter Tomorrows</span>
+        </div>
+    </a>
+
     {% if user.is_authenticated %}
     <nav>
         <a href="{% url 'dashboard' %}">Αρχική</a>
