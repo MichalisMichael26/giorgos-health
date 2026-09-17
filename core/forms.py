@@ -1,5 +1,11 @@
 from django import forms
-from .models import GlucoseReading, GrowthMeasurement, MealEntry
+from .models import (
+    GlucoseReading,
+    GrowthMeasurement,
+    MealEntry,
+    MedicationEntry,
+    MedicalAppointment,
+)
 
 
 class DateInput(forms.DateInput):
@@ -39,18 +45,14 @@ class MealEntryForm(forms.ModelForm):
             "scheduled_time": TimeInput(format="%H:%M"),
             "actual_time": TimeInput(format="%H:%M"),
             "notes": forms.Textarea(attrs={"rows": 3}),
-            "consumed_ml": forms.NumberInput(attrs={
-                "inputmode": "numeric",
-                "min": "0",
-                "step": "1",
-            }),
+            "offered_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
+            "consumed_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "formula": forms.TextInput(attrs={"inputmode": "decimal"}),
             "supplement": forms.TextInput(attrs={"inputmode": "decimal"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.order_fields([
             "date",
             "scheduled_time",
@@ -96,5 +98,38 @@ class GrowthMeasurementForm(forms.ModelForm):
         fields = ["date", "weight_kg", "length_cm", "head_cm", "notes"]
         widgets = {
             "date": DateInput(),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
+class MedicationEntryForm(forms.ModelForm):
+    class Meta:
+        model = MedicationEntry
+        fields = ["date", "time", "name", "dose", "unit", "notes"]
+        widgets = {
+            "date": DateInput(),
+            "time": TimeInput(format="%H:%M"),
+            "dose": forms.NumberInput(attrs={"min": "0", "step": "0.01", "inputmode": "decimal"}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
+class MedicalAppointmentForm(forms.ModelForm):
+    class Meta:
+        model = MedicalAppointment
+        fields = [
+            "date",
+            "time",
+            "doctor",
+            "clinic",
+            "purpose",
+            "reminder_days_before",
+            "status",
+            "notes",
+        ]
+        widgets = {
+            "date": DateInput(),
+            "time": TimeInput(format="%H:%M"),
+            "reminder_days_before": forms.NumberInput(attrs={"min": "0", "max": "90", "step": "1"}),
             "notes": forms.Textarea(attrs={"rows": 3}),
         }

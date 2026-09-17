@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Γραφήματα{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>📊 Γραφήματα</h1>
+        <p class="muted">Παρακολούθηση τάσεων για γλυκόζη, σίτιση και ανάπτυξη.</p>
+    </div>
+    <div class="period-tabs">
+        <a class="{% if period == 7 %}active{% endif %}" href="?period=7">7 ημέρες</a>
+        <a class="{% if period == 30 %}active{% endif %}" href="?period=30">30 ημέρες</a>
+        <a class="{% if period == 90 %}active{% endif %}" href="?period=90">90 ημέρες</a>
+    </div>
+</div>
+
+{{ chart_data|json_script:"chart-data" }}
+
+<div class="charts-grid">
+    <section class="chart-card">
+        <div class="chart-card-head">
+            <div><span>🩸</span><h2>Γλυκόζη</h2></div>
+            <small>mg/dL</small>
+        </div>
+        <div class="chart-wrap"><canvas id="glucoseChart"></canvas></div>
+        <p class="chart-empty" id="glucoseEmpty" hidden>Δεν υπάρχουν μετρήσεις για αυτή την περίοδο.</p>
+    </section>
+
+    <section class="chart-card">
+        <div class="chart-card-head">
+            <div><span>🍼</span><h2>Συνολικά ml ανά ημέρα</h2></div>
+            <small>ml</small>
+        </div>
+        <div class="chart-wrap"><canvas id="mlChart"></canvas></div>
+    </section>
+
+    <section class="chart-card">
+        <div class="chart-card-head">
+            <div><span>⚖️</span><h2>Βάρος</h2></div>
+            <small>kg</small>
+        </div>
+        <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
+        <p class="chart-empty" id="weightEmpty" hidden>Δεν υπάρχουν μετρήσεις βάρους για αυτή την περίοδο.</p>
+    </section>
+
+    <section class="chart-card">
+        <div class="chart-card-head">
+            <div><span>📏</span><h2>Μήκος</h2></div>
+            <small>cm</small>
+        </div>
+        <div class="chart-wrap"><canvas id="lengthChart"></canvas></div>
+        <p class="chart-empty" id="lengthEmpty" hidden>Δεν υπάρχουν μετρήσεις μήκους για αυτή την περίοδο.</p>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const dataNode = document.getElementById("chart-data");
+    const data = dataNode ? JSON.parse(dataNode.textContent) : null;
+
+    if (!data || typeof Chart === "undefined") {
+        document.querySelectorAll(".chart-empty").forEach(el => {
+            el.hidden = false;
+            el.textContent = "Δεν ήταν δυνατή η φόρτωση του γραφήματος.";
+        });
+        return;
+    }
+
+    function nightMode() {
+        return document.documentElement.classList.contains("night");
+    }
+
+    function commonOptions(unit) {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.parsed.y} ${unit}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: nightMode() ? "#c6d1e3" : "#6c7892", maxRotation: 0, autoSkip: true },
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: unit === "ml",
+                    ticks: { color: nightMode() ? "#c6d1e3" : "#6c7892" },
+                    grid: { color: nightMode() ? "rgba(255,255,255,.08)" : "rgba(80,100,140,.08)" }
+                }
+            }
+        };
+    }
+
+    function lineChart(canvasId, labels, values, unit, emptyId) {
+        if (!values.length) {
+            document.getElementById(canvasId).hidden = true;
+            const empty = document.getElementById(emptyId);
+            if (empty) empty.hidden = false;
+            return;
+        }
+        new Chart(document.getElementById(canvasId), {
+            type: "line",
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    borderWidth: 2.5,
+                    pointRadius: values.length > 50 ? 1.5 : 3,
+                    pointHoverRadius: 5,
+                    tension: .28,
+                    fill: false
+                }]
+            },
+            options: commonOptions(unit)
+        });
+    }
+
+    lineChart("glucoseChart", data.glucose_labels, data.glucose_values, "mg/dL", "glucoseEmpty");
+
+    new Chart(document.getElementById("mlChart"), {
+        type: "bar",
+        data: {
+            labels: data.daily_labels,
+            datasets: [{
+                data: data.daily_ml,
+                borderRadius: 7,
+                maxBarThickness: 34
+            }]
+        },
+        options: commonOptions("ml")
+    });
+
+    lineChart("weightChart", data.weight_labels, data.weight_values, "kg", "weightEmpty");
+    lineChart("lengthChart", data.length_labels, data.length_values, "cm", "lengthEmpty");
+})();
+</script>
+{% endblock %}

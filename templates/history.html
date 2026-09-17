@@ -4,7 +4,7 @@
 <div class="page-head history-head">
     <div>
         <h1>📅 Ιστορικό</h1>
-        <p class="muted">Δες τι έγινε σε κάθε προηγούμενη ημέρα και εξήγαγε την περίοδο σε PDF.</p>
+        <p class="muted">Γεύματα, γλυκόζη, φάρμακα και ανάπτυξη ανά ημέρα.</p>
     </div>
 </div>
 
@@ -19,9 +19,7 @@
             <input id="end" name="end" type="date" value="{{ end_date|date:'Y-m-d' }}">
         </div>
         <button class="btn primary" type="submit">Προβολή</button>
-        <a class="btn pdf-btn" href="{% url 'history_pdf' %}?start={{ start_date|date:'Y-m-d' }}&end={{ end_date|date:'Y-m-d' }}">
-            📄 Εξαγωγή PDF
-        </a>
+        <a class="btn pdf-btn" href="{% url 'history_pdf' %}?start={{ start_date|date:'Y-m-d' }}&end={{ end_date|date:'Y-m-d' }}">📄 PDF</a>
     </form>
 </section>
 
@@ -36,6 +34,7 @@
             <span>🍼 {{ day.meals|length }} γεύματα</span>
             <span>💧 {{ day.total_consumed }} ml</span>
             <span>🩸 {{ day.glucose|length }} μετρήσεις</span>
+            <span>💊 {{ day.medications|length }}</span>
             {% if day.glucose_min != None %}
                 <span>↕ {{ day.glucose_min|floatformat:0 }}–{{ day.glucose_max|floatformat:0 }} mg/dL</span>
             {% endif %}
@@ -49,10 +48,7 @@
             <div class="timeline-time">{{ item.time|time:"H:i" }}</div>
             <div class="timeline-dot"></div>
             <div class="timeline-content">
-                <strong>
-                    {% if item.kind == "meal" %}🍼{% else %}🩸{% endif %}
-                    {{ item.title }}
-                </strong>
+                <strong>{{ item.icon }} {{ item.title }}</strong>
                 <span>{{ item.text }}</span>
                 {% if item.extra %}<small>{{ item.extra }}</small>{% endif %}
             </div>
@@ -73,11 +69,6 @@
         {% endfor %}
     </div>
     {% endif %}
-
-    <div class="history-detail-actions">
-        <a href="{% url 'meal_list' %}">Επεξεργασία γευμάτων</a>
-        <a href="{% url 'glucose_list' %}">Επεξεργασία γλυκόζης</a>
-    </div>
 </section>
 {% empty %}
 <section class="panel empty-state">

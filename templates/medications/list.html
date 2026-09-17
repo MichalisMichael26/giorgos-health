@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Φάρμακα / συμπληρώματα{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>💊 Φάρμακα / συμπληρώματα</h1>
+        <p class="muted">Τι δόθηκε, πόσο, πότε και πλήρες ιστορικό.</p>
+    </div>
+    <a class="btn primary" href="{% url 'medication_create' %}">+ Νέα καταχώρηση</a>
+</div>
+
+<div class="panel table-wrap">
+<table class="responsive-table">
+<thead>
+<tr><th>Ημέρα</th><th>Ημερομηνία</th><th>Ώρα</th><th>Όνομα</th><th>Ποσότητα</th><th></th></tr>
+</thead>
+<tbody>
+{% for item in medications %}
+<tr>
+    <td data-label="Ημέρα">{{ item.weekday_name }}</td>
+    <td data-label="Ημερομηνία">{{ item.date|date:"d/m/Y" }}</td>
+    <td data-label="Ώρα">{{ item.time|time:"H:i" }}</td>
+    <td data-label="Όνομα">{{ item.name }}</td>
+    <td data-label="Ποσότητα">{{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }}</td>
+    <td data-label="Ενέργειες" class="row-actions">
+        <a class="mini-action" href="{% url 'medication_edit' item.pk %}">Edit</a>
+        <a class="mini-action danger-link" href="{% url 'medication_delete' item.pk %}">Delete</a>
+    </td>
+</tr>
+{% empty %}
+<tr><td colspan="6">Δεν υπάρχουν καταχωρήσεις.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

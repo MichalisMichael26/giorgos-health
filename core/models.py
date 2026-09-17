@@ -6,6 +6,7 @@ GREEK_WEEKDAYS = [
     "Παρασκευή", "Σάββατο", "Κυριακή",
 ]
 
+
 def greek_weekday(value):
     return GREEK_WEEKDAYS[value.weekday()] if value else ""
 
@@ -121,3 +122,78 @@ class GrowthMeasurement(models.Model):
 
     def __str__(self):
         return str(self.date)
+
+
+class MedicationEntry(models.Model):
+    UNIT_CHOICES = [
+        ("ml", "ml"),
+        ("mg", "mg"),
+        ("g", "g"),
+        ("drops", "Σταγόνες"),
+        ("scoops", "Κουταλάκια"),
+        ("dose", "Δόση"),
+        ("other", "Άλλο"),
+    ]
+
+    date = models.DateField("Ημερομηνία")
+    time = models.TimeField("Ώρα")
+    name = models.CharField("Φάρμακο / συμπλήρωμα", max_length=160)
+    dose = models.DecimalField("Ποσότητα", max_digits=8, decimal_places=2)
+    unit = models.CharField("Μονάδα", max_length=20, choices=UNIT_CHOICES, default="ml")
+    notes = models.TextField("Σημειώσεις", blank=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="medication_entries",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date", "-time"]
+
+    @property
+    def weekday_name(self):
+        return greek_weekday(self.date)
+
+    def __str__(self):
+        return f"{self.date} {self.time.strftime('%H:%M')} - {self.name}"
+
+
+class MedicalAppointment(models.Model):
+    STATUS_CHOICES = [
+        ("scheduled", "Προγραμματισμένο"),
+        ("completed", "Ολοκληρώθηκε"),
+        ("cancelled", "Ακυρώθηκε"),
+    ]
+
+    date = models.DateField("Ημερομηνία")
+    time = models.TimeField("Ώρα")
+    doctor = models.CharField("Ιατρός", max_length=160, blank=True)
+    clinic = models.CharField("Κλινική / νοσοκομείο", max_length=180, blank=True)
+    purpose = models.CharField("Λόγος / επανέλεγχος", max_length=220)
+    reminder_days_before = models.PositiveSmallIntegerField(
+        "Υπενθύμιση (ημέρες πριν)",
+        default=1,
+    )
+    status = models.CharField(
+        "Κατάσταση",
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="scheduled",
+    )
+    notes = models.TextField("Σημειώσεις", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["date", "time"]
+
+    @property
+    def weekday_name(self):
+        return greek_weekday(self.date)
+
+    def __str__(self):
+        return f"{self.date} {self.time.strftime('%H:%M')} - {self.purpose}"

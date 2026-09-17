@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import GlucoseReading, GrowthMeasurement, MealEntry
+from .models import (
+    GlucoseReading,
+    GrowthMeasurement,
+    MealEntry,
+    MedicationEntry,
+    MedicalAppointment,
+)
 
 
 @admin.register(MealEntry)
@@ -18,3 +24,17 @@ class GlucoseReadingAdmin(admin.ModelAdmin):
 @admin.register(GrowthMeasurement)
 class GrowthMeasurementAdmin(admin.ModelAdmin):
     list_display = ("date", "weight_kg", "length_cm", "head_cm")
+
+
+@admin.register(MedicationEntry)
+class MedicationEntryAdmin(admin.ModelAdmin):
+    list_display = ("date", "time", "name", "dose", "unit")
+    list_filter = ("date", "unit")
+    search_fields = ("name", "notes")
+
+
+@admin.register(MedicalAppointment)
+class MedicalAppointmentAdmin(admin.ModelAdmin):
+    list_display = ("date", "time", "purpose", "doctor", "clinic", "status")
+    list_filter = ("status", "date")
+    search_fields = ("purpose", "doctor", "clinic", "notes")

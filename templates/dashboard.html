@@ -4,36 +4,77 @@
 <div class="hero-banner">
     <div class="hero-text">
         <h1>Σήμερα · {{ today|date:"d/m/Y" }}</h1>
-        <p class="muted large-text">Όλα τα βασικά της ημέρας σε μία οθόνη.</p>
+        <p class="muted large-text">Η σημερινή εικόνα του Γιώργη σε μία οθόνη.</p>
     </div>
     <div class="hero-actions">
         <a class="btn primary" href="{% url 'meal_create' %}">+ Γεύμα</a>
         <a class="btn secondary" href="{% url 'glucose_create' %}">+ Γλυκόζη</a>
+        <a class="btn pdf-btn" href="{% url 'report_24h_pdf' %}">📄 24ωρη αναφορά</a>
     </div>
 </div>
 
-<div class="cards">
-    <div class="card soft-blue">
-        <span class="label">Επόμενο προγραμματισμένο γεύμα</span>
-        <strong class="big">{{ next_meal_time|time:"H:i" }}</strong>
-        <span class="emoji-hint">🍼 Ώρα για το επόμενο γεύμα</span>
+<section class="today-overview">
+    <div class="overview-card soft-blue">
+        <span class="overview-icon">🍼</span>
+        <span class="label">Γεύματα σήμερα</span>
+        <strong class="big">{{ meal_count }}</strong>
     </div>
-    <div class="card soft-green">
-        <span class="label">Σύνολο που ήπιε σήμερα</span>
+    <div class="overview-card soft-green">
+        <span class="overview-icon">💧</span>
+        <span class="label">Σύνολο σήμερα</span>
         <strong class="big">{{ consumed_total }} ml</strong>
-        <span class="emoji-hint">💧 Παρακολούθηση κατανάλωσης</span>
     </div>
-    <div class="card soft-peach">
-        <span class="label">Τελευταία γλυκόζη</span>
-        {% if latest_glucose %}
-            <strong class="big">{{ latest_glucose.value|floatformat:0 }} mg/dL</strong>
-            <span class="muted">{{ latest_glucose.date|date:"d/m" }} · {{ latest_glucose.time|time:"H:i" }}</span>
-        {% else %}
-            <strong class="big">—</strong>
+    <div class="overview-card soft-peach">
+        <span class="overview-icon">🩸</span>
+        <span class="label">Μετρήσεις γλυκόζης</span>
+        <strong class="big">{{ glucose_count }}</strong>
+    </div>
+    <div class="overview-card soft-purple">
+        <span class="overview-icon">⚖️</span>
+        <span class="label">Τελευταίο βάρος</span>
+        <strong class="big">
+            {% if latest_growth and latest_growth.weight_kg %}
+                {{ latest_growth.weight_kg }} kg
+            {% else %}
+                —
+            {% endif %}
+        </strong>
+        {% if latest_growth %}
+            <small>{{ latest_growth.date|date:"d/m/Y" }}</small>
         {% endif %}
-        <span class="emoji-hint">🩸 Τελευταία μέτρηση</span>
     </div>
-</div>
+</section>
+
+{% if reminder_appointments %}
+<section class="panel reminder-panel">
+    <div class="panel-head">
+        <h2>🔔 Υπενθυμίσεις ραντεβού</h2>
+        <a href="{% url 'appointment_list' %}">Όλα</a>
+    </div>
+    <div class="reminder-list">
+        {% for item in reminder_appointments %}
+        <a href="{% url 'appointment_edit' item.object.pk %}" class="reminder-item">
+            <div>
+                <strong>{{ item.label }} · {{ item.object.time|time:"H:i" }}</strong>
+                <span>{{ item.object.purpose }}</span>
+                {% if item.object.doctor or item.object.clinic %}
+                    <small>{{ item.object.doctor }}{% if item.object.doctor and item.object.clinic %} · {% endif %}{{ item.object.clinic }}</small>
+                {% endif %}
+            </div>
+            <span>›</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="panel next-meal-panel">
+    <div class="next-meal-block">
+        <span class="label">Επόμενο προγραμματισμένο γεύμα</span>
+        <strong class="next-meal-time">{{ next_meal_time|time:"H:i" }}</strong>
+    </div>
+    <a class="btn secondary" href="{% url 'meal_create' %}">Καταχώρηση γεύματος</a>
+</section>
 
 <section class="panel">
     <div class="panel-head">
@@ -41,7 +82,9 @@
     </div>
     <div class="schedule-grid">
         {% for item in schedule %}
-            <div class="schedule-time">{{ item|time:"H:i" }}</div>
+            <div class="schedule-time {% if item|time:'H:i' == '22:30' or item|time:'H:i' == '01:30' or item|time:'H:i' == '04:30' %}night-slot{% endif %}">
+                {{ item|time:"H:i" }}
+            </div>
         {% endfor %}
     </div>
 </section>
@@ -54,21 +97,15 @@
     <div class="table-wrap">
         <table class="responsive-table">
             <thead>
-                <tr>
-                    <th>Πρόγραμμα</th>
-                    <th>Πραγματική ώρα</th>
-                    <th>Ήπιε</th>
-                    <th>Κατάσταση</th>
-                    <th></th>
-                </tr>
+                <tr><th>Πρόγραμμα</th><th>Πραγματική ώρα</th><th>Προσφ.</th><th>Ήπιε</th><th></th></tr>
             </thead>
             <tbody>
             {% for meal in meals_today %}
                 <tr>
                     <td data-label="Πρόγραμμα">{{ meal.scheduled_time|time:"H:i" }}</td>
-                    <td data-label="Πραγματική ώρα">{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
+                    <td data-label="Πραγματική">{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
+                    <td data-label="Προσφέρθηκαν">{% if meal.offered_ml != None %}{{ meal.offered_ml }} ml{% else %}—{% endif %}</td>
                     <td data-label="Ήπιε">{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
-                    <td data-label="Κατάσταση">{{ meal.get_status_display }}</td>
                     <td data-label=""><a class="mini-action" href="{% url 'meal_edit' meal.pk %}">Edit</a></td>
                 </tr>
             {% empty %}
@@ -79,29 +116,53 @@
     </div>
 </section>
 
-<section class="panel">
-    <div class="panel-head">
-        <h2>🩸 Γλυκόζη σήμερα</h2>
-        <a href="{% url 'glucose_list' %}">Όλες</a>
-    </div>
-    <div class="table-wrap">
-        <table class="responsive-table">
-            <thead>
-                <tr><th>Ώρα</th><th>Τιμή</th><th>Σχέση</th><th></th></tr>
-            </thead>
-            <tbody>
+<section class="two-panel-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h2>🩸 Γλυκόζη σήμερα</h2>
+            <a href="{% url 'glucose_list' %}">Όλες</a>
+        </div>
+        <div class="compact-list">
             {% for reading in glucose_today %}
-                <tr>
-                    <td data-label="Ώρα">{{ reading.time|time:"H:i" }}</td>
-                    <td data-label="Τιμή"><strong>{{ reading.value|floatformat:0 }}</strong> mg/dL</td>
-                    <td data-label="Σχέση">{{ reading.get_context_display }}</td>
-                    <td data-label=""><a class="mini-action" href="{% url 'glucose_edit' reading.pk %}">Edit</a></td>
-                </tr>
+            <a href="{% url 'glucose_edit' reading.pk %}" class="compact-row">
+                <strong>{{ reading.time|time:"H:i" }}</strong>
+                <span>{{ reading.value|floatformat:0 }} mg/dL</span>
+                <small>{{ reading.get_context_display }}</small>
+            </a>
             {% empty %}
-                <tr><td colspan="4">Δεν υπάρχουν μετρήσεις σήμερα.</td></tr>
+            <p class="muted">Δεν υπάρχουν μετρήσεις σήμερα.</p>
             {% endfor %}
-            </tbody>
-        </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h2>💊 Φάρμακα / συμπληρώματα</h2>
+            <a href="{% url 'medication_list' %}">Όλα</a>
+        </div>
+        <div class="compact-list">
+            {% for item in medications_today %}
+            <a href="{% url 'medication_edit' item.pk %}" class="compact-row">
+                <strong>{{ item.time|time:"H:i" }}</strong>
+                <span>{{ item.name }}</span>
+                <small>{{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }}</small>
+            </a>
+            {% empty %}
+            <p class="muted">Δεν υπάρχουν καταχωρήσεις σήμερα.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="panel quick-actions-panel">
+    <div class="panel-head"><h2>⚡ Γρήγορες ενέργειες</h2></div>
+    <div class="quick-actions-grid">
+        <a href="{% url 'analytics' %}"><span>📊</span><strong>Γραφήματα</strong></a>
+        <a href="{% url 'medication_create' %}"><span>💊</span><strong>Φάρμακο</strong></a>
+        <a href="{% url 'appointment_create' %}"><span>🩺</span><strong>Ραντεβού</strong></a>
+        <a href="{% url 'growth_create' %}"><span>📏</span><strong>Ανάπτυξη</strong></a>
+        <a href="{% url 'history' %}"><span>📅</span><strong>Ιστορικό</strong></a>
+        <a href="{% url 'report_24h_pdf' %}"><span>📄</span><strong>24ωρο PDF</strong></a>
     </div>
 </section>
 
@@ -110,19 +171,19 @@
         <h2>📅 Προηγούμενες ημέρες</h2>
         <a href="{% url 'history' %}">Πλήρες ιστορικό</a>
     </div>
-
     {% if previous_days %}
     <div class="history-preview-grid">
         {% for day in previous_days %}
         <a class="history-preview-card" href="{% url 'history' %}?start={{ day.date|date:'Y-m-d' }}&end={{ day.date|date:'Y-m-d' }}">
             <strong>{{ day.date|date:"d/m/Y" }}</strong>
-            <span>🍼 {{ day.meals|length }} γεύματα · {{ day.total_consumed }} ml</span>
+            <span>🍼 {{ day.meals|length }} · {{ day.total_consumed }} ml</span>
             <span>🩸 {{ day.glucose|length }} μετρήσεις</span>
+            <span>💊 {{ day.medications|length }} καταχωρήσεις</span>
         </a>
         {% endfor %}
     </div>
     {% else %}
-        <p class="muted">Μόλις καταχωρηθούν δεδομένα προηγούμενων ημερών, θα εμφανίζονται εδώ.</p>
+        <p class="muted">Δεν υπάρχουν ακόμη προηγούμενες ημέρες με δεδομένα.</p>
     {% endif %}
 </section>
 {% endblock %}

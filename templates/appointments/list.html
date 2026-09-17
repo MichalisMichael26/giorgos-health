@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Ιατρικά ραντεβού{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>🩺 Ιατρικά ραντεβού</h1>
+        <p class="muted">Ραντεβού, επανέλεγχοι και υπενθυμίσεις μέσα στο app.</p>
+    </div>
+    <a class="btn primary" href="{% url 'appointment_create' %}">+ Νέο ραντεβού</a>
+</div>
+
+<div class="appointment-grid">
+{% for item in appointments %}
+<article class="appointment-card {% if item.status != 'scheduled' %}appointment-muted{% endif %}">
+    <div class="appointment-date">
+        <strong>{{ item.date|date:"d" }}</strong>
+        <span>{{ item.date|date:"m/Y" }}</span>
+    </div>
+    <div class="appointment-main">
+        <div class="appointment-topline">
+            <span class="status-badge status-{{ item.status }}">{{ item.get_status_display }}</span>
+            <span>{{ item.weekday_name }} · {{ item.time|time:"H:i" }}</span>
+        </div>
+        <h2>{{ item.purpose }}</h2>
+        {% if item.doctor %}<p>👨‍⚕️ {{ item.doctor }}</p>{% endif %}
+        {% if item.clinic %}<p>🏥 {{ item.clinic }}</p>{% endif %}
+        <small>🔔 Υπενθύμιση {{ item.reminder_days_before }} ημέρα/ες πριν</small>
+        {% if item.notes %}<p class="muted">{{ item.notes }}</p>{% endif %}
+        <div class="row-actions">
+            <a class="mini-action" href="{% url 'appointment_edit' item.pk %}">Edit</a>
+            <a class="mini-action danger-link" href="{% url 'appointment_delete' item.pk %}">Delete</a>
+        </div>
+    </div>
+</article>
+{% empty %}
+<div class="panel empty-state">
+    <div class="empty-icon">🩺</div>
+    <h2>Δεν υπάρχουν ραντεβού</h2>
+</div>
+{% endfor %}
+</div>
+{% endblock %}

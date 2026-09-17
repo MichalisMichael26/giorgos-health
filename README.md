@@ -43,3 +43,15 @@ All values remain editable.
 - New measurements automatically use today's date, which remains editable.
 - The Greek weekday is shown automatically from the selected date.
 - Offered amount defaults to 175 ml and remains editable.
+
+
+## Added health-management features
+- 7 / 30 / 90 day charts for glucose, total daily ml, weight and length.
+- Medication / supplement history with dose, unit and time.
+- Medical appointments with in-app reminder window.
+- Expanded "today" dashboard.
+- One-click rolling 24-hour PDF report.
+- Automatic night mode between 22:00 and 06:00 plus manual toggle.
+
+The appointment reminders in this version are shown inside the app/dashboard.
+True push, SMS or email notifications would require a separate notification provider or scheduled delivery service.
