@@ -2,7 +2,7 @@ services:
   - type: web
     name: giorgos-health
     runtime: python
-    buildCommand: "./build.sh"
+    buildCommand: "bash build.sh"
     startCommand: "gunicorn giorgos_health.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
