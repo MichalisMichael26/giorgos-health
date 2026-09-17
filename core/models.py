@@ -1,6 +1,14 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+GREEK_WEEKDAYS = [
+    "Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη",
+    "Παρασκευή", "Σάββατο", "Κυριακή",
+]
+
+def greek_weekday(value):
+    return GREEK_WEEKDAYS[value.weekday()] if value else ""
+
 
 class MealEntry(models.Model):
     STATUS_CHOICES = [
@@ -35,6 +43,10 @@ class MealEntry(models.Model):
 
     class Meta:
         ordering = ["-date", "-scheduled_time"]
+
+    @property
+    def weekday_name(self):
+        return greek_weekday(self.date)
 
     def __str__(self):
         return f"{self.date} {self.scheduled_time.strftime('%H:%M')}"
@@ -78,6 +90,10 @@ class GlucoseReading(models.Model):
     class Meta:
         ordering = ["-date", "-time"]
 
+    @property
+    def weekday_name(self):
+        return greek_weekday(self.date)
+
     def __str__(self):
         return f"{self.date} {self.time.strftime('%H:%M')} - {self.value} mg/dL"
 
@@ -98,6 +114,10 @@ class GrowthMeasurement(models.Model):
 
     class Meta:
         ordering = ["-date"]
+
+    @property
+    def weekday_name(self):
+        return greek_weekday(self.date)
 
     def __str__(self):
         return str(self.date)

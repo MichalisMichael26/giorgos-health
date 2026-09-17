@@ -12,11 +12,12 @@
 <div class="panel table-wrap">
 <table class="responsive-table">
 <thead>
-<tr><th>Ημερομηνία</th><th>Ώρα</th><th>Τιμή</th><th>Σχέση</th><th>Γεύμα</th><th></th></tr>
+<tr><th>Ημέρα</th><th>Ημερομηνία</th><th>Ώρα</th><th>Τιμή</th><th>Σχέση</th><th>Γεύμα</th><th></th></tr>
 </thead>
 <tbody>
 {% for item in readings %}
 <tr>
+    <td data-label="Ημέρα">{{ item.weekday_name }}</td>
     <td data-label="Ημερομηνία">{{ item.date|date:"d/m/Y" }}</td>
     <td data-label="Ώρα">{{ item.time|time:"H:i" }}</td>
     <td data-label="Τιμή"><strong>{{ item.value|floatformat:0 }}</strong> mg/dL</td>
@@ -32,7 +33,7 @@
     </td>
 </tr>
 {% empty %}
-<tr><td colspan="6">Δεν υπάρχουν μετρήσεις.</td></tr>
+<tr><td colspan="7">Δεν υπάρχουν μετρήσεις.</td></tr>
 {% endfor %}
 </tbody>
 </table>

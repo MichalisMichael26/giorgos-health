@@ -38,3 +38,8 @@ The Giorgos Health logo is included as:
 - Formula defaults to 5 scoops.
 - Supplement defaults to 1 scoop.
 All values remain editable.
+
+## Automatic measurement date and meal defaults
+- New measurements automatically use today's date, which remains editable.
+- The Greek weekday is shown automatically from the selected date.
+- Offered amount defaults to 175 ml and remains editable.

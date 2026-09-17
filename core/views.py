@@ -435,6 +435,7 @@ def meal_create(request):
             "scheduled_time": suggested_time,
             "actual_time": suggested_time,
             "same_as_scheduled": True,
+            "offered_ml": 175,
             "consumed_ml": 175,
             "formula": "5",
             "supplement": "1",

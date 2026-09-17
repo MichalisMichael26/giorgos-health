@@ -765,3 +765,24 @@ textarea { min-height: 100px; resize: vertical; }
     background: #f5f8fc !important;
     color: #68758c;
 }
+
+
+.weekday-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border: 1px solid #d8e6ff;
+    border-radius: 14px;
+    background: #f4f8ff;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.weekday-preview[hidden] { display: none; }
+
+.weekday-preview strong {
+    color: #315d9d;
+    font-size: 15px;
+}
