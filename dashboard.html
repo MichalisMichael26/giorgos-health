@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Αρχική{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>Σήμερα · {{ today|date:"d/m/Y" }}</h1>
+        <p class="muted">Πρόγραμμα γευμάτων ανά 3 ώρες, αρχίζοντας στις 01:30.</p>
+    </div>
+    <div class="actions">
+        <a class="btn primary" href="{% url 'meal_create' %}">+ Γεύμα</a>
+        <a class="btn secondary" href="{% url 'glucose_create' %}">+ Γλυκόζη</a>
+    </div>
+</div>
+
+<div class="cards">
+    <section class="card">
+        <span class="label">Επόμενο προγραμματισμένο γεύμα</span>
+        <strong class="big">{{ next_meal_time|time:"H:i" }}</strong>
+    </section>
+    <section class="card">
+        <span class="label">Σύνολο ml σήμερα</span>
+        <strong class="big">{{ consumed_total }} ml</strong>
+    </section>
+    <section class="card">
+        <span class="label">Τελευταία γλυκόζη</span>
+        <strong class="big">
+            {% if latest_glucose %}{{ latest_glucose.value|floatformat:0 }} mg/dL{% else %}—{% endif %}
+        </strong>
+        {% if latest_glucose %}
+            <span class="muted">{{ latest_glucose.date|date:"d/m" }} · {{ latest_glucose.time|time:"H:i" }}</span>
+        {% endif %}
+    </section>
+</div>
+
+<section class="panel">
+    <div class="panel-head">
+        <h2>Πρόγραμμα ημέρας</h2>
+    </div>
+    <div class="schedule-grid">
+        {% for t in schedule %}
+            <div class="schedule-time">{{ t|time:"H:i" }}</div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h2>Γεύματα σήμερα</h2>
+        <a href="{% url 'meal_list' %}">Όλα</a>
+    </div>
+    {% if meals_today %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Πρόγραμμα</th>
+                <th>Πραγματική ώρα</th>
+                <th>Ήπιε</th>
+                <th>Κατάσταση</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for meal in meals_today %}
+            <tr>
+                <td>{{ meal.scheduled_time|time:"H:i" }}</td>
+                <td>{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
+                <td>{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
+                <td>{{ meal.get_status_display }}</td>
+                <td><a href="{% url 'meal_edit' meal.pk %}">Edit</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="muted">Δεν υπάρχουν ακόμη γεύματα σήμερα.</p>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h2>Γλυκόζη σήμερα</h2>
+        <a href="{% url 'glucose_list' %}">Όλες</a>
+    </div>
+    {% if glucose_today %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Ώρα</th>
+                <th>Τιμή</th>
+                <th>Σχέση με γεύμα</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for reading in glucose_today %}
+            <tr>
+                <td>{{ reading.time|time:"H:i" }}</td>
+                <td><strong>{{ reading.value|floatformat:0 }}</strong> mg/dL</td>
+                <td>{{ reading.get_context_display }}</td>
+                <td><a href="{% url 'glucose_edit' reading.pk %}">Edit</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="muted">Δεν υπάρχουν ακόμη μετρήσεις σήμερα.</p>
+    {% endif %}
+</section>
+{% endblock %}

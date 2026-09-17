@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Γλυκόζη{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1>Γλυκόζη</h1><p class="muted">Όλες οι μετρήσεις με πλήρες Edit/Delete.</p></div>
+    <a class="btn primary" href="{% url 'glucose_create' %}">+ Νέα μέτρηση</a>
+</div>
+
+<div class="panel table-wrap">
+<table>
+<thead>
+<tr>
+    <th>Ημερομηνία</th>
+    <th>Ώρα</th>
+    <th>Τιμή</th>
+    <th>Σχέση</th>
+    <th>Γεύμα</th>
+    <th></th>
+</tr>
+</thead>
+<tbody>
+{% for r in readings %}
+<tr>
+    <td>{{ r.date|date:"d/m/Y" }}</td>
+    <td>{{ r.time|time:"H:i" }}</td>
+    <td><strong>{{ r.value|floatformat:0 }}</strong> mg/dL</td>
+    <td>{{ r.get_context_display }}</td>
+    <td>
+        {% if r.related_meal %}
+            {{ r.related_meal.date|date:"d/m" }} {{ r.related_meal.scheduled_time|time:"H:i" }}
+        {% else %}
+            —
+        {% endif %}
+    </td>
+    <td class="row-actions">
+        <a href="{% url 'glucose_edit' r.pk %}">Edit</a>
+        <a class="danger-link" href="{% url 'glucose_delete' r.pk %}">Delete</a>
+    </td>
+</tr>
+{% empty %}
+<tr><td colspan="6">Δεν υπάρχουν μετρήσεις.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

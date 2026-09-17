@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Ανάπτυξη{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1>Ανάπτυξη</h1><p class="muted">Βάρος, μήκος και περίμετρος κεφαλής.</p></div>
+    <a class="btn primary" href="{% url 'growth_create' %}">+ Νέα μέτρηση</a>
+</div>
+
+<div class="panel table-wrap">
+<table>
+<thead>
+<tr>
+    <th>Ημερομηνία</th>
+    <th>Βάρος</th>
+    <th>Μήκος</th>
+    <th>Κεφάλι</th>
+    <th></th>
+</tr>
+</thead>
+<tbody>
+{% for m in measurements %}
+<tr>
+    <td>{{ m.date|date:"d/m/Y" }}</td>
+    <td>{% if m.weight_kg %}{{ m.weight_kg }} kg{% else %}—{% endif %}</td>
+    <td>{% if m.length_cm %}{{ m.length_cm }} cm{% else %}—{% endif %}</td>
+    <td>{% if m.head_cm %}{{ m.head_cm }} cm{% else %}—{% endif %}</td>
+    <td class="row-actions">
+        <a href="{% url 'growth_edit' m.pk %}">Edit</a>
+        <a class="danger-link" href="{% url 'growth_delete' m.pk %}">Delete</a>
+    </td>
+</tr>
+{% empty %}
+<tr><td colspan="5">Δεν υπάρχουν μετρήσεις.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}
