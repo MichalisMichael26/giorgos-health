@@ -31,3 +31,10 @@ The Giorgos Health logo is included as:
 - Bookmark icon
 - Apple touch icon
 - PWA/mobile home-screen icon
+
+## Meal entry defaults
+- Actual time defaults to the scheduled time.
+- Consumed amount defaults to 175 ml.
+- Formula defaults to 5 scoops.
+- Supplement defaults to 1 scoop.
+All values remain editable.

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="form-card">
     <h1>{{ title }}</h1>
-    <form method="post">
+    <form method="post" id="entry-form">
         {% csrf_token %}
         {{ form.as_p }}
         <div class="actions">
@@ -12,4 +12,31 @@
         </div>
     </form>
 </div>
+
+<script>
+(function () {
+    const sameBox = document.getElementById("id_same_as_scheduled");
+    const scheduled = document.getElementById("id_scheduled_time");
+    const actual = document.getElementById("id_actual_time");
+
+    if (!sameBox || !scheduled || !actual) return;
+
+    function syncActualTime() {
+        if (sameBox.checked) {
+            actual.value = scheduled.value;
+            actual.readOnly = true;
+            actual.classList.add("input-synced");
+        } else {
+            actual.readOnly = false;
+            actual.classList.remove("input-synced");
+        }
+    }
+
+    sameBox.addEventListener("change", syncActualTime);
+    scheduled.addEventListener("input", syncActualTime);
+    scheduled.addEventListener("change", syncActualTime);
+
+    syncActualTime();
+})();
+</script>
 {% endblock %}

@@ -427,11 +427,17 @@ def meal_list(request):
 
 @login_required
 def meal_create(request):
+    suggested_time = next_scheduled_time(timezone.localtime())
     form = MealEntryForm(
         request.POST or None,
         initial={
             "date": timezone.localdate(),
-            "scheduled_time": next_scheduled_time(timezone.localtime()),
+            "scheduled_time": suggested_time,
+            "actual_time": suggested_time,
+            "same_as_scheduled": True,
+            "consumed_ml": 175,
+            "formula": "5",
+            "supplement": "1",
         },
     )
     if form.is_valid():

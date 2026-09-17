@@ -11,6 +11,12 @@ class TimeInput(forms.TimeInput):
 
 
 class MealEntryForm(forms.ModelForm):
+    same_as_scheduled = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Πραγματική ώρα ίδια με την προγραμματισμένη",
+    )
+
     class Meta:
         model = MealEntry
         fields = [
@@ -24,12 +30,53 @@ class MealEntryForm(forms.ModelForm):
             "status",
             "notes",
         ]
+        labels = {
+            "formula": "Formula (κουταλάκια)",
+            "supplement": "Συμπλήρωμα (κουταλάκια)",
+        }
         widgets = {
             "date": DateInput(),
             "scheduled_time": TimeInput(format="%H:%M"),
             "actual_time": TimeInput(format="%H:%M"),
             "notes": forms.Textarea(attrs={"rows": 3}),
+            "consumed_ml": forms.NumberInput(attrs={
+                "inputmode": "numeric",
+                "min": "0",
+                "step": "1",
+            }),
+            "formula": forms.TextInput(attrs={"inputmode": "decimal"}),
+            "supplement": forms.TextInput(attrs={"inputmode": "decimal"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.order_fields([
+            "date",
+            "scheduled_time",
+            "same_as_scheduled",
+            "actual_time",
+            "offered_ml",
+            "consumed_ml",
+            "formula",
+            "supplement",
+            "status",
+            "notes",
+        ])
+
+        if self.instance and self.instance.pk:
+            self.fields["same_as_scheduled"].initial = bool(
+                self.instance.actual_time
+                and self.instance.scheduled_time
+                and self.instance.actual_time == self.instance.scheduled_time
+            )
+
+    def clean(self):
+        cleaned = super().clean()
+        scheduled_time = cleaned.get("scheduled_time")
+        if cleaned.get("same_as_scheduled") and scheduled_time:
+            cleaned["actual_time"] = scheduled_time
+        return cleaned
 
 
 class GlucoseReadingForm(forms.ModelForm):

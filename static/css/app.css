@@ -734,3 +734,34 @@ textarea { min-height: 100px; resize: vertical; }
 
     .mobile-bottom-nav a small { font-size: 9px; }
 }
+
+
+/* Meal-entry convenience controls */
+#entry-form p:has(#id_same_as_scheduled) {
+    display: flex;
+    grid-template-columns: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid #d8e6ff;
+    border-radius: 14px;
+    background: #f4f8ff;
+}
+
+#entry-form #id_same_as_scheduled {
+    width: 22px;
+    height: 22px;
+    min-height: 22px;
+    flex: 0 0 auto;
+    accent-color: var(--primary);
+}
+
+#entry-form p:has(#id_same_as_scheduled) label {
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.input-synced {
+    background: #f5f8fc !important;
+    color: #68758c;
+}
