@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}24ωρη Αναφορά{% endblock %}
+{% block content %}
+<div class="report-page">
+    <div class="report-toolbar no-print">
+        <a class="btn secondary" href="javascript:window.close()">← Κλείσιμο</a>
+        <div class="report-toolbar-actions">
+            <button class="btn secondary" type="button" onclick="window.print()">🖨️ Εκτύπωση</button>
+            <a class="btn primary" href="{% url 'report_24h_pdf' %}">⬇ Λήψη PDF</a>
+        </div>
+    </div>
+
+    <article class="report-sheet">
+        <header class="report-header">
+            <img src="{% static 'images/logo.png' %}" alt="Giorgos Health" class="report-logo">
+            <div>
+                <h1>Giorgos Health</h1>
+                <h2>24ωρη Αναφορά</h2>
+                <p>{{ start_dt|date:"d/m/Y H:i" }} – {{ end_dt|date:"d/m/Y H:i" }}</p>
+            </div>
+        </header>
+
+        <section class="report-summary-grid">
+            <div><span>🍼</span><strong>{{ meals|length }}</strong><small>Γεύματα</small></div>
+            <div><span>💧</span><strong>{{ total_ml }} ml</strong><small>Σύνολο</small></div>
+            <div><span>🩸</span><strong>{{ glucose|length }}</strong><small>Μετρήσεις</small></div>
+            <div><span>💊</span><strong>{{ medications|length }}</strong><small>Φάρμακα / συμπληρώματα</small></div>
+        </section>
+
+        {% if glucose_min != None %}
+        <div class="report-info">
+            Εύρος γλυκόζης τελευταίου 24ώρου:
+            <strong>{{ glucose_min|floatformat:0 }}–{{ glucose_max|floatformat:0 }} mg/dL</strong>
+        </div>
+        {% endif %}
+
+        {% if latest_growth %}
+        <section class="report-section">
+            <h3>📏 Τελευταία ανάπτυξη</h3>
+            <div class="report-growth">
+                <span><strong>Ημερομηνία</strong>{{ latest_growth.date|date:"d/m/Y" }}</span>
+                <span><strong>Βάρος</strong>{% if latest_growth.weight_kg %}{{ latest_growth.weight_kg }} kg{% else %}—{% endif %}</span>
+                <span><strong>Μήκος</strong>{% if latest_growth.length_cm %}{{ latest_growth.length_cm }} cm{% else %}—{% endif %}</span>
+                <span><strong>Κεφάλι</strong>{% if latest_growth.head_cm %}{{ latest_growth.head_cm }} cm{% else %}—{% endif %}</span>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="report-section">
+            <h3>🍼 Γεύματα</h3>
+            <div class="report-table-wrap">
+                <table class="report-table">
+                    <thead>
+                        <tr><th>Ημ/νία</th><th>Ώρα</th><th>Προσφέρθηκαν</th><th>Ήπιε</th><th>Formula</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in meals %}
+                        <tr>
+                            <td>{{ item.date|date:"d/m" }}</td>
+                            <td>{% if item.actual_time %}{{ item.actual_time|time:"H:i" }}{% else %}{{ item.scheduled_time|time:"H:i" }}{% endif %}</td>
+                            <td>{% if item.offered_ml != None %}{{ item.offered_ml }} ml{% else %}—{% endif %}</td>
+                            <td>{% if item.consumed_ml != None %}{{ item.consumed_ml }} ml{% else %}—{% endif %}</td>
+                            <td>{{ item.formula|default:"—" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="5">Δεν υπάρχουν γεύματα στο τελευταίο 24ωρο.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="report-section">
+            <h3>🩸 Γλυκόζη</h3>
+            <div class="report-table-wrap">
+                <table class="report-table">
+                    <thead>
+                        <tr><th>Ημ/νία</th><th>Ώρα</th><th>Τιμή</th><th>Σχέση</th><th>Σημειώσεις</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in glucose %}
+                        <tr>
+                            <td>{{ item.date|date:"d/m" }}</td>
+                            <td>{{ item.time|time:"H:i" }}</td>
+                            <td><strong>{{ item.value|floatformat:"-1" }} mg/dL</strong></td>
+                            <td>{{ item.get_context_display }}</td>
+                            <td>{{ item.notes|default:"—" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="5">Δεν υπάρχουν μετρήσεις στο τελευταίο 24ωρο.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="report-section">
+            <h3>💊 Φάρμακα / συμπληρώματα</h3>
+            <div class="report-table-wrap">
+                <table class="report-table">
+                    <thead>
+                        <tr><th>Ημ/νία</th><th>Ώρα</th><th>Όνομα</th><th>Ποσότητα</th><th>Σημειώσεις</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in medications %}
+                        <tr>
+                            <td>{{ item.date|date:"d/m" }}</td>
+                            <td>{{ item.time|time:"H:i" }}</td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }}</td>
+                            <td>{{ item.notes|default:"—" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="5">Δεν υπάρχουν καταχωρήσεις στο τελευταίο 24ωρο.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer class="report-footer">
+            Η αναφορά δημιουργήθηκε από το Giorgos Health.
+        </footer>
+    </article>
+</div>
+{% endblock %}

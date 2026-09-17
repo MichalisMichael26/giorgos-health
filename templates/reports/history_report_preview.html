@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Report Ιστορικού{% endblock %}
+{% block content %}
+<div class="report-page">
+    <div class="report-toolbar no-print">
+        <a class="btn secondary" href="javascript:window.close()">← Κλείσιμο</a>
+        <div class="report-toolbar-actions">
+            <button class="btn secondary" type="button" onclick="window.print()">🖨️ Εκτύπωση</button>
+            <a class="btn primary"
+               href="{% url 'history_pdf' %}?start={{ start_date|date:'Y-m-d' }}&end={{ end_date|date:'Y-m-d' }}">
+                ⬇ Λήψη PDF
+            </a>
+        </div>
+    </div>
+
+    <article class="report-sheet">
+        <header class="report-header">
+            <img src="{% static 'images/logo.png' %}" alt="Giorgos Health" class="report-logo">
+            <div>
+                <h1>Giorgos Health</h1>
+                <h2>Αναφορά Ιστορικού</h2>
+                <p>{{ start_date|date:"d/m/Y" }} – {{ end_date|date:"d/m/Y" }}</p>
+            </div>
+        </header>
+
+        <section class="report-summary-grid">
+            <div><span>🍼</span><strong>{{ total_meals }}</strong><small>Γεύματα</small></div>
+            <div><span>💧</span><strong>{{ total_ml }} ml</strong><small>Σύνολο</small></div>
+            <div><span>🩸</span><strong>{{ total_glucose }}</strong><small>Μετρήσεις</small></div>
+            <div><span>💊</span><strong>{{ total_medications }}</strong><small>Φάρμακα / συμπληρώματα</small></div>
+        </section>
+
+        {% if glucose_min != None %}
+        <div class="report-info">
+            Εύρος γλυκόζης περιόδου:
+            <strong>{{ glucose_min|floatformat:0 }}–{{ glucose_max|floatformat:0 }} mg/dL</strong>
+        </div>
+        {% endif %}
+
+        {% for day in days %}
+        <section class="report-section report-day">
+            <div class="report-day-head">
+                <h3>📅 {{ day.date|date:"d/m/Y" }}</h3>
+                <div>
+                    <span>🍼 {{ day.meals|length }}</span>
+                    <span>💧 {{ day.total_consumed }} ml</span>
+                    <span>🩸 {{ day.glucose|length }}</span>
+                    <span>💊 {{ day.medications|length }}</span>
+                </div>
+            </div>
+
+            {% if day.timeline %}
+            <div class="report-timeline">
+                {% for item in day.timeline %}
+                <div>
+                    <time>{{ item.time|time:"H:i" }}</time>
+                    <span>{{ item.icon }}</span>
+                    <p><strong>{{ item.title }}</strong> · {{ item.text }}{% if item.extra %}<small>{{ item.extra }}</small>{% endif %}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if day.growth %}
+            <div class="report-growth">
+                {% for item in day.growth %}
+                    <span><strong>Βάρος</strong>{% if item.weight_kg %}{{ item.weight_kg }} kg{% else %}—{% endif %}</span>
+                    <span><strong>Μήκος</strong>{% if item.length_cm %}{{ item.length_cm }} cm{% else %}—{% endif %}</span>
+                    <span><strong>Κεφάλι</strong>{% if item.head_cm %}{{ item.head_cm }} cm{% else %}—{% endif %}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+        {% empty %}
+        <section class="report-section">
+            <p>Δεν υπάρχουν δεδομένα για αυτή την περίοδο.</p>
+        </section>
+        {% endfor %}
+
+        <footer class="report-footer">
+            Η αναφορά δημιουργήθηκε από το Giorgos Health.
+        </footer>
+    </article>
+</div>
+{% endblock %}

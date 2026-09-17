@@ -19,7 +19,12 @@
             <input id="end" name="end" type="date" value="{{ end_date|date:'Y-m-d' }}">
         </div>
         <button class="btn primary" type="submit">Προβολή</button>
-        <a class="btn pdf-btn" href="{% url 'history_pdf' %}?start={{ start_date|date:'Y-m-d' }}&end={{ end_date|date:'Y-m-d' }}">📄 PDF</a>
+        <a class="btn pdf-btn"
+           target="_blank"
+           rel="noopener"
+           href="{% url 'history_report_preview' %}?start={{ start_date|date:'Y-m-d' }}&end={{ end_date|date:'Y-m-d' }}">
+            📄 Προβολή report
+        </a>
     </form>
 </section>
 

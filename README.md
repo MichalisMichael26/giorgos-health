@@ -55,3 +55,13 @@ All values remain editable.
 
 The appointment reminders in this version are shown inside the app/dashboard.
 True push, SMS or email notifications would require a separate notification provider or scheduled delivery service.
+
+
+## Charts: all-time option
+Analytics now supports 7 days, 30 days, 90 days and "Πάντα" (all available data).
+
+## Report preview workflow
+Reports no longer need to download immediately:
+- 24-hour report opens as an HTML preview in a new tab.
+- History-period report opens as an HTML preview in a new tab.
+- Each report preview includes Print and Download PDF actions.

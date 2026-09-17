@@ -237,39 +237,82 @@ def more(request):
 
 @login_required
 def analytics(request):
-    try:
-        period = int(request.GET.get("period", 7))
-    except ValueError:
-        period = 7
-    if period not in (7, 30, 90):
-        period = 7
+    raw_period = request.GET.get("period", "7")
+    allowed_periods = {"7", "30", "90", "all"}
+    if raw_period not in allowed_periods:
+        raw_period = "7"
 
     today = timezone.localdate()
-    start_date = today - timedelta(days=period - 1)
-    dates = [start_date + timedelta(days=i) for i in range(period)]
+
+    if raw_period == "all":
+        earliest_dates = []
+
+        first_meal = MealEntry.objects.order_by("date").values_list("date", flat=True).first()
+        first_glucose = GlucoseReading.objects.order_by("date").values_list("date", flat=True).first()
+        first_growth = GrowthMeasurement.objects.order_by("date").values_list("date", flat=True).first()
+
+        for value in (first_meal, first_glucose, first_growth):
+            if value:
+                earliest_dates.append(value)
+
+        start_date = min(earliest_dates) if earliest_dates else today
+        period_label = "Πάντα"
+    else:
+        period_days = int(raw_period)
+        start_date = today - timedelta(days=period_days - 1)
+        period_label = f"{period_days} ημέρες"
 
     meals = MealEntry.objects.filter(date__range=(start_date, today))
-    glucose = GlucoseReading.objects.filter(date__range=(start_date, today)).order_by("date", "time")
-    growth = GrowthMeasurement.objects.filter(date__range=(start_date, today)).order_by("date")
+    glucose = GlucoseReading.objects.filter(
+        date__range=(start_date, today)
+    ).order_by("date", "time")
+    growth = GrowthMeasurement.objects.filter(
+        date__range=(start_date, today)
+    ).order_by("date")
 
     ml_by_date = defaultdict(int)
     for item in meals:
         ml_by_date[item.date] += item.consumed_ml or 0
 
+    # For the daily-ml graph, use every calendar date in the requested period.
+    date_count = (today - start_date).days + 1
+    dates = [start_date + timedelta(days=i) for i in range(date_count)]
+
     chart_data = {
-        "period": period,
-        "daily_labels": [d.strftime("%d/%m") for d in dates],
+        "period": raw_period,
+        "period_label": period_label,
+        "daily_labels": [d.strftime("%d/%m/%y") for d in dates],
         "daily_ml": [ml_by_date.get(d, 0) for d in dates],
-        "glucose_labels": [f"{item.date.strftime('%d/%m')} {item.time.strftime('%H:%M')}" for item in glucose],
+        "glucose_labels": [
+            f"{item.date.strftime('%d/%m/%y')} {item.time.strftime('%H:%M')}"
+            for item in glucose
+        ],
         "glucose_values": [float(item.value) for item in glucose],
-        "weight_labels": [item.date.strftime("%d/%m") for item in growth if item.weight_kg is not None],
-        "weight_values": [float(item.weight_kg) for item in growth if item.weight_kg is not None],
-        "length_labels": [item.date.strftime("%d/%m") for item in growth if item.length_cm is not None],
-        "length_values": [float(item.length_cm) for item in growth if item.length_cm is not None],
+        "weight_labels": [
+            item.date.strftime("%d/%m/%y")
+            for item in growth
+            if item.weight_kg is not None
+        ],
+        "weight_values": [
+            float(item.weight_kg)
+            for item in growth
+            if item.weight_kg is not None
+        ],
+        "length_labels": [
+            item.date.strftime("%d/%m/%y")
+            for item in growth
+            if item.length_cm is not None
+        ],
+        "length_values": [
+            float(item.length_cm)
+            for item in growth
+            if item.length_cm is not None
+        ],
     }
 
     return render(request, "analytics.html", {
-        "period": period,
+        "period": raw_period,
+        "period_label": period_label,
         "chart_data": chart_data,
     })
 
@@ -496,6 +539,94 @@ def _aware_event_datetime(date_value, time_value):
     return timezone.make_aware(dt, timezone.get_current_timezone())
 
 
+
+def _rolling_24h_data():
+    end_dt = timezone.localtime()
+    start_dt = end_dt - timedelta(hours=24)
+    date_start = start_dt.date()
+    date_end = end_dt.date()
+
+    meals = []
+    for item in MealEntry.objects.filter(
+        date__range=(date_start, date_end)
+    ).order_by("date", "scheduled_time"):
+        event_time = item.actual_time or item.scheduled_time
+        if start_dt <= _aware_event_datetime(item.date, event_time) <= end_dt:
+            meals.append(item)
+
+    glucose = []
+    for item in GlucoseReading.objects.filter(
+        date__range=(date_start, date_end)
+    ).order_by("date", "time"):
+        if start_dt <= _aware_event_datetime(item.date, item.time) <= end_dt:
+            glucose.append(item)
+
+    medications = []
+    for item in MedicationEntry.objects.filter(
+        date__range=(date_start, date_end)
+    ).order_by("date", "time"):
+        if start_dt <= _aware_event_datetime(item.date, item.time) <= end_dt:
+            medications.append(item)
+
+    latest_growth = GrowthMeasurement.objects.first()
+    total_ml = sum(item.consumed_ml or 0 for item in meals)
+
+    glucose_values = [float(item.value) for item in glucose]
+    glucose_min = min(glucose_values) if glucose_values else None
+    glucose_max = max(glucose_values) if glucose_values else None
+
+    return {
+        "start_dt": start_dt,
+        "end_dt": end_dt,
+        "meals": meals,
+        "glucose": glucose,
+        "medications": medications,
+        "latest_growth": latest_growth,
+        "total_ml": total_ml,
+        "glucose_min": glucose_min,
+        "glucose_max": glucose_max,
+    }
+
+
+@login_required
+def report_24h_preview(request):
+    data = _rolling_24h_data()
+    return render(request, "reports/report_24h_preview.html", data)
+
+
+@login_required
+def history_report_preview(request):
+    start_date, end_date = history_range(request)
+    days = build_history_days(start_date, end_date)
+
+    total_meals = sum(len(day["meals"]) for day in days)
+    total_ml = sum(day["total_consumed"] for day in days)
+    total_glucose = sum(len(day["glucose"]) for day in days)
+    total_medications = sum(len(day["medications"]) for day in days)
+
+    glucose_values = [
+        float(item.value)
+        for day in days
+        for item in day["glucose"]
+    ]
+
+    return render(
+        request,
+        "reports/history_report_preview.html",
+        {
+            "days": days,
+            "start_date": start_date,
+            "end_date": end_date,
+            "total_meals": total_meals,
+            "total_ml": total_ml,
+            "total_glucose": total_glucose,
+            "total_medications": total_medications,
+            "glucose_min": min(glucose_values) if glucose_values else None,
+            "glucose_max": max(glucose_values) if glucose_values else None,
+        },
+    )
+
+
 @login_required
 def report_24h_pdf(request):
     from reportlab.lib import colors
@@ -503,29 +634,14 @@ def report_24h_pdf(request):
     from reportlab.lib.units import mm
     from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-    end_dt = timezone.localtime()
-    start_dt = end_dt - timedelta(hours=24)
-    date_start = start_dt.date()
-    date_end = end_dt.date()
-
-    meals = []
-    for item in MealEntry.objects.filter(date__range=(date_start, date_end)).order_by("date", "scheduled_time"):
-        event_time = item.actual_time or item.scheduled_time
-        if start_dt <= _aware_event_datetime(item.date, event_time) <= end_dt:
-            meals.append(item)
-
-    glucose = []
-    for item in GlucoseReading.objects.filter(date__range=(date_start, date_end)).order_by("date", "time"):
-        if start_dt <= _aware_event_datetime(item.date, item.time) <= end_dt:
-            glucose.append(item)
-
-    medications = []
-    for item in MedicationEntry.objects.filter(date__range=(date_start, date_end)).order_by("date", "time"):
-        if start_dt <= _aware_event_datetime(item.date, item.time) <= end_dt:
-            medications.append(item)
-
-    latest_growth = GrowthMeasurement.objects.first()
-    total_ml = sum(item.consumed_ml or 0 for item in meals)
+    report_data = _rolling_24h_data()
+    end_dt = report_data["end_dt"]
+    start_dt = report_data["start_dt"]
+    meals = report_data["meals"]
+    glucose = report_data["glucose"]
+    medications = report_data["medications"]
+    latest_growth = report_data["latest_growth"]
+    total_ml = report_data["total_ml"]
 
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = (

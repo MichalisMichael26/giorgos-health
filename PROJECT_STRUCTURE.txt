@@ -39,3 +39,5 @@ templates/meals/list.html
 templates/medications/list.html
 templates/more.html
 templates/registration/login.html
+templates/reports/history_report_preview.html
+templates/reports/report_24h_preview.html

@@ -4,12 +4,13 @@
 <div class="page-head">
     <div>
         <h1>📊 Γραφήματα</h1>
-        <p class="muted">Παρακολούθηση τάσεων για γλυκόζη, σίτιση και ανάπτυξη.</p>
+        <p class="muted">Παρακολούθηση τάσεων για γλυκόζη, σίτιση και ανάπτυξη · {{ period_label }}.</p>
     </div>
     <div class="period-tabs">
-        <a class="{% if period == 7 %}active{% endif %}" href="?period=7">7 ημέρες</a>
-        <a class="{% if period == 30 %}active{% endif %}" href="?period=30">30 ημέρες</a>
-        <a class="{% if period == 90 %}active{% endif %}" href="?period=90">90 ημέρες</a>
+        <a class="{% if period == '7' %}active{% endif %}" href="?period=7">7 ημέρες</a>
+        <a class="{% if period == '30' %}active{% endif %}" href="?period=30">30 ημέρες</a>
+        <a class="{% if period == '90' %}active{% endif %}" href="?period=90">90 ημέρες</a>
+        <a class="{% if period == 'all' %}active{% endif %}" href="?period=all">Πάντα</a>
     </div>
 </div>
 

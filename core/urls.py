@@ -7,7 +7,9 @@ urlpatterns = [
     path("analytics/", views.analytics, name="analytics"),
 
     path("history/", views.history, name="history"),
+    path("history/report/", views.history_report_preview, name="history_report_preview"),
     path("history/pdf/", views.history_pdf, name="history_pdf"),
+    path("report/24h/", views.report_24h_preview, name="report_24h_preview"),
     path("report/24h/pdf/", views.report_24h_pdf, name="report_24h_pdf"),
 
     path("meals/", views.meal_list, name="meal_list"),
