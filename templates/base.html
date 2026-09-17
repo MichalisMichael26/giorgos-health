@@ -4,8 +4,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#edf6ff">
+    <meta name="theme-color" content="#5b83ff">
+    <meta name="application-name" content="Giorgos Health">
+    <meta name="apple-mobile-web-app-title" content="Giorgos Health">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>{% block title %}Giorgos Health{% endblock %}</title>
+
+    <link rel="icon" href="{% static 'icons/favicon.ico' %}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}">
+
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body class="kids-bg">

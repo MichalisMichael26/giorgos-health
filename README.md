@@ -24,3 +24,10 @@ be exported correctly.
 
 ## Security
 Do not commit passwords, medical reports, API keys or private health data to GitHub.
+
+## Website icon
+The Giorgos Health logo is included as:
+- Browser favicon
+- Bookmark icon
+- Apple touch icon
+- PWA/mobile home-screen icon
