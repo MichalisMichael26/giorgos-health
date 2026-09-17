@@ -10,25 +10,25 @@
 </div>
 
 <div class="panel table-wrap">
-<table>
+<table class="responsive-table">
 <thead>
 <tr><th>Ημερομηνία</th><th>Ώρα</th><th>Τιμή</th><th>Σχέση</th><th>Γεύμα</th><th></th></tr>
 </thead>
 <tbody>
 {% for item in readings %}
 <tr>
-    <td>{{ item.date|date:"d/m/Y" }}</td>
-    <td>{{ item.time|time:"H:i" }}</td>
-    <td><strong>{{ item.value|floatformat:0 }}</strong> mg/dL</td>
-    <td>{{ item.get_context_display }}</td>
-    <td>
+    <td data-label="Ημερομηνία">{{ item.date|date:"d/m/Y" }}</td>
+    <td data-label="Ώρα">{{ item.time|time:"H:i" }}</td>
+    <td data-label="Τιμή"><strong>{{ item.value|floatformat:0 }}</strong> mg/dL</td>
+    <td data-label="Σχέση">{{ item.get_context_display }}</td>
+    <td data-label="Γεύμα">
         {% if item.related_meal %}
             {{ item.related_meal.date|date:"d/m" }} · {{ item.related_meal.scheduled_time|time:"H:i" }}
         {% else %}—{% endif %}
     </td>
-    <td class="row-actions">
-        <a href="{% url 'glucose_edit' item.pk %}">Edit</a>
-        <a class="danger-link" href="{% url 'glucose_delete' item.pk %}">Delete</a>
+    <td data-label="Ενέργειες" class="row-actions">
+        <a class="mini-action" href="{% url 'glucose_edit' item.pk %}">Edit</a>
+        <a class="mini-action danger-link" href="{% url 'glucose_delete' item.pk %}">Delete</a>
     </td>
 </tr>
 {% empty %}

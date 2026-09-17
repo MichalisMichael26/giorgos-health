@@ -4,7 +4,7 @@
 <div class="hero-banner">
     <div class="hero-text">
         <h1>Σήμερα · {{ today|date:"d/m/Y" }}</h1>
-        <p class="muted large-text">Παιδικό, ζεστό και εύχρηστο dashboard για την καθημερινή φροντίδα του Γιώργη.</p>
+        <p class="muted large-text">Όλα τα βασικά της ημέρας σε μία οθόνη.</p>
     </div>
     <div class="hero-actions">
         <a class="btn primary" href="{% url 'meal_create' %}">+ Γεύμα</a>
@@ -36,7 +36,9 @@
 </div>
 
 <section class="panel">
-    <div class="panel-head"><h2>🌈 Πρόγραμμα ημέρας</h2></div>
+    <div class="panel-head">
+        <h2>🌈 Πρόγραμμα ημέρας</h2>
+    </div>
     <div class="schedule-grid">
         {% for item in schedule %}
             <div class="schedule-time">{{ item|time:"H:i" }}</div>
@@ -50,7 +52,7 @@
         <a href="{% url 'meal_list' %}">Όλα</a>
     </div>
     <div class="table-wrap">
-        <table>
+        <table class="responsive-table">
             <thead>
                 <tr>
                     <th>Πρόγραμμα</th>
@@ -63,11 +65,11 @@
             <tbody>
             {% for meal in meals_today %}
                 <tr>
-                    <td>{{ meal.scheduled_time|time:"H:i" }}</td>
-                    <td>{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
-                    <td>{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
-                    <td>{{ meal.get_status_display }}</td>
-                    <td><a href="{% url 'meal_edit' meal.pk %}">Edit</a></td>
+                    <td data-label="Πρόγραμμα">{{ meal.scheduled_time|time:"H:i" }}</td>
+                    <td data-label="Πραγματική ώρα">{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
+                    <td data-label="Ήπιε">{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
+                    <td data-label="Κατάσταση">{{ meal.get_status_display }}</td>
+                    <td data-label=""><a class="mini-action" href="{% url 'meal_edit' meal.pk %}">Edit</a></td>
                 </tr>
             {% empty %}
                 <tr><td colspan="5">Δεν υπάρχουν γεύματα σήμερα.</td></tr>
@@ -83,17 +85,17 @@
         <a href="{% url 'glucose_list' %}">Όλες</a>
     </div>
     <div class="table-wrap">
-        <table>
+        <table class="responsive-table">
             <thead>
                 <tr><th>Ώρα</th><th>Τιμή</th><th>Σχέση</th><th></th></tr>
             </thead>
             <tbody>
             {% for reading in glucose_today %}
                 <tr>
-                    <td>{{ reading.time|time:"H:i" }}</td>
-                    <td><strong>{{ reading.value|floatformat:0 }}</strong> mg/dL</td>
-                    <td>{{ reading.get_context_display }}</td>
-                    <td><a href="{% url 'glucose_edit' reading.pk %}">Edit</a></td>
+                    <td data-label="Ώρα">{{ reading.time|time:"H:i" }}</td>
+                    <td data-label="Τιμή"><strong>{{ reading.value|floatformat:0 }}</strong> mg/dL</td>
+                    <td data-label="Σχέση">{{ reading.get_context_display }}</td>
+                    <td data-label=""><a class="mini-action" href="{% url 'glucose_edit' reading.pk %}">Edit</a></td>
                 </tr>
             {% empty %}
                 <tr><td colspan="4">Δεν υπάρχουν μετρήσεις σήμερα.</td></tr>
@@ -101,5 +103,26 @@
             </tbody>
         </table>
     </div>
+</section>
+
+<section class="panel history-preview-panel">
+    <div class="panel-head">
+        <h2>📅 Προηγούμενες ημέρες</h2>
+        <a href="{% url 'history' %}">Πλήρες ιστορικό</a>
+    </div>
+
+    {% if previous_days %}
+    <div class="history-preview-grid">
+        {% for day in previous_days %}
+        <a class="history-preview-card" href="{% url 'history' %}?start={{ day.date|date:'Y-m-d' }}&end={{ day.date|date:'Y-m-d' }}">
+            <strong>{{ day.date|date:"d/m/Y" }}</strong>
+            <span>🍼 {{ day.meals|length }} γεύματα · {{ day.total_consumed }} ml</span>
+            <span>🩸 {{ day.glucose|length }} μετρήσεις</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+        <p class="muted">Μόλις καταχωρηθούν δεδομένα προηγούμενων ημερών, θα εμφανίζονται εδώ.</p>
+    {% endif %}
 </section>
 {% endblock %}

@@ -25,5 +25,6 @@ templates/dashboard.html
 templates/form.html
 templates/glucose/list.html
 templates/growth/list.html
+templates/history.html
 templates/meals/list.html
 templates/registration/login.html

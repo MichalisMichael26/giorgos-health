@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Ιστορικό{% endblock %}
+{% block content %}
+<div class="page-head history-head">
+    <div>
+        <h1>📅 Ιστορικό</h1>
+        <p class="muted">Δες τι έγινε σε κάθε προηγούμενη ημέρα και εξήγαγε την περίοδο σε PDF.</p>
+    </div>
+</div>
+
+<section class="panel history-filter-panel">
+    <form class="history-filter" method="get">
+        <div class="filter-field">
+            <label for="start">Από</label>
+            <input id="start" name="start" type="date" value="{{ start_date|date:'Y-m-d' }}">
+        </div>
+        <div class="filter-field">
+            <label for="end">Έως</label>
+            <input id="end" name="end" type="date" value="{{ end_date|date:'Y-m-d' }}">
+        </div>
+        <button class="btn primary" type="submit">Προβολή</button>
+        <a class="btn pdf-btn" href="{% url 'history_pdf' %}?start={{ start_date|date:'Y-m-d' }}&end={{ end_date|date:'Y-m-d' }}">
+            📄 Εξαγωγή PDF
+        </a>
+    </form>
+</section>
+
+{% for day in days %}
+<section class="history-day">
+    <div class="history-day-head">
+        <div>
+            <span class="day-label">Ημέρα</span>
+            <h2>{{ day.date|date:"d/m/Y" }}</h2>
+        </div>
+        <div class="history-summary">
+            <span>🍼 {{ day.meals|length }} γεύματα</span>
+            <span>💧 {{ day.total_consumed }} ml</span>
+            <span>🩸 {{ day.glucose|length }} μετρήσεις</span>
+            {% if day.glucose_min != None %}
+                <span>↕ {{ day.glucose_min|floatformat:0 }}–{{ day.glucose_max|floatformat:0 }} mg/dL</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if day.timeline %}
+    <div class="timeline">
+        {% for item in day.timeline %}
+        <div class="timeline-item {{ item.kind }}">
+            <div class="timeline-time">{{ item.time|time:"H:i" }}</div>
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <strong>
+                    {% if item.kind == "meal" %}🍼{% else %}🩸{% endif %}
+                    {{ item.title }}
+                </strong>
+                <span>{{ item.text }}</span>
+                {% if item.extra %}<small>{{ item.extra }}</small>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if day.growth %}
+    <div class="growth-history">
+        <h3>📏 Ανάπτυξη</h3>
+        {% for item in day.growth %}
+        <div class="growth-history-card">
+            <span><strong>Βάρος</strong><br>{% if item.weight_kg %}{{ item.weight_kg }} kg{% else %}—{% endif %}</span>
+            <span><strong>Μήκος</strong><br>{% if item.length_cm %}{{ item.length_cm }} cm{% else %}—{% endif %}</span>
+            <span><strong>Κεφάλι</strong><br>{% if item.head_cm %}{{ item.head_cm }} cm{% else %}—{% endif %}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="history-detail-actions">
+        <a href="{% url 'meal_list' %}">Επεξεργασία γευμάτων</a>
+        <a href="{% url 'glucose_list' %}">Επεξεργασία γλυκόζης</a>
+    </div>
+</section>
+{% empty %}
+<section class="panel empty-state">
+    <div class="empty-icon">📭</div>
+    <h2>Δεν υπάρχουν καταχωρήσεις</h2>
+    <p class="muted">Δεν βρέθηκαν δεδομένα για την επιλεγμένη περίοδο.</p>
+</section>
+{% endfor %}
+{% endblock %}

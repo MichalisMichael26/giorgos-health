@@ -1,10 +1,26 @@
 # Giorgos Health
 
-Private Django app for tracking meals, glucose readings and growth.
+Private responsive Django app for family health tracking.
 
-## Main feeding schedule
-01:30, 04:30, 07:30, 10:30, 13:30, 16:30, 19:30, 22:30
+## Included
+- Feeding schedule: 01:30, then every 3 hours
+- Scheduled and actual feeding time
+- Offered / consumed ml
+- Formula and supplement fields
+- Glucose readings with date and time
+- Edit and delete
+- Growth measurements
+- Historical view by date range
+- Daily timeline
+- PDF export for the selected history period
+- Responsive desktop, tablet and mobile interface
+- Mobile bottom navigation
+- PostgreSQL / Render ready
 
-## Notes
-- Built for private use.
-- Do not commit private medical data or passwords to GitHub.
+## PDF
+The PDF export is generated on the server with ReportLab. The code attempts to use
+a Unicode system font such as DejaVu Sans or Liberation Sans so Greek text can
+be exported correctly.
+
+## Security
+Do not commit passwords, medical reports, API keys or private health data to GitHub.
