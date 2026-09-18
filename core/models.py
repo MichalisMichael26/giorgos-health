@@ -1,4 +1,5 @@
 from datetime import date
+import uuid
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -233,6 +234,14 @@ class ChildProfile(models.Model):
         help_text="Προαιρετικά: άλλο τηλέφωνο, κλινική, νοσοκομείο ή επαφή.",
     )
     current_feeding_plan = models.TextField("Τρέχον πλάνο σίτισης", blank=True)
+    emergency_share_enabled = models.BooleanField("Emergency QR ενεργό", default=False)
+    emergency_share_token = models.UUIDField("Emergency share token", default=uuid.uuid4, unique=True, editable=False)
+    emergency_share_show_identity = models.BooleanField("QR: όνομα & DOB", default=True)
+    emergency_share_show_instructions = models.BooleanField("QR: βασικές ιατρικές οδηγίες", default=True)
+    emergency_share_show_feeding = models.BooleanField("QR: πλάνο σίτισης", default=True)
+    emergency_share_show_doctors = models.BooleanField("QR: θεράποντες ιατροί", default=True)
+    emergency_share_show_phones = models.BooleanField("QR: τηλέφωνα", default=True)
+    emergency_share_show_glucose = models.BooleanField("QR: τελευταία γλυκόζη", default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -339,6 +348,9 @@ class SymptomEntry(models.Model):
     duration_minutes = models.PositiveIntegerField("Διάρκεια (λεπτά)", blank=True, null=True)
     relation_to_feed = models.CharField("Σχέση με γεύμα", max_length=20, choices=RELATION_CHOICES, default="unknown")
     notes = models.TextField("Σημειώσεις", blank=True)
+    photo_name = models.CharField("Όνομα φωτογραφίας", max_length=255, blank=True)
+    photo_mime = models.CharField("Τύπος φωτογραφίας", max_length=120, blank=True)
+    photo_data = models.BinaryField("Φωτογραφία", blank=True, null=True, editable=False)
     created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -373,6 +385,9 @@ class DiaperEntry(models.Model):
     stool_color = models.CharField("Χρώμα κένωσης", max_length=100, blank=True)
     stool_consistency = models.CharField("Σύσταση", max_length=120, blank=True)
     notes = models.TextField("Σημειώσεις", blank=True)
+    photo_name = models.CharField("Όνομα φωτογραφίας", max_length=255, blank=True)
+    photo_mime = models.CharField("Τύπος φωτογραφίας", max_length=120, blank=True)
+    photo_data = models.BinaryField("Φωτογραφία", blank=True, null=True, editable=False)
     created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -465,12 +480,14 @@ class ProductSafetyRecord(models.Model):
     ]
     DECISION_CHOICES = [
         ("confirmed", "Επιβεβαιωμένο από ιατρό / φαρμακοποιό"),
+        ("checked", "Ελέγχθηκε — δεν εντοπίστηκε περιορισμός"),
         ("avoid", "Να αποφεύγεται"),
         ("caution", "Χρειάζεται έλεγχος"),
     ]
 
     kind = models.CharField("Τύπος", max_length=20, choices=KIND_CHOICES)
     name = models.CharField("Ονομασία προϊόντος / φαρμάκου", max_length=220)
+    barcode = models.CharField("Barcode", max_length=64, blank=True, db_index=True)
     decision = models.CharField("Καταχωρημένη αξιολόγηση", max_length=20, choices=DECISION_CHOICES)
     ingredients = models.TextField(
         "Συστατικά / έκδοχα",
@@ -485,6 +502,9 @@ class ProductSafetyRecord(models.Model):
     )
     reviewed_on = models.DateField("Ημερομηνία ελέγχου", blank=True, null=True)
     notes = models.TextField("Σημειώσεις", blank=True)
+    label_photo_name = models.CharField("Όνομα φωτογραφίας ετικέτας", max_length=255, blank=True)
+    label_photo_mime = models.CharField("Τύπος φωτογραφίας ετικέτας", max_length=120, blank=True)
+    label_photo_data = models.BinaryField("Φωτογραφία ετικέτας", blank=True, null=True, editable=False)
     created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -500,3 +520,125 @@ class ProductSafetyRecord(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.get_decision_display()}"
+
+
+
+class LabResult(models.Model):
+    date = models.DateField("Ημερομηνία εξέτασης")
+    time = models.TimeField("Ώρα", blank=True, null=True)
+    test_name = models.CharField("Εξέταση", max_length=160, db_index=True)
+    value = models.DecimalField("Τιμή", max_digits=12, decimal_places=4)
+    unit = models.CharField("Μονάδα", max_length=80, blank=True)
+    reference_min = models.DecimalField("Κατώτερο όριο αναφοράς", max_digits=12, decimal_places=4, blank=True, null=True)
+    reference_max = models.DecimalField("Ανώτερο όριο αναφοράς", max_digits=12, decimal_places=4, blank=True, null=True)
+    laboratory = models.CharField("Εργαστήριο", max_length=180, blank=True)
+    notes = models.TextField("Σημειώσεις", blank=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="lab_results"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date", "-time", "test_name"]
+
+    @property
+    def weekday_name(self):
+        return greek_weekday(self.date)
+
+    def __str__(self):
+        suffix = f" {self.unit}" if self.unit else ""
+        return f"{self.date} - {self.test_name}: {self.value}{suffix}"
+
+
+class HealthReminder(models.Model):
+    TYPE_CHOICES = [
+        ("meal", "Γεύμα"),
+        ("medication", "Φάρμακο"),
+        ("vaccine", "Εμβόλιο"),
+        ("measurement", "Μέτρηση"),
+        ("lab", "Εξέταση"),
+        ("other", "Άλλο"),
+    ]
+
+    reminder_type = models.CharField("Τύπος", max_length=20, choices=TYPE_CHOICES, default="other")
+    title = models.CharField("Τίτλος", max_length=180)
+    due_at = models.DateTimeField("Ημερομηνία / ώρα")
+    notes = models.TextField("Σημειώσεις", blank=True)
+    active = models.BooleanField("Ενεργό", default=True)
+    completed = models.BooleanField("Ολοκληρώθηκε", default=False)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="health_reminders"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["completed", "due_at"]
+
+    def __str__(self):
+        return f"{self.title} - {self.due_at:%d/%m/%Y %H:%M}"
+
+
+class DoctorQuestion(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Εκκρεμεί"),
+        ("answered", "Απαντήθηκε"),
+    ]
+
+    question = models.TextField("Ερώτηση για τον γιατρό")
+    status = models.CharField("Κατάσταση", max_length=20, choices=STATUS_CHOICES, default="pending")
+    appointment = models.ForeignKey(
+        MedicalAppointment,
+        verbose_name="Σχετικό ραντεβού",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="doctor_questions",
+    )
+    answer = models.TextField("Απάντηση / σημείωση", blank=True)
+    answered_at = models.DateTimeField("Απαντήθηκε στις", blank=True, null=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="doctor_questions"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["status", "-created_at"]
+
+    def __str__(self):
+        return self.question[:80]
+
+
+class UserAccessProfile(models.Model):
+    ROLE_CHOICES = [
+        ("parent", "Γονέας / πλήρης πρόσβαση"),
+        ("doctor_readonly", "Ιατρός / μόνο προβολή"),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="access_profile")
+    role = models.CharField("Ρόλος", max_length=30, choices=ROLE_CHOICES, default="parent")
+    display_name = models.CharField("Εμφανιζόμενο όνομα", max_length=120, blank=True)
+
+    def __str__(self):
+        return self.display_name or self.user.username
+
+
+class BackupRun(models.Model):
+    STATUS_CHOICES = [
+        ("success", "Επιτυχία"),
+        ("failed", "Αποτυχία"),
+    ]
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField("Κατάσταση", max_length=20, choices=STATUS_CHOICES)
+    destination = models.CharField("Προορισμός", max_length=220, blank=True)
+    size_bytes = models.PositiveBigIntegerField("Μέγεθος", default=0)
+    notes = models.TextField("Σημειώσεις", blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.created_at:%d/%m/%Y %H:%M} - {self.get_status_display()}"

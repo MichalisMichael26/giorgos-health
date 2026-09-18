@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Υπενθυμίσεις{% endblock %}
+{% block content %}
+<div class="page-head">
+<div><h1>🔔 Υπενθυμίσεις</h1><p class="muted">Γεύμα, φάρμακο, εμβόλιο, μέτρηση ή εξέταση — οι ώρες ορίζονται από εσάς.</p></div>
+<a class="btn primary" href="{% url 'reminder_create' %}">+ Νέα υπενθύμιση</a>
+</div>
+<section class="panel reminder-browser-panel">
+<div><strong>Ειδοποιήσεις browser</strong><p class="muted">Όσο το app είναι ανοικτό, μπορεί να εμφανίζει browser notification όταν μια υπενθύμιση είναι ληξιπρόθεσμη.</p></div>
+<button type="button" class="btn secondary" id="enable-notifications">Ενεργοποίηση</button>
+</section>
+<div class="reminder-page-list">
+{% for item in items %}
+<article class="reminder-card {% if item.completed %}reminder-completed{% elif item.due_at < now %}reminder-overdue{% endif %}" data-reminder-due="{{ item.due_at|date:'c' }}" data-reminder-title="{{ item.title }}">
+<div class="reminder-icon">{% if item.reminder_type == "meal" %}🍼{% elif item.reminder_type == "medication" %}💊{% elif item.reminder_type == "vaccine" %}💉{% elif item.reminder_type == "measurement" %}🩸{% elif item.reminder_type == "lab" %}🧪{% else %}🔔{% endif %}</div>
+<div class="reminder-body"><span>{{ item.get_reminder_type_display }}</span><h2>{{ item.title }}</h2><strong>{{ item.due_at|date:"d/m/Y H:i" }}</strong>{% if item.notes %}<p>{{ item.notes }}</p>{% endif %}</div>
+<div class="reminder-actions">
+{% if not item.completed %}<form method="post" action="{% url 'reminder_done' item.pk %}">{% csrf_token %}<button class="mini-action" type="submit">✓ Done</button></form>{% endif %}
+<a class="mini-action" href="{% url 'reminder_edit' item.pk %}">Edit</a>
+<a class="mini-action danger-link" href="{% url 'reminder_delete' item.pk %}">Delete</a>
+</div>
+</article>
+{% empty %}<div class="panel empty-state"><div class="empty-icon">🔔</div><h2>Δεν υπάρχουν υπενθυμίσεις</h2></div>{% endfor %}
+</div>
+<script>
+document.getElementById("enable-notifications").addEventListener("click", async function(){ if ("Notification" in window) await Notification.requestPermission(); });
+(function(){
+ if (!("Notification" in window) || Notification.permission !== "granted") return;
+ const seenKey = "giorgos-reminder-notified";
+ let seen = {};
+ try { seen = JSON.parse(localStorage.getItem(seenKey) || "{}"); } catch(e) {}
+ const now = Date.now();
+ document.querySelectorAll("[data-reminder-due]").forEach(function(el, idx){
+   const due = new Date(el.dataset.reminderDue).getTime();
+   const key = el.dataset.reminderDue + "|" + el.dataset.reminderTitle;
+   if (due <= now && !seen[key]) {
+      new Notification("Giorgos Health", {body: el.dataset.reminderTitle});
+      seen[key] = true;
+   }
+ });
+ try { localStorage.setItem(seenKey, JSON.stringify(seen)); } catch(e) {}
+})();
+</script>
+{% endblock %}

@@ -25,6 +25,8 @@ from .advanced_forms import (
     SafetyRuleForm,
     ProductSafetyRecordForm,
 )
+from .mega_forms import DiaperWithPhotoForm, SymptomWithPhotoForm, ScannedProductForm
+
 from .models import (
     AuditLog,
     ChildProfile,
@@ -39,6 +41,11 @@ from .models import (
     VaccineEntry,
     SafetyRule,
     ProductSafetyRecord,
+    LabResult,
+    HealthReminder,
+    DoctorQuestion,
+    UserAccessProfile,
+    BackupRun,
 )
 from .who_growth import (
     HEAD_BOYS,
@@ -129,9 +136,17 @@ def dashboard_extras(today):
                 label = f"Σε {days_until} ημέρες"
             vaccine_reminders.append({"object": vaccine, "label": label, "days_until": days_until})
 
+    now = timezone.now()
+    custom_reminders = list(
+        HealthReminder.objects.filter(active=True, completed=False)
+        .filter(due_at__lte=now + timedelta(days=7))
+        .order_by("due_at")[:6]
+    )
+
     return {
         "day_comparison": comparison,
         "vaccine_reminders": vaccine_reminders[:5],
+        "custom_reminders": custom_reminders,
         "feeding_today": feeding_stats(today, today),
     }
 
@@ -259,13 +274,15 @@ def symptom_list(request):
 
 @login_required
 def symptom_create(request):
-    form = SymptomEntryForm(
+    form = SymptomWithPhotoForm(
         request.POST or None,
+        request.FILES or None,
         initial={"date": timezone.localdate(), "time": timezone.localtime().strftime("%H:%M")},
     )
     if form.is_valid():
         item = form.save(commit=False)
         item.created_by = request.user
+        form.save_photo(item, form.cleaned_data.get("photo"))
         item.save()
         messages.success(request, "Το σύμπτωμα/επεισόδιο αποθηκεύτηκε.")
         return redirect("symptom_list")
@@ -275,9 +292,11 @@ def symptom_create(request):
 @login_required
 def symptom_edit(request, pk):
     item = get_object_or_404(SymptomEntry, pk=pk)
-    form = SymptomEntryForm(request.POST or None, instance=item)
+    form = SymptomWithPhotoForm(request.POST or None, request.FILES or None, instance=item)
     if form.is_valid():
-        form.save()
+        obj = form.save(commit=False)
+        form.save_photo(obj, form.cleaned_data.get("photo"))
+        obj.save()
         messages.success(request, "Η καταχώρηση ενημερώθηκε.")
         return redirect("symptom_list")
     return render(request, "form.html", {"form": form, "title": "Επεξεργασία συμπτώματος"})
@@ -300,13 +319,15 @@ def diaper_list(request):
 
 @login_required
 def diaper_create(request):
-    form = DiaperEntryForm(
+    form = DiaperWithPhotoForm(
         request.POST or None,
+        request.FILES or None,
         initial={"date": timezone.localdate(), "time": timezone.localtime().strftime("%H:%M")},
     )
     if form.is_valid():
         item = form.save(commit=False)
         item.created_by = request.user
+        form.save_photo(item, form.cleaned_data.get("photo"))
         item.save()
         messages.success(request, "Η πάνα αποθηκεύτηκε.")
         return redirect("diaper_list")
@@ -316,9 +337,11 @@ def diaper_create(request):
 @login_required
 def diaper_edit(request, pk):
     item = get_object_or_404(DiaperEntry, pk=pk)
-    form = DiaperEntryForm(request.POST or None, instance=item)
+    form = DiaperWithPhotoForm(request.POST or None, request.FILES or None, instance=item)
     if form.is_valid():
-        form.save()
+        obj = form.save(commit=False)
+        form.save_photo(obj, form.cleaned_data.get("photo"))
+        obj.save()
         messages.success(request, "Η καταχώρηση ενημερώθηκε.")
         return redirect("diaper_list")
     return render(request, "form.html", {"form": form, "title": "Επεξεργασία πάνας"})
@@ -454,6 +477,8 @@ def doctor_view(request):
 @login_required
 def emergency_card(request):
     profile = get_profile()
+    from .mega_views import emergency_qr_data
+    qr_data_uri, share_url = emergency_qr_data(request, profile)
     return render(
         request,
         "emergency/card.html",
@@ -461,6 +486,8 @@ def emergency_card(request):
             "profile": profile,
             "latest_growth": GrowthMeasurement.objects.first(),
             "latest_glucose": GlucoseReading.objects.first(),
+            "qr_data_uri": qr_data_uri,
+            "share_url": share_url,
         },
     )
 
@@ -535,8 +562,7 @@ def safety_checker(request):
         kind = form.cleaned_data["kind"]
         name = form.cleaned_data["name"].strip()
         ingredients = form.cleaned_data["ingredients"].strip()
-        combined = f"{name}\n{ingredients}"
-        matches = _matching_safety_rules(kind, combined)
+        matches = _matching_safety_rules(kind, ingredients)
 
         avoid = [rule for rule in matches if rule.guidance == "avoid"]
         caution = [rule for rule in matches if rule.guidance == "caution"]
@@ -546,7 +572,11 @@ def safety_checker(request):
             name__iexact=name,
         ).order_by("-reviewed_on", "-updated_at")
 
-        if avoid:
+        if not ingredients:
+            result_level = "needs_ingredients"
+            result_title = "Χρειάζονται συστατικά για έλεγχο"
+            result_text = "Φωτογράφισε, αντέγραψε ή γράψε τη λίστα συστατικών / εκδόχων για να γίνει έλεγχος."
+        elif avoid:
             result_level = "avoid"
             result_title = "Περιέχει καταχωρημένο περιορισμό"
             result_text = "Βρέθηκε στα συστατικά ένας ή περισσότεροι ενεργοί όροι που έχουν καταχωρηθεί ως «Να αποφεύγεται»."
@@ -635,7 +665,7 @@ def product_record_create(request):
         "name": request.GET.get("name", ""),
         "reviewed_on": timezone.localdate(),
     }
-    form = ProductSafetyRecordForm(request.POST or None, initial=initial)
+    form = ScannedProductForm(request.POST or None, request.FILES or None, initial=initial)
     if form.is_valid():
         item = form.save(commit=False)
         item.created_by = request.user
@@ -655,7 +685,7 @@ def product_record_create(request):
 @login_required
 def product_record_edit(request, pk):
     item = get_object_or_404(ProductSafetyRecord, pk=pk)
-    form = ProductSafetyRecordForm(request.POST or None, instance=item)
+    form = ScannedProductForm(request.POST or None, request.FILES or None, instance=item)
     if form.is_valid():
         form.save()
         messages.success(request, "Η αξιολόγηση ενημερώθηκε.")
@@ -687,6 +717,11 @@ def _records_for_export():
         ("Documents", MedicalDocument.objects.all()),
         ("SafetyRules", SafetyRule.objects.all()),
         ("ProductChecks", ProductSafetyRecord.objects.all()),
+        ("LabResults", LabResult.objects.all()),
+        ("Reminders", HealthReminder.objects.all()),
+        ("DoctorQuestions", DoctorQuestion.objects.all()),
+        ("UserAccess", UserAccessProfile.objects.all()),
+        ("BackupRuns", BackupRun.objects.all()),
         ("Audit", AuditLog.objects.all()),
     ]
 
@@ -694,7 +729,7 @@ def _records_for_export():
 def _model_row(instance):
     row = {}
     for field in instance._meta.concrete_fields:
-        if field.name == "data":
+        if field.get_internal_type() == "BinaryField" or field.name.endswith("_data"):
             continue
         try:
             value = getattr(instance, field.attname if field.is_relation else field.name)
@@ -746,6 +781,9 @@ def export_center(request):
                 "documents": MedicalDocument.objects.count(),
                 "safety_rules": SafetyRule.objects.count(),
                 "product_checks": ProductSafetyRecord.objects.count(),
+                "labs": LabResult.objects.count(),
+                "reminders": HealthReminder.objects.count(),
+                "questions": DoctorQuestion.objects.count(),
                 "audit": AuditLog.objects.count(),
             }
         },
@@ -775,11 +813,26 @@ def export_zip(request):
         archive.writestr("giorgos-health-all-data.xlsx", build_excel_bytes())
         archive.writestr(
             "README.txt",
-            "Giorgos Health backup\nContains structured data in JSON and Excel plus all uploaded documents.\n",
+            "Giorgos Health backup\nContains structured data in JSON and Excel plus uploaded documents and stored photos.\n",
         )
         for item in MedicalDocument.objects.all():
             safe_name = Path(item.original_filename).name.replace("/", "_").replace("\\", "_")
             archive.writestr(f"documents/{item.pk}-{safe_name}", bytes(item.data))
+
+        for item in ProductSafetyRecord.objects.exclude(label_photo_data__isnull=True):
+            if item.label_photo_data:
+                safe_name = Path(item.label_photo_name or "label.jpg").name.replace("/", "_").replace("\\", "_")
+                archive.writestr(f"product-labels/{item.pk}-{safe_name}", bytes(item.label_photo_data))
+
+        for item in SymptomEntry.objects.exclude(photo_data__isnull=True):
+            if item.photo_data:
+                safe_name = Path(item.photo_name or "symptom.jpg").name.replace("/", "_").replace("\\", "_")
+                archive.writestr(f"symptom-photos/{item.pk}-{safe_name}", bytes(item.photo_data))
+
+        for item in DiaperEntry.objects.exclude(photo_data__isnull=True):
+            if item.photo_data:
+                safe_name = Path(item.photo_name or "diaper.jpg").name.replace("/", "_").replace("\\", "_")
+                archive.writestr(f"diaper-photos/{item.pk}-{safe_name}", bytes(item.photo_data))
     response = HttpResponse(buffer.getvalue(), content_type="application/zip")
     response["Content-Disposition"] = 'attachment; filename="giorgos-health-backup.zip"'
     return response
@@ -843,6 +896,9 @@ def export_pdf(request):
         ("Έγγραφα", [[d.date.strftime('%d/%m/%Y'), d.get_category_display(), d.title, d.original_filename] for d in MedicalDocument.objects.order_by('-date')], ["Ημ/νία","Κατηγορία","Τίτλος","Αρχείο"]),
         ("Κανόνες ελέγχου", [[r.term, r.get_applies_to_display(), r.get_guidance_display(), r.note] for r in SafetyRule.objects.order_by('term')], ["Όρος","Ισχύει για","Οδηγία","Σημείωση"]),
         ("Αξιολογήσεις προϊόντων", [[p.get_kind_display(), p.name, p.get_decision_display(), p.confirmed_by] for p in ProductSafetyRecord.objects.order_by('kind','name')], ["Τύπος","Ονομασία","Αξιολόγηση","Επιβεβαιώθηκε από"]),
+        ("Εργαστηριακές τιμές", [[l.date.strftime('%d/%m/%Y'), l.test_name, str(l.value), l.unit] for l in LabResult.objects.order_by('-date','test_name')], ["Ημ/νία","Εξέταση","Τιμή","Μονάδα"]),
+        ("Υπενθυμίσεις", [[r.due_at.strftime('%d/%m/%Y %H:%M'), r.get_reminder_type_display(), r.title, "Ναι" if r.completed else "Όχι"] for r in HealthReminder.objects.order_by('-due_at')], ["Ημ/νία","Τύπος","Τίτλος","Ολοκλ."]),
+        ("Ερωτήσεις για γιατρό", [[q.created_at.strftime('%d/%m/%Y'), q.question, q.get_status_display(), q.answer] for q in DoctorQuestion.objects.order_by('-created_at')], ["Ημ/νία","Ερώτηση","Κατάσταση","Απάντηση"]),
         ("Audit log", [[a.timestamp.strftime('%d/%m/%Y %H:%M'), a.get_action_display(), a.model_name, a.object_repr] for a in AuditLog.objects.order_by('-timestamp')[:500]], ["Ημ/νία","Ενέργεια","Τύπος","Αντικείμενο"]),
     ]
     for title, rows, headers in sections:

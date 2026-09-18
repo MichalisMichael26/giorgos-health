@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Χρήστες{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>👥 Χρήστες & ρόλοι</h1><p class="muted">Γονέας = πλήρης πρόσβαση. Ιατρός = μόνο προβολή.</p></div><a class="btn primary" href="{% url 'user_access_create' %}">+ Νέος χρήστης</a></div>
+<div class="user-role-grid">{% for row in rows %}<article class="panel"><h2>{{ row.profile.display_name|default:row.user.username }}</h2><p>@{{ row.user.username }}</p><span class="decision-label">{{ row.profile.get_role_display }}</span><p>{% if row.user.is_active %}Ενεργός{% else %}Ανενεργός{% endif %}</p><a class="btn secondary" href="{% url 'user_access_edit' row.user.pk %}">Ρυθμίσεις</a></article>{% endfor %}</div>
+{% endblock %}

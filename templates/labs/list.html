@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Εργαστηριακές τιμές{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1>🧪 Εργαστηριακές τιμές</h1><p class="muted">AST, ALT, γλυκόζη, τριγλυκερίδια και οποιαδήποτε άλλη αριθμητική εξέταση.</p></div>
+    <div class="page-head-actions"><a class="btn secondary" href="{% url 'lab_chart' %}">📈 Γραφήματα</a><a class="btn primary" href="{% url 'lab_create' %}">+ Νέα τιμή</a></div>
+</div>
+<form class="global-search-form panel" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Αναζήτηση εξέτασης"><button class="btn secondary">Αναζήτηση</button></form>
+<div class="lab-grid">
+{% for item in items %}
+<article class="lab-card">
+    <div><span>{{ item.date|date:"d/m/Y" }}</span>{% if item.time %}<small>{{ item.time|time:"H:i" }}</small>{% endif %}</div>
+    <h2>{{ item.test_name }}</h2>
+    <strong class="lab-value">{{ item.value|floatformat:"-4" }} {{ item.unit }}</strong>
+    {% if item.reference_min != None or item.reference_max != None %}<small>Reference: {{ item.reference_min|default:"—" }} – {{ item.reference_max|default:"—" }} {{ item.unit }}</small>{% endif %}
+    {% if item.laboratory %}<p>🏥 {{ item.laboratory }}</p>{% endif %}
+    {% if item.notes %}<p class="muted">{{ item.notes }}</p>{% endif %}
+    <div class="row-actions"><a class="mini-action" href="{% url 'lab_edit' item.pk %}">Edit</a><a class="mini-action danger-link" href="{% url 'lab_delete' item.pk %}">Delete</a></div>
+</article>
+{% empty %}<div class="panel empty-state"><div class="empty-icon">🧪</div><h2>Δεν υπάρχουν εργαστηριακές τιμές</h2></div>{% endfor %}
+</div>
+{% endblock %}

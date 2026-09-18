@@ -14,6 +14,11 @@ from .models import (
     VaccineEntry,
     SafetyRule,
     ProductSafetyRecord,
+    LabResult,
+    HealthReminder,
+    DoctorQuestion,
+    UserAccessProfile,
+    BackupRun,
 )
 
 
@@ -105,3 +110,35 @@ class ProductSafetyRecordAdmin(admin.ModelAdmin):
     list_display = ("name", "kind", "decision", "confirmed_by", "reviewed_on")
     list_filter = ("kind", "decision")
     search_fields = ("name", "ingredients", "confirmed_by", "notes")
+
+
+
+@admin.register(LabResult)
+class LabResultAdmin(admin.ModelAdmin):
+    list_display = ("date", "time", "test_name", "value", "unit", "laboratory")
+    list_filter = ("date", "test_name")
+    search_fields = ("test_name", "laboratory", "notes")
+
+
+@admin.register(HealthReminder)
+class HealthReminderAdmin(admin.ModelAdmin):
+    list_display = ("due_at", "reminder_type", "title", "active", "completed")
+    list_filter = ("reminder_type", "active", "completed")
+
+
+@admin.register(DoctorQuestion)
+class DoctorQuestionAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "question", "status", "appointment")
+    list_filter = ("status",)
+
+
+@admin.register(UserAccessProfile)
+class UserAccessProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "display_name", "role")
+    list_filter = ("role",)
+
+
+@admin.register(BackupRun)
+class BackupRunAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "status", "destination", "size_bytes")
+    list_filter = ("status",)

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Daily Health Summary{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>📊 Daily Health Summary</h1><p class="muted">{{ summary.date|date:"d/m/Y" }}</p></div><a class="btn primary" href="{% url 'daily_summary_pdf' %}?date={{ summary.date|date:'Y-m-d' }}">PDF</a></div>
+<div class="summary-kpi-grid">
+<div class="summary-kpi"><span>🍼 Γεύματα</span><strong>{{ summary.meal_count }}</strong><small>{{ summary.consumed }} ml συνολικά · μ.ό. {{ summary.avg_meal|default:"—" }} ml</small></div>
+<div class="summary-kpi"><span>🩸 Γλυκόζη</span><strong>{{ summary.glucose_count }}</strong><small>Μ.ό. {{ summary.glucose_avg|default:"—" }} mg/dL</small></div>
+<div class="summary-kpi"><span>💊 Φάρμακα</span><strong>{{ summary.medications|length }}</strong></div>
+<div class="summary-kpi"><span>👶 Πάνες</span><strong>{{ summary.diapers|length }}</strong></div>
+<div class="summary-kpi"><span>🌡️ Συμπτώματα</span><strong>{{ summary.symptoms|length }}</strong></div>
+</div>
+{% endblock %}

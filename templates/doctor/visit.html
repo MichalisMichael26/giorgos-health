@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Doctor Visit{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>👨‍⚕️ Doctor Visit</h1><p class="muted">Εκκρεμείς ερωτήσεις και πρόσφατα δεδομένα 7 ημερών σε μία οθόνη.</p></div><a class="btn secondary" href="{% url 'doctor_questions' %}">📝 Ερωτήσεις</a></div>
+<section class="panel"><h2>📝 Εκκρεμείς ερωτήσεις</h2>{% for q in questions %}<div class="doctor-question-row"><strong>{{ q.question }}</strong><a href="{% url 'doctor_question_answer' q.pk %}">Απάντηση</a></div>{% empty %}<p class="muted">Καμία εκκρεμής ερώτηση.</p>{% endfor %}</section>
+<div class="two-panel-grid">
+<section class="panel"><h2>🩸 Πρόσφατη γλυκόζη</h2>{% for g in glucose %}<div class="compact-row"><strong>{{ g.date|date:"d/m" }} {{ g.time|time:"H:i" }}</strong><span>{{ g.value }} mg/dL</span></div>{% empty %}<p class="muted">—</p>{% endfor %}</section>
+<section class="panel"><h2>🧪 Πρόσφατες εξετάσεις</h2>{% for l in labs %}<div class="compact-row"><strong>{{ l.test_name }}</strong><span>{{ l.value }} {{ l.unit }}</span><small>{{ l.date|date:"d/m/Y" }}</small></div>{% empty %}<p class="muted">—</p>{% endfor %}</section>
+</div>
+<section class="panel"><h2>🌡️ Συμπτώματα 7 ημερών</h2>{% for s in symptoms %}<div class="compact-row"><strong>{{ s.date|date:"d/m" }} {{ s.time|time:"H:i" }}</strong><span>{{ s.symptom }}</span><small>{{ s.get_severity_display }}</small></div>{% empty %}<p class="muted">—</p>{% endfor %}</section>
+{% endblock %}

@@ -6,7 +6,7 @@
         <h1>❤️ Υγεία</h1>
         <p class="muted">Όλες οι σημαντικές λειτουργίες οργανωμένες σε κατηγορίες — χωρίς να είναι κρυμμένες.</p>
     </div>
-    <a class="btn primary" href="{% url 'safety_checker' %}">🔎 Έλεγχος προϊόντος / φαρμάκου</a>
+    <a class="btn primary" href="{% url 'product_scanner' %}">📷 Scan προϊόντος / συστατικών</a>
 </div>
 
 <section class="health-critical-grid">
@@ -18,9 +18,13 @@
         <span>👨‍⚕️</span>
         <div><strong>Doctor View</strong><small>Καθαρή εικόνα για γιατρό / νοσοκομείο</small></div>
     </a>
-    <a href="{% url 'safety_checker' %}" class="health-critical-card critical-checker">
-        <span>🔎</span>
-        <div><strong>Έλεγχος τροφίμου / φαρμάκου</strong><small>Κανόνες συστατικών και καταχωρημένες αξιολογήσεις</small></div>
+    <a href="{% url 'product_scanner' %}" class="health-critical-card critical-checker">
+        <span>📷</span>
+        <div><strong>Scan προϊόντος / φαρμάκου</strong><small>Barcode + κάμερα συστατικών + αυτόματος checker</small></div>
+    </a>
+    <a href="{% url 'hospital_mode' %}" class="health-critical-card">
+        <span>🏥</span>
+        <div><strong>Hospital Mode</strong><small>Γρήγορη οθόνη για νοσοκομείο</small></div>
     </a>
 </section>
 
@@ -37,6 +41,9 @@
         <a href="{% url 'medication_list' %}" class="health-menu-card"><span>💊</span><div><strong>Φάρμακα</strong><small>Δόσεις και ιστορικό</small></div></a>
         <a href="{% url 'vaccine_list' %}" class="health-menu-card"><span>💉</span><div><strong>Εμβόλια</strong><small>Δόσεις και reminders</small></div></a>
         <a href="{% url 'appointment_list' %}" class="health-menu-card"><span>🩺</span><div><strong>Ραντεβού</strong><small>Ιατροί και επανέλεγχοι</small></div></a>
+        <a href="{% url 'lab_list' %}" class="health-menu-card"><span>🧪</span><div><strong>Εργαστηριακές τιμές</strong><small>AST, ALT, γλυκόζη, τριγλυκερίδια κ.ά.</small></div></a>
+        <a href="{% url 'reminder_list' %}" class="health-menu-card"><span>🔔</span><div><strong>Υπενθυμίσεις</strong><small>Γεύματα, φάρμακα, μετρήσεις, εξετάσεις</small></div></a>
+        <a href="{% url 'doctor_questions' %}" class="health-menu-card"><span>📝</span><div><strong>Ερωτήσεις για γιατρό</strong><small>Εκκρεμείς και απαντημένες</small></div></a>
         <a href="{% url 'symptom_list' %}" class="health-menu-card"><span>🌡️</span><div><strong>Συμπτώματα</strong><small>Επεισόδια και ένταση</small></div></a>
         <a href="{% url 'diaper_list' %}" class="health-menu-card"><span>👶</span><div><strong>Πάνες / κενώσεις</strong><small>Ούρα και κενώσεις</small></div></a>
     </div>
@@ -68,7 +75,11 @@
         <a href="{% url 'analytics' %}" class="health-menu-card"><span>📊</span><div><strong>Γραφήματα</strong><small>7 / 30 / 90 ημέρες / πάντα</small></div></a>
         <a href="{% url 'feeding_performance' %}" class="health-menu-card"><span>🍼</span><div><strong>Feeding Performance</strong><small>Μ.ό., ποσοστό κατανάλωσης και γεύματα</small></div></a>
         <a href="{% url 'child_profile_edit' %}" class="health-menu-card"><span>👶</span><div><strong>Στοιχεία & στόχος</strong><small>Προφίλ και ημερήσιος στόχος γάλακτος</small></div></a>
+        <a href="{% url 'reviewed_products' %}" class="health-menu-card"><span>✅</span><div><strong>Ελεγμένα προϊόντα</strong><small>Επιβεβαιωμένα, αποφυγή, χρειάζονται έλεγχο</small></div></a>
         <a href="{% url 'safety_rule_list' %}" class="health-menu-card"><span>⚙️</span><div><strong>Κανόνες ελέγχου</strong><small>Περιορισμοί για τρόφιμα / φάρμακα</small></div></a>
+        <a href="{% url 'daily_summary' %}" class="health-menu-card"><span>📊</span><div><strong>Daily Summary</strong><small>Σύνοψη ημέρας και PDF</small></div></a>
+        <a href="{% url 'backup_status' %}" class="health-menu-card"><span>☁️</span><div><strong>Cloud Backup</strong><small>Κατάσταση αυτόματου backup</small></div></a>
+        {% if user.is_superuser %}<a href="{% url 'user_access_list' %}" class="health-menu-card"><span>👥</span><div><strong>Χρήστες & ρόλοι</strong><small>Γονείς και read-only ιατρός</small></div></a>{% endif %}
         <a href="{% url 'audit_log' %}" class="health-menu-card"><span>🧾</span><div><strong>Audit Log</strong><small>Ποιος άλλαξε τι και πότε</small></div></a>
     </div>
 </section>

@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, advanced_views
+from . import views, advanced_views, mega_views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
@@ -76,6 +76,63 @@ urlpatterns = [
     path("checker/records/new/", advanced_views.product_record_create, name="product_record_create"),
     path("checker/records/<int:pk>/edit/", advanced_views.product_record_edit, name="product_record_edit"),
     path("checker/records/<int:pk>/delete/", advanced_views.product_record_delete, name="product_record_delete"),
+
+
+    # Mobile scanner / evaluated products
+    path("scanner/", mega_views.product_scanner, name="product_scanner"),
+    path("scanner/check/", mega_views.scanner_check, name="scanner_check"),
+    path("scanner/barcode/<str:code>/", mega_views.barcode_lookup, name="barcode_lookup"),
+    path("products/reviewed/", mega_views.reviewed_products, name="reviewed_products"),
+    path("products/<int:pk>/label-photo/", mega_views.product_label_photo, name="product_label_photo"),
+
+    # Structured laboratory results
+    path("labs/", mega_views.lab_list, name="lab_list"),
+    path("labs/new/", mega_views.lab_create, name="lab_create"),
+    path("labs/<int:pk>/edit/", mega_views.lab_edit, name="lab_edit"),
+    path("labs/<int:pk>/delete/", mega_views.lab_delete, name="lab_delete"),
+    path("labs/chart/", mega_views.lab_chart, name="lab_chart"),
+
+    # Reminders
+    path("reminders/", mega_views.reminder_list, name="reminder_list"),
+    path("reminders/new/", mega_views.reminder_create, name="reminder_create"),
+    path("reminders/<int:pk>/edit/", mega_views.reminder_edit, name="reminder_edit"),
+    path("reminders/<int:pk>/done/", mega_views.reminder_done, name="reminder_done"),
+    path("reminders/<int:pk>/delete/", mega_views.reminder_delete, name="reminder_delete"),
+
+    # Photos
+    path("symptoms/<int:pk>/photo/", mega_views.symptom_photo, name="symptom_photo"),
+    path("diapers/<int:pk>/photo/", mega_views.diaper_photo, name="diaper_photo"),
+
+    # Questions / doctor visit
+    path("doctor-questions/", mega_views.doctor_questions, name="doctor_questions"),
+    path("doctor-questions/new/", mega_views.doctor_question_create, name="doctor_question_create"),
+    path("doctor-questions/<int:pk>/answer/", mega_views.doctor_question_answer, name="doctor_question_answer"),
+    path("doctor-questions/<int:pk>/delete/", mega_views.doctor_question_delete, name="doctor_question_delete"),
+    path("doctor-visit/", mega_views.doctor_visit, name="doctor_visit"),
+
+    # Hospital mode
+    path("hospital/", mega_views.hospital_mode, name="hospital_mode"),
+
+    # Emergency QR
+    path("emergency-card/share/settings/", mega_views.emergency_share_settings, name="emergency_share_settings"),
+    path("emergency-card/share/rotate/", mega_views.emergency_share_rotate, name="emergency_share_rotate"),
+    path("e/<uuid:token>/", mega_views.emergency_public, name="emergency_public"),
+
+    # Global search
+    path("search/", mega_views.global_search, name="global_search"),
+
+    # Daily summary
+    path("summary/daily/", mega_views.daily_summary, name="daily_summary"),
+    path("summary/daily/pdf/", mega_views.daily_summary_pdf, name="daily_summary_pdf"),
+
+    # User roles
+    path("users/access/", mega_views.user_access_list, name="user_access_list"),
+    path("users/access/new/", mega_views.user_access_create, name="user_access_create"),
+    path("users/access/<int:pk>/edit/", mega_views.user_access_edit, name="user_access_edit"),
+
+    # Cloud backup status / manual run
+    path("backup/status/", mega_views.backup_status, name="backup_status"),
+    path("backup/cloud-now/", mega_views.cloud_backup_now, name="cloud_backup_now"),
 
     path("exports/", advanced_views.export_center, name="export_center"),
     path("exports/excel/", advanced_views.export_excel, name="export_excel"),

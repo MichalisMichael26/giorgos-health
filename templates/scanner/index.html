@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}Scan προϊόντος{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>📷 Scan προϊόντος / συστατικών</h1>
+        <p class="muted">Σκάναρε barcode ή φωτογράφισε την ετικέτα. Τα συστατικά ελέγχονται αυτόματα με τους ενεργούς περιορισμούς.</p>
+    </div>
+    <a class="btn secondary" href="{% url 'reviewed_products' %}">✅ Ελεγμένα προϊόντα</a>
+</div>
+
+<div class="scanner-grid">
+    <section class="panel">
+        <h2>📦 Barcode scanner</h2>
+        <div id="barcode-reader" class="barcode-reader"></div>
+        <div class="scanner-actions">
+            <button type="button" class="btn primary" id="start-barcode">Άνοιγμα κάμερας</button>
+            <button type="button" class="btn secondary" id="stop-barcode" disabled>Κλείσιμο</button>
+        </div>
+        <div class="manual-barcode-row">
+            <input type="text" id="manual-barcode" inputmode="numeric" placeholder="ή γράψε barcode">
+            <button type="button" class="btn secondary" id="lookup-barcode">Αναζήτηση</button>
+        </div>
+        <div id="barcode-status" class="scanner-status muted">Δεν έχει σαρωθεί barcode.</div>
+    </section>
+
+    <section class="panel">
+        <h2>🧾 Συστατικά από φωτογραφία</h2>
+        <p class="muted">Βγάλε καθαρή φωτογραφία της λίστας συστατικών. Η OCR ανάγνωση γίνεται στο κινητό/browser και περνά το κείμενο στον checker.</p>
+        <label for="id_label_photo" class="camera-file-label">Φωτογραφία ετικέτας</label>
+        {{ form.label_photo }}
+        {% for error in form.label_photo.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        <img id="ocr-preview" class="ocr-preview" alt="" hidden>
+        <button type="button" class="btn secondary" id="run-ocr">Ανάγνωση συστατικών</button>
+        <div id="ocr-status" class="scanner-status muted">Δεν έχει επιλεγεί φωτογραφία.</div>
+    </section>
+</div>
+
+<section class="panel scanner-save-panel">
+    <div class="panel-head">
+        <div>
+            <h2>🔎 Αποτέλεσμα & αποθήκευση</h2>
+            <p class="muted">Αν το προϊόν είναι ήδη καταχωρημένο, εμφανίζεται η προηγούμενη αξιολόγηση. Αλλιώς αποθήκευσε τον νέο έλεγχο.</p>
+        </div>
+    </div>
+
+    <div id="auto-result" class="scanner-auto-result" hidden></div>
+
+    <form method="post" enctype="multipart/form-data" id="scanner-save-form">
+        {% csrf_token %}
+        <div class="scanner-form-grid">
+            {% for field in form %}
+            {% if field.name != "label_photo" %}<div class="form-field {% if field.name == 'ingredients' or field.name == 'notes' %}scanner-wide{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+            </div>{% endif %}
+            {% endfor %}
+        </div>
+        <button class="btn primary" type="submit">Αποθήκευση αξιολόγησης</button>
+    </form>
+</section>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+(function () {
+    const barcodeInput = document.getElementById("id_barcode");
+    const nameInput = document.getElementById("id_name");
+    const kindInput = document.getElementById("id_kind");
+    const ingredientsInput = document.getElementById("id_ingredients");
+    const decisionInput = document.getElementById("id_decision");
+    const reviewedInput = document.getElementById("id_reviewed_on");
+    const manual = document.getElementById("manual-barcode");
+    const status = document.getElementById("barcode-status");
+    const result = document.getElementById("auto-result");
+
+    let scanner = null;
+
+    function escapeHtml(value) {
+        return String(value || "").replace(/[&<>"']/g, function (ch) {
+            return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch];
+        });
+    }
+
+    function renderAnalysis(analysis, source) {
+        if (!analysis) return;
+        const matches = (analysis.matches || []).map(function (m) {
+            return `<li><strong>${escapeHtml(m.term)}</strong> — ${escapeHtml(m.label)}${m.note ? `<br><small>${escapeHtml(m.note)}</small>` : ""}</li>`;
+        }).join("");
+        result.hidden = false;
+        result.className = "scanner-auto-result scanner-" + analysis.level;
+        result.innerHTML = `
+            <div class="scanner-result-icon">${analysis.level === "avoid" ? "⛔" : (analysis.level === "caution" || analysis.level === "needs_ingredients") ? "⚠️" : "✅"}</div>
+            <div>
+                <strong>${escapeHtml(analysis.title)}</strong>
+                ${source ? `<small>Πηγή προϊόντος: ${escapeHtml(source)}</small>` : ""}
+                ${matches ? `<ul>${matches}</ul>` : (analysis.level === "needs_ingredients" ? `<p>Φωτογράφισε ή επικόλλησε τη λίστα συστατικών για να γίνει ο έλεγχος.</p>` : `<p>Δεν βρέθηκε αντιστοιχία με τους ενεργούς περιορισμούς.</p>`)}
+            </div>`;
+        if (decisionInput && analysis.decision) decisionInput.value = analysis.decision;
+    }
+
+    async function checkIngredients() {
+        const params = new URLSearchParams({
+            kind: kindInput ? kindInput.value : "food",
+            name: nameInput ? nameInput.value : "",
+            ingredients: ingredientsInput ? ingredientsInput.value : ""
+        });
+        const response = await fetch("{% url 'scanner_check' %}?" + params.toString(), {credentials: "same-origin"});
+        const analysis = await response.json();
+        renderAnalysis(analysis, "κανόνες Giorgos Health");
+    }
+
+    async function lookupBarcode(code) {
+        code = (code || "").trim();
+        if (!code) return;
+        status.textContent = "Αναζήτηση barcode " + code + "…";
+        if (barcodeInput) barcodeInput.value = code;
+        manual.value = code;
+        const url = "{% url 'barcode_lookup' 'BARCODECODE' %}".replace("BARCODECODE", encodeURIComponent(code));
+        try {
+            const response = await fetch(url, {credentials: "same-origin"});
+            const data = await response.json();
+            if (data.found) {
+                status.textContent = data.source === "local"
+                    ? "Βρέθηκε ήδη αποθηκευμένη αξιολόγηση."
+                    : "Βρέθηκε προϊόν από Open Food Facts.";
+                if (nameInput) nameInput.value = data.name || "";
+                if (kindInput) kindInput.value = data.kind || "food";
+                if (ingredientsInput) ingredientsInput.value = data.ingredients || "";
+                if (data.reviewed_on && reviewedInput) reviewedInput.value = data.reviewed_on;
+                if (data.analysis) renderAnalysis(data.analysis, data.source);
+                if (data.source === "local" && data.decision_label && !result.hidden) {
+                    const details = document.createElement("div");
+                    details.className = "local-review-banner";
+                    details.innerHTML = `<strong>Προηγούμενη αξιολόγηση:</strong> ${escapeHtml(data.decision_label)}${data.reviewed_on ? ` · ${escapeHtml(data.reviewed_on)}` : ""}${data.confirmed_by ? `<br><small>Επιβεβαίωση: ${escapeHtml(data.confirmed_by)}</small>` : ""}`;
+                    result.querySelector("div:last-child").appendChild(details);
+                }
+                if (data.decision && decisionInput) decisionInput.value = data.decision;
+            } else {
+                status.textContent = data.message || "Δεν βρέθηκε προϊόν. Φωτογράφισε τα συστατικά.";
+                result.hidden = true;
+            }
+        } catch (err) {
+            status.textContent = "Δεν μπόρεσε να γίνει online αναζήτηση. Μπορείς να χρησιμοποιήσεις τη φωτογραφία συστατικών.";
+        }
+    }
+
+    document.getElementById("lookup-barcode").addEventListener("click", function () {
+        lookupBarcode(manual.value);
+    });
+
+    document.getElementById("start-barcode").addEventListener("click", async function () {
+        if (typeof Html5Qrcode === "undefined") {
+            status.textContent = "Ο scanner δεν φορτώθηκε. Χρησιμοποίησε χειροκίνητη εισαγωγή barcode.";
+            return;
+        }
+        scanner = scanner || new Html5Qrcode("barcode-reader");
+        this.disabled = true;
+        document.getElementById("stop-barcode").disabled = false;
+        status.textContent = "Άνοιγμα κάμερας…";
+        try {
+            await scanner.start(
+                {facingMode: "environment"},
+                {fps: 10, qrbox: {width: 280, height: 150}, formatsToSupport: [
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E,
+                    Html5QrcodeSupportedFormats.CODE_128
+                ]},
+                async function (decodedText) {
+                    status.textContent = "Barcode: " + decodedText;
+                    try { await scanner.stop(); } catch (e) {}
+                    document.getElementById("start-barcode").disabled = false;
+                    document.getElementById("stop-barcode").disabled = true;
+                    lookupBarcode(decodedText);
+                }
+            );
+            status.textContent = "Στόχευσε το barcode μέσα στο πλαίσιο.";
+        } catch (err) {
+            this.disabled = false;
+            document.getElementById("stop-barcode").disabled = true;
+            status.textContent = "Δεν ήταν δυνατή η πρόσβαση στην κάμερα. Έλεγξε την άδεια κάμερας.";
+        }
+    });
+
+    document.getElementById("stop-barcode").addEventListener("click", async function () {
+        if (scanner) {
+            try { await scanner.stop(); } catch (e) {}
+        }
+        this.disabled = true;
+        document.getElementById("start-barcode").disabled = false;
+        status.textContent = "Η κάμερα έκλεισε.";
+    });
+
+    const photo = document.getElementById("id_label_photo");
+    const preview = document.getElementById("ocr-preview");
+    const ocrStatus = document.getElementById("ocr-status");
+
+    photo.addEventListener("change", function () {
+        const file = photo.files && photo.files[0];
+        if (!file) return;
+        preview.src = URL.createObjectURL(file);
+        preview.hidden = false;
+        ocrStatus.textContent = "Η φωτογραφία είναι έτοιμη για ανάγνωση.";
+    });
+
+    document.getElementById("run-ocr").addEventListener("click", async function () {
+        const file = photo.files && photo.files[0];
+        if (!file) {
+            ocrStatus.textContent = "Πρώτα βγάλε ή επίλεξε φωτογραφία.";
+            return;
+        }
+        if (typeof Tesseract === "undefined") {
+            ocrStatus.textContent = "Η OCR βιβλιοθήκη δεν φορτώθηκε.";
+            return;
+        }
+        this.disabled = true;
+        ocrStatus.textContent = "Ανάγνωση κειμένου…";
+        try {
+            const output = await Tesseract.recognize(file, "eng+ell", {
+                logger: function (m) {
+                    if (m.status === "recognizing text") {
+                        ocrStatus.textContent = "Ανάγνωση " + Math.round((m.progress || 0) * 100) + "%";
+                    }
+                }
+            });
+            const text = (output.data && output.data.text || "").trim();
+            if (ingredientsInput) ingredientsInput.value = text;
+            ocrStatus.textContent = text ? "Τα συστατικά διαβάστηκαν. Έγινε αυτόματος έλεγχος." : "Δεν αναγνωρίστηκε κείμενο. Δοκίμασε καθαρότερη φωτογραφία.";
+            if (text) await checkIngredients();
+        } catch (err) {
+            ocrStatus.textContent = "Η αυτόματη ανάγνωση απέτυχε. Μπορείς να γράψεις ή να επικολλήσεις τα συστατικά.";
+        } finally {
+            this.disabled = false;
+        }
+    });
+
+    if (ingredientsInput) ingredientsInput.addEventListener("change", checkIngredients);
+})();
+</script>
+{% endblock %}

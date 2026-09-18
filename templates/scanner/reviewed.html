@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Ελεγμένα προϊόντα{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1>✅ Ελεγμένα προϊόντα</h1><p class="muted">Ιστορικό αξιολογήσεων, barcode, ημερομηνία τελευταίου ελέγχου και φωτογραφία ετικέτας.</p></div>
+    <a class="btn primary" href="{% url 'product_scanner' %}">📷 Scan προϊόντος</a>
+</div>
+
+<form class="global-search-form panel" method="get">
+    <input type="search" name="q" value="{{ q }}" placeholder="Όνομα, barcode ή συστατικό">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <button class="btn secondary" type="submit">Αναζήτηση</button>
+</form>
+
+<div class="product-tabs">
+    <a class="{% if tab == 'checked' %}active{% endif %}" href="?tab=checked&q={{ q|urlencode }}">Ελεγμένα / επιβεβαιωμένα <b>{{ counts.checked }}</b></a>
+    <a class="{% if tab == 'avoid' %}active{% endif %}" href="?tab=avoid&q={{ q|urlencode }}">Να αποφεύγονται <b>{{ counts.avoid }}</b></a>
+    <a class="{% if tab == 'caution' %}active{% endif %}" href="?tab=caution&q={{ q|urlencode }}">Χρειάζονται έλεγχο <b>{{ counts.caution }}</b></a>
+</div>
+
+<div class="reviewed-product-grid">
+{% for item in items %}
+<article class="reviewed-product-card decision-{{ item.decision }}">
+    {% if item.label_photo_data %}
+    <a href="{% url 'product_label_photo' item.pk %}" target="_blank" class="product-photo-wrap">
+        <img src="{% url 'product_label_photo' item.pk %}" alt="Ετικέτα {{ item.name }}">
+    </a>
+    {% endif %}
+    <div class="reviewed-product-body">
+        <div class="reviewed-product-title">
+            <span>{% if item.kind == "food" %}🥣{% else %}💊{% endif %}</span>
+            <div><strong>{{ item.name }}</strong>{% if item.barcode %}<small>Barcode: {{ item.barcode }}</small>{% endif %}</div>
+        </div>
+        <span class="decision-label">{{ item.get_decision_display }}</span>
+        <p><strong>Τελευταίος έλεγχος:</strong> {% if item.reviewed_on %}{{ item.reviewed_on|date:"d/m/Y" }}{% else %}{{ item.updated_at|date:"d/m/Y" }}{% endif %}</p>
+        {% if item.confirmed_by %}<p><strong>Επιβεβαίωση:</strong> {{ item.confirmed_by }}</p>{% endif %}
+        {% if item.ingredients %}<details><summary>Συστατικά / έκδοχα</summary><p class="preline">{{ item.ingredients }}</p></details>{% endif %}
+        <div class="row-actions">
+            <a class="mini-action" href="{% url 'product_record_edit' item.pk %}">Edit</a>
+            <a class="mini-action danger-link" href="{% url 'product_record_delete' item.pk %}">Delete</a>
+        </div>
+    </div>
+</article>
+{% empty %}
+<div class="panel empty-state"><div class="empty-icon">📦</div><h2>Δεν υπάρχουν προϊόντα σε αυτή την κατηγορία</h2></div>
+{% endfor %}
+</div>
+{% endblock %}

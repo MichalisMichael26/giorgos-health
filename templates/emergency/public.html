@@ -1,0 +1,16 @@
+{% load static %}
+<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#c74747"><title>Emergency — Giorgos Health</title><link rel="stylesheet" href="{% static 'css/app.css' %}"></head>
+<body class="emergency-public-body"><main class="emergency-public-card">
+<img src="{% static 'images/logo.png' %}" class="emergency-public-logo" alt="Giorgos Health">
+{% if profile.emergency_share_show_identity %}<div class="emergency-public-title"><span>🆘</span><div><h1>{{ profile.full_name }}</h1><p>Ημερομηνία γέννησης: {{ profile.birth_date|date:"d/m/Y" }}</p></div></div>{% else %}<div class="emergency-public-title"><span>🆘</span><div><h1>Emergency Information</h1></div></div>{% endif %}
+{% if profile.emergency_share_show_instructions %}<section><h2>Βασικές ιατρικές οδηγίες</h2><p class="preline">{{ profile.emergency_instructions|default:"—" }}</p></section>{% endif %}
+{% if profile.emergency_share_show_feeding %}<section><h2>Τρέχον πλάνο σίτισης</h2><p class="preline">{{ profile.current_feeding_plan|default:"—" }}</p></section>{% endif %}
+{% if profile.emergency_share_show_doctors %}<section><h2>Θεράποντες ιατροί</h2><p class="preline">{{ profile.treating_doctors|default:"—" }}</p></section>{% endif %}
+{% if profile.emergency_share_show_phones %}<section><h2>Τηλέφωνα</h2>
+{% if profile.father_phone %}<a class="emergency-phone-link" href="tel:{{ profile.father_phone|cut:' ' }}">📞 Μπαμπάς — {{ profile.father_phone }}</a>{% endif %}
+{% if profile.mother_phone %}<a class="emergency-phone-link" href="tel:{{ profile.mother_phone|cut:' ' }}">📞 Μαμά — {{ profile.mother_phone }}</a>{% endif %}
+{% if profile.dr_savvas_phone %}<a class="emergency-phone-link" href="tel:{{ profile.dr_savvas_phone|cut:' ' }}">📞 Δρ Σάββας Σάββα — {{ profile.dr_savvas_phone }}</a>{% endif %}
+{% if profile.dr_grafakou_phone %}<a class="emergency-phone-link" href="tel:{{ profile.dr_grafakou_phone|cut:' ' }}">📞 Δρ Όλγα Γραφάκου — {{ profile.dr_grafakou_phone }}</a>{% endif %}
+</section>{% endif %}
+{% if profile.emergency_share_show_glucose and latest_glucose %}<section><h2>Τελευταία καταχωρημένη γλυκόζη</h2><strong>{{ latest_glucose.value|floatformat:0 }} mg/dL</strong><p>{{ latest_glucose.date|date:"d/m/Y" }} {{ latest_glucose.time|time:"H:i" }}</p></section>{% endif %}
+</main></body></html>

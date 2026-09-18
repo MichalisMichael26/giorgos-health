@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Αναζήτηση{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>🔍 Αναζήτηση σε όλο το app</h1><p class="muted">Γράψε π.χ. AST, Όλγα, Frysolac, 16/9 ή εξιτήριο.</p></div></div>
+<form class="global-search-page panel" method="get"><input autofocus type="search" name="q" value="{{ q }}" placeholder="Τι ψάχνεις;"><button class="btn primary">Αναζήτηση</button></form>
+
+{% if q %}
+<p class="search-total">{{ total }} αποτέλεσμα/α για “{{ q }}”</p>
+<div class="search-groups">
+
+{% if results.documents %}
+<section class="panel"><h2>📁 Έγγραφα</h2>{% for item in results.documents %}<a class="search-result-row" href="{% url 'document_view' item.pk %}"><strong>{{ item.title }}</strong><small>{{ item.date|date:"d/m/Y" }} · {{ item.get_category_display }}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if results.labs %}
+<section class="panel"><h2>🧪 Εργαστηριακές τιμές</h2>{% for item in results.labs %}<a class="search-result-row" href="{% url 'lab_edit' item.pk %}"><strong>{{ item.test_name }} — {{ item.value|floatformat:"-4" }} {{ item.unit }}</strong><small>{{ item.date|date:"d/m/Y" }}{% if item.laboratory %} · {{ item.laboratory }}{% endif %}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if results.medications %}
+<section class="panel"><h2>💊 Φάρμακα</h2>{% for item in results.medications %}<a class="search-result-row" href="{% url 'medication_edit' item.pk %}"><strong>{{ item.name }}</strong><small>{{ item.date|date:"d/m/Y" }} {{ item.time|time:"H:i" }}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if results.appointments %}
+<section class="panel"><h2>🩺 Ραντεβού</h2>{% for item in results.appointments %}<a class="search-result-row" href="{% url 'appointment_edit' item.pk %}"><strong>{{ item.purpose }}</strong><small>{{ item.date|date:"d/m/Y" }} · {{ item.doctor }}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if results.products %}
+<section class="panel"><h2>📦 Προϊόντα / φάρμακα checker</h2>{% for item in results.products %}<a class="search-result-row" href="{% url 'product_record_edit' item.pk %}"><strong>{{ item.name }}</strong><small>{{ item.get_decision_display }}{% if item.barcode %} · {{ item.barcode }}{% endif %}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if results.symptoms %}
+<section class="panel"><h2>🌡️ Συμπτώματα</h2>{% for item in results.symptoms %}<a class="search-result-row" href="{% url 'symptom_edit' item.pk %}"><strong>{{ item.symptom }}</strong><small>{{ item.date|date:"d/m/Y" }} {{ item.time|time:"H:i" }}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if results.questions %}
+<section class="panel"><h2>📝 Ερωτήσεις για γιατρό</h2>{% for item in results.questions %}<a class="search-result-row" href="{% url 'doctor_questions' %}"><strong>{{ item.question|truncatechars:100 }}</strong><small>{{ item.get_status_display }}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if results.meals %}
+<section class="panel"><h2>🍼 Γεύματα</h2>{% for item in results.meals %}<a class="search-result-row" href="{% url 'meal_edit' item.pk %}"><strong>{{ item.date|date:"d/m/Y" }} · {{ item.consumed_ml|default:"—" }} ml</strong><small>{{ item.scheduled_time|time:"H:i" }}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if results.glucose %}
+<section class="panel"><h2>🩸 Γλυκόζη</h2>{% for item in results.glucose %}<a class="search-result-row" href="{% url 'glucose_edit' item.pk %}"><strong>{{ item.value|floatformat:"-1" }} mg/dL</strong><small>{{ item.date|date:"d/m/Y" }} {{ item.time|time:"H:i" }}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if results.vaccines %}
+<section class="panel"><h2>💉 Εμβόλια</h2>{% for item in results.vaccines %}<a class="search-result-row" href="{% url 'vaccine_edit' item.pk %}"><strong>{{ item.name }}</strong><small>{{ item.date|date:"d/m/Y" }}</small></a>{% endfor %}</section>
+{% endif %}
+
+{% if total == 0 %}<section class="panel empty-state"><div class="empty-icon">🔍</div><h2>Δεν βρέθηκε κάτι</h2></section>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

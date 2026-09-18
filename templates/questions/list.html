@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Ερωτήσεις για τον γιατρό{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>📝 Ερωτήσεις για τον γιατρό</h1><p class="muted">Κράτησε ό,τι θέλεις να ρωτήσεις και κλείσε την ερώτηση όταν πάρεις απάντηση.</p></div><div class="page-head-actions"><a class="btn secondary" href="{% url 'doctor_visit' %}">👨‍⚕️ Doctor Visit</a><a class="btn primary" href="{% url 'doctor_question_create' %}">+ Νέα ερώτηση</a></div></div>
+<div class="product-tabs"><a class="{% if tab == 'pending' %}active{% endif %}" href="?tab=pending">Εκκρεμείς</a><a class="{% if tab == 'answered' %}active{% endif %}" href="?tab=answered">Απαντημένες</a></div>
+<div class="question-list">
+{% for item in items %}
+<article class="question-card">
+<span>{{ item.created_at|date:"d/m/Y" }}</span><h2>{{ item.question }}</h2>{% if item.appointment %}<small>Ραντεβού: {{ item.appointment.date|date:"d/m/Y" }} · {{ item.appointment.doctor }}</small>{% endif %}
+{% if item.answer %}<div class="question-answer"><strong>Απάντηση</strong><p class="preline">{{ item.answer }}</p></div>{% endif %}
+<div class="row-actions">{% if item.status == "pending" %}<a class="mini-action" href="{% url 'doctor_question_answer' item.pk %}">Καταχώρηση απάντησης</a>{% endif %}<a class="mini-action danger-link" href="{% url 'doctor_question_delete' item.pk %}">Delete</a></div>
+</article>
+{% empty %}<div class="panel empty-state"><div class="empty-icon">📝</div><h2>Δεν υπάρχουν ερωτήσεις</h2></div>{% endfor %}
+</div>
+{% endblock %}

@@ -27,9 +27,14 @@
         <span>🩸 {{ counts.glucose }} γλυκόζες</span>
         <span>📏 {{ counts.growth }} μετρήσεις ανάπτυξης</span>
         <span>📁 {{ counts.documents }} έγγραφα</span>
+        <span>🧪 {{ counts.labs }} εργαστηριακές τιμές</span>
+        <span>🔔 {{ counts.reminders }} υπενθυμίσεις</span>
+        <span>📝 {{ counts.questions }} ερωτήσεις για γιατρό</span>
         <span>🔎 {{ counts.product_checks }} αξιολογήσεις προϊόντων</span>
         <span>⚙️ {{ counts.safety_rules }} κανόνες ελέγχου</span>
         <span>🧾 {{ counts.audit }} audit entries</span>
     </div>
 </section>
+
+<a class="export-card cloud-backup-link" href="{% url 'backup_status' %}"><span>☁️</span><div><strong>Cloud Backup</strong><p>Κατάσταση και προαιρετικό αυτόματο backup σε R2/S3.</p></div><b>Άνοιγμα</b></a>
 {% endblock %}

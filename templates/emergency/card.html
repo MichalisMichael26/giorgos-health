@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Emergency Card{% endblock %}
 {% block content %}
-<div class="page-head no-print"><div><h1>🆘 Επείγουσα κάρτα</h1><p class="muted">Τα βασικά στοιχεία συγκεντρωμένα για γρήγορη πρόσβαση.</p></div><div class="page-actions"><button class="btn secondary" onclick="window.print()" type="button">🖨️ Εκτύπωση</button><a class="btn primary" href="{% url 'emergency_edit' %}">Edit</a></div></div>
+<div class="page-head no-print"><div><h1>🆘 Επείγουσα κάρτα</h1><p class="muted">Τα βασικά στοιχεία συγκεντρωμένα για γρήγορη πρόσβαση.</p></div><div class="page-actions"><button class="btn secondary" onclick="window.print()" type="button">🖨️ Εκτύπωση</button><a class="btn secondary" href="{% url 'emergency_share_settings' %}">📱 QR Settings</a><a class="btn primary" href="{% url 'emergency_edit' %}">Edit</a></div></div>
 <article class="emergency-card-page">
 <header><div class="emergency-symbol">✚</div><div><span>GIORGOS HEALTH · EMERGENCY INFORMATION</span><h1>{% if profile %}{{ profile.full_name }}{% else %}Giorgos Panayiotis Michael{% endif %}</h1><p>{% if profile %}Ημερομηνία γέννησης: {{ profile.birth_date|date:"d/m/Y" }}{% endif %}</p></div></header>
 <div class="emergency-grid">
@@ -59,6 +59,27 @@
 </section>
 </div>
 <div class="emergency-vitals">{% if latest_growth %}<span>Τελευταίο βάρος <strong>{{ latest_growth.weight_kg|default:"—" }} kg</strong> · {{ latest_growth.date|date:"d/m/Y" }}</span>{% endif %}{% if latest_glucose %}<span>Τελευταία γλυκόζη <strong>{{ latest_glucose.value|floatformat:"-1" }} mg/dL</strong> · {{ latest_glucose.date|date:"d/m/Y" }} {{ latest_glucose.time|time:"H:i" }}</span>{% endif %}</div>
+{% if profile and profile.emergency_share_enabled and qr_data_uri %}
+<section class="emergency-qr-section no-print">
+    <div>
+        <h2>📱 Emergency QR</h2>
+        <p>Το QR ανοίγει μόνο την ειδική read-only emergency σελίδα. Μπορείς να το απενεργοποιήσεις οποτεδήποτε.</p>
+        <small>{{ share_url }}</small>
+    </div>
+    <div class="emergency-qr-side">
+        <img src="{{ qr_data_uri }}" alt="Emergency QR Code">
+        <form method="post" action="{% url 'emergency_share_rotate' %}" onsubmit="return confirm('Να δημιουργηθεί νέο QR; Το παλιό link θα σταματήσει να λειτουργεί.');">
+            {% csrf_token %}
+            <button type="submit" class="btn secondary">🔄 Νέο QR</button>
+        </form>
+    </div>
+</section>
+{% else %}
+<section class="emergency-qr-disabled no-print">
+    <div><strong>📱 Emergency QR απενεργοποιημένο</strong><p>Ενεργοποίησέ το μόνο αν θέλεις να μπορεί κάποιος με το QR να δει την emergency κάρτα χωρίς login.</p></div>
+    <a class="btn secondary" href="{% url 'emergency_share_settings' %}">Ρυθμίσεις</a>
+</section>
+{% endif %}
 <footer>Η κάρτα περιέχει πληροφορίες που έχουν καταχωρηθεί από τους χρήστες του Giorgos Health.</footer>
 </article>
 {% endblock %}

@@ -186,6 +186,46 @@ def daily_milk_guide(profile, latest_growth, today, consumed_today):
     }
 
 
+
+def meal_timing_context(now_local):
+    today = now_local.date()
+    current_time = now_local.time().replace(tzinfo=None)
+
+    next_date = today
+    next_time = None
+    for scheduled in SCHEDULED_TIMES:
+        if scheduled > current_time:
+            next_time = scheduled
+            break
+    if next_time is None:
+        next_date = today + timedelta(days=1)
+        next_time = SCHEDULED_TIMES[0]
+
+    next_naive = datetime.combine(next_date, next_time)
+    next_dt = timezone.make_aware(next_naive, timezone.get_current_timezone())
+
+    recent_meals = list(MealEntry.objects.order_by("-date", "-scheduled_time")[:30])
+    last_meal = None
+    last_naive = None
+    for candidate in recent_meals:
+        candidate_time = candidate.actual_time or candidate.scheduled_time
+        candidate_dt = datetime.combine(candidate.date, candidate_time)
+        if last_naive is None or candidate_dt > last_naive:
+            last_meal = candidate
+            last_naive = candidate_dt
+
+    last_dt = None
+    if last_naive is not None:
+        last_dt = timezone.make_aware(last_naive, timezone.get_current_timezone())
+
+    return {
+        "next_meal_dt": next_dt,
+        "next_meal_iso": next_dt.isoformat(),
+        "last_meal": last_meal,
+        "last_meal_dt": last_dt,
+        "last_meal_iso": last_dt.isoformat() if last_dt else "",
+    }
+
 def next_scheduled_time(now_local):
     current = now_local.time().replace(second=0, microsecond=0)
     for scheduled in SCHEDULED_TIMES:
@@ -363,6 +403,7 @@ def dashboard(request):
 
     previous_days = build_history_days(today - timedelta(days=3), today - timedelta(days=1))
     reminder_appointments, upcoming_appointments = appointment_reminder_items(today)
+    meal_timing = meal_timing_context(timezone.localtime())
 
     from .advanced_views import dashboard_extras
     extras = dashboard_extras(today)
@@ -384,6 +425,7 @@ def dashboard(request):
         "previous_days": previous_days[:3],
         "reminder_appointments": reminder_appointments,
         "upcoming_appointments": upcoming_appointments,
+        **meal_timing,
         **extras,
     }
     return render(request, "dashboard.html", context)

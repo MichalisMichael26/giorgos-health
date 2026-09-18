@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Cloud Backup{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>☁️ Cloud Backup</h1><p class="muted">Προαιρετικό αυτόματο backup σε Cloudflare R2 ή άλλο S3-compatible storage.</p></div><a class="btn secondary" href="{% url 'export_center' %}">Χειροκίνητο export</a></div>
+<section class="panel backup-status-card">
+{% if configured %}
+<div><span class="status-dot status-ok"></span><strong>Cloud storage ρυθμισμένο</strong><p class="muted">Μπορείς να τρέξεις backup τώρα ή να προγραμματίσεις το command <code>python manage.py cloud_backup</code> καθημερινά.</p></div>
+{% if user.is_superuser %}<form method="post" action="{% url 'cloud_backup_now' %}">{% csrf_token %}<button class="btn primary">Backup τώρα</button></form>{% endif %}
+{% else %}
+<div><span class="status-dot status-warn"></span><strong>Δεν έχει συνδεθεί cloud storage</strong><p class="muted">Για αυτόματο backup χρειάζονται τα env vars BACKUP_S3_ENDPOINT_URL, BACKUP_S3_ACCESS_KEY_ID, BACKUP_S3_SECRET_ACCESS_KEY και BACKUP_S3_BUCKET. Μέχρι τότε λειτουργεί κανονικά το ZIP/Excel/PDF export.</p></div>
+{% endif %}
+</section>
+{% if last_run %}<section class="panel"><h2>Τελευταίο backup</h2><p><strong>{{ last_run.get_status_display }}</strong> · {{ last_run.created_at|date:"d/m/Y H:i" }}</p><p>{{ last_run.destination }}</p>{% if last_run.notes %}<p class="muted">{{ last_run.notes }}</p>{% endif %}</section>{% endif %}
+<section class="panel"><h2>Ιστορικό</h2>{% for item in runs %}<div class="compact-row"><strong>{{ item.created_at|date:"d/m/Y H:i" }}</strong><span>{{ item.get_status_display }}</span><small>{{ item.destination }}</small></div>{% empty %}<p class="muted">Δεν έχει εκτελεστεί cloud backup.</p>{% endfor %}</section>
+{% endblock %}

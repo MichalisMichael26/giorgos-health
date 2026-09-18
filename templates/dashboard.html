@@ -54,8 +54,8 @@
         <a href="{% url 'health_hub' %}">Όλη η Υγεία</a>
     </div>
     <div class="home-health-grid">
-        <a href="{% url 'safety_checker' %}" class="home-health-card home-checker">
-            <span>🔎</span><div><strong>Έλεγχος προϊόντος / φαρμάκου</strong><small>Συστατικά, έκδοχα και καταχωρημένες οδηγίες</small></div>
+        <a href="{% url 'product_scanner' %}" class="home-health-card home-checker">
+            <span>📷</span><div><strong>Scan προϊόντος / φαρμάκου</strong><small>Barcode + φωτογραφία συστατικών</small></div>
         </a>
         <a href="{% url 'doctor_view' %}" class="home-health-card">
             <span>👨‍⚕️</span><div><strong>Doctor View</strong><small>Καθαρή ιατρική εικόνα</small></div>
@@ -73,6 +73,18 @@
             <span>🩺</span><div><strong>Ραντεβού</strong><small>Επανέλεγχοι και reminders</small></div>
         </a>
     </div>
+</section>
+
+<section class="dashboard-focus-strip">
+    <a class="focus-strip-card hospital-focus" href="{% url 'hospital_mode' %}">
+        <span>🏥</span><div><strong>Hospital Mode</strong><small>Μόνο τα απολύτως σημαντικά</small></div>
+    </a>
+    <a class="focus-strip-card" href="{% url 'daily_summary' %}">
+        <span>📊</span><div><strong>Daily Health Summary</strong><small>Σήμερα σε μία σελίδα + PDF</small></div>
+    </a>
+    <a class="focus-strip-card" href="{% url 'doctor_questions' %}">
+        <span>📝</span><div><strong>Ερωτήσεις για γιατρό</strong><small>Κράτησε ό,τι θέλεις να ρωτήσεις</small></div>
+    </a>
 </section>
 
 <section class="panel comparison-panel">
@@ -193,6 +205,19 @@
     </div>
 </section>
 
+{% if custom_reminders %}
+<section class="panel reminder-panel">
+    <div class="panel-head"><h2>🔔 Επόμενες υπενθυμίσεις</h2><a href="{% url 'reminder_list' %}">Όλες</a></div>
+    <div class="reminder-list">
+    {% for item in custom_reminders %}
+        <a href="{% url 'reminder_edit' item.pk %}" class="reminder-item">
+            <div><strong>{{ item.title }}</strong><span>{{ item.get_reminder_type_display }} · {{ item.due_at|date:"d/m/Y H:i" }}</span></div><span>›</span>
+        </a>
+    {% endfor %}
+    </div>
+</section>
+{% endif %}
+
 {% if vaccine_reminders %}
 <section class="panel vaccine-reminder-panel">
     <div class="panel-head">
@@ -236,13 +261,47 @@
 </section>
 {% endif %}
 
-<section class="panel next-meal-panel">
+<section class="panel next-meal-panel countdown-panel"
+         data-next-meal="{{ next_meal_iso }}"
+         data-last-meal="{{ last_meal_iso }}">
     <div class="next-meal-block">
-        <span class="label">Επόμενο προγραμματισμένο γεύμα</span>
-        <strong class="next-meal-time">{{ next_meal_time|time:"H:i" }}</strong>
+        <span class="label">⏱️ Επόμενο γεύμα</span>
+        <strong class="next-meal-time" id="next-meal-countdown">--:--</strong>
+        <small>Προγραμματισμένη ώρα {{ next_meal_dt|time:"H:i" }}</small>
+    </div>
+    <div class="since-last-meal">
+        <span>Από το τελευταίο γεύμα</span>
+        <strong id="since-last-meal">{% if last_meal_dt %}υπολογισμός…{% else %}—{% endif %}</strong>
     </div>
     <a class="btn secondary" href="{% url 'meal_create' %}">Καταχώρηση γεύματος</a>
 </section>
+<script>
+(function(){
+ const panel=document.querySelector(".countdown-panel"); if(!panel) return;
+ const nextEl=document.getElementById("next-meal-countdown");
+ const lastEl=document.getElementById("since-last-meal");
+ const next=new Date(panel.dataset.nextMeal);
+ const last=panel.dataset.lastMeal ? new Date(panel.dataset.lastMeal) : null;
+ function fmt(ms){
+   ms=Math.max(0,ms); const total=Math.floor(ms/60000); const h=Math.floor(total/60); const m=total%60;
+   return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
+ }
+ function elapsed(ms){
+   if(ms<0) return "—"; const total=Math.floor(ms/60000); const h=Math.floor(total/60); const m=total%60;
+   return h+"ω "+m+"λ";
+ }
+ function tick(){
+   const now=new Date(); const remaining=next-now;
+   nextEl.textContent=fmt(remaining);
+   if(last&&lastEl) lastEl.textContent=elapsed(now-last);
+   if(remaining <= 0 && remaining > -120000 && "Notification" in window && Notification.permission === "granted") {
+      const key="giorgos-meal-notified-"+panel.dataset.nextMeal;
+      if(!localStorage.getItem(key)){ new Notification("Giorgos Health", {body:"Ώρα για το επόμενο προγραμματισμένο γεύμα."}); localStorage.setItem(key,"1"); }
+   }
+ }
+ tick(); setInterval(tick,30000);
+})();
+</script>
 
 <section class="panel">
     <div class="panel-head">

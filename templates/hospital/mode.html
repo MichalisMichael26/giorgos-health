@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Hospital Mode{% endblock %}
+{% block content %}
+<div class="hospital-head">
+<div><span>🏥</span><div><h1>Hospital Mode</h1><p>Γρήγορη εικόνα χωρίς περιττά μενού.</p></div></div>
+<a class="btn secondary" href="{% url 'dashboard' %}">Έξοδος</a>
+</div>
+<div class="hospital-vitals-grid">
+<a class="hospital-card" href="{% url 'glucose_create' %}"><span>🩸</span><small>Τελευταία γλυκόζη</small><strong>{% if latest_glucose %}{{ latest_glucose.value|floatformat:0 }} mg/dL{% else %}—{% endif %}</strong>{% if latest_glucose %}<em>{{ latest_glucose.date|date:"d/m" }} {{ latest_glucose.time|time:"H:i" }}</em>{% endif %}</a>
+<a class="hospital-card" href="{% url 'meal_create' %}"><span>🍼</span><small>Τελευταία σίτιση</small><strong>{% if last_meal %}{{ last_meal.consumed_ml|default:"—" }} ml{% else %}—{% endif %}</strong>{% if last_meal %}<em>{{ last_meal.date|date:"d/m" }} · {% if last_meal.actual_time %}{{ last_meal.actual_time|time:"H:i" }}{% else %}{{ last_meal.scheduled_time|time:"H:i" }}{% endif %}</em>{% endif %}</a>
+<a class="hospital-card hospital-emergency" href="{% url 'emergency_card' %}"><span>🆘</span><small>Emergency</small><strong>Κάρτα</strong><em>Οδηγίες & τηλέφωνα</em></a>
+</div>
+<div class="hospital-quick-add">
+<a href="{% url 'glucose_create' %}">🩸 Γλυκόζη</a><a href="{% url 'meal_create' %}">🍼 Γεύμα</a><a href="{% url 'medication_create' %}">💊 Φάρμακο</a><a href="{% url 'symptom_create' %}">🌡️ Σύμπτωμα</a>
+</div>
+<div class="two-panel-grid">
+<section class="panel"><h2>💊 Σήμερα</h2>{% for m in medications %}<div class="compact-row"><strong>{{ m.time|time:"H:i" }}</strong><span>{{ m.name }}</span><small>{{ m.dose }} {{ m.get_unit_display }}</small></div>{% empty %}<p class="muted">—</p>{% endfor %}</section>
+<section class="panel"><h2>🧪 Τελευταίες εξετάσεις</h2>{% for l in labs %}<div class="compact-row"><strong>{{ l.test_name }}</strong><span>{{ l.value }} {{ l.unit }}</span><small>{{ l.date|date:"d/m/Y" }}</small></div>{% empty %}<p class="muted">—</p>{% endfor %}</section>
+</div>
+{% endblock %}

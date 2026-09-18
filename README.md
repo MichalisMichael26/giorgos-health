@@ -235,3 +235,41 @@ The product/medicine checker now communicates the configured-rule behavior direc
 - If no restriction matches, it displays "Δεν εντοπίστηκε λακτόζη ή ζάχαρη".
 - The previous long generic "Σημαντικό" warning was removed.
 - A short scope note remains: the result is based on entered ingredients and active app rules.
+
+
+## 2026 Daily Care Mega Upgrade
+
+This package adds:
+
+- Mobile barcode scanning using the phone camera.
+- Barcode lookup against the local reviewed-product registry first, then Open Food Facts for food products.
+- Ingredient-label camera capture and in-browser OCR using Tesseract.js (Greek + English).
+- Ingredient checking is based on the entered/OCR ingredient list only. If there are no ingredients, the app asks for them instead of returning a green result.
+- Label photo stored with the reviewed product in PostgreSQL.
+- Reviewed products tabs: checked/confirmed, avoid, needs review, including last review date.
+- Live next-meal countdown plus time since the last logged meal.
+- Custom reminders for meal, medication, vaccine, measurement, lab, or other. Vaccine/appointment reminders continue to work.
+- Structured numeric laboratory results plus trend charts.
+- Optional photos on symptom and diaper entries, stored in PostgreSQL.
+- Questions for the doctor and a Doctor Visit page.
+- Hospital Mode focused on last glucose, last feed, medication, labs, emergency card, and quick entry.
+- Privacy-controlled Emergency QR: sharing is OFF by default; the user chooses which sections appear.
+- Global search across documents, labs, medications, appointments, products, symptoms, questions, and date-based records.
+- Daily Health Summary and PDF.
+- User roles: parent/full access and doctor/read-only. The doctor role is enforced server-side by middleware.
+- Manual backup continues to provide ZIP/Excel/PDF and now includes stored product-label, symptom, and diaper photos.
+- Optional S3-compatible cloud backup (including Cloudflare R2) with Backup history.
+- Management command for scheduled cloud backup: `python manage.py cloud_backup`.
+- `render-cron-backup.example.yaml` is an example only; it is intentionally not activated automatically because scheduled jobs/cloud credentials can have billing implications.
+
+### Cloud backup environment variables
+
+- `BACKUP_S3_ENDPOINT_URL`
+- `BACKUP_S3_ACCESS_KEY_ID`
+- `BACKUP_S3_SECRET_ACCESS_KEY`
+- `BACKUP_S3_BUCKET`
+- `BACKUP_S3_REGION` (optional, default `auto`)
+
+### Camera/OCR notes
+
+The scanner page loads `html5-qrcode` and `Tesseract.js` from public CDNs in the browser. Camera access requires HTTPS and user permission. If a camera or online barcode lookup is unavailable, manual barcode and ingredient entry remain available.

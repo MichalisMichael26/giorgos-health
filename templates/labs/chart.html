@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Γραφήματα εξετάσεων{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>📈 Πορεία εργαστηριακών εξετάσεων</h1><p class="muted">Επίλεξε εξέταση για να δεις την πορεία της στον χρόνο.</p></div><a class="btn secondary" href="{% url 'lab_list' %}">← Τιμές</a></div>
+<section class="panel">
+<form method="get" class="lab-chart-picker">
+<select name="name" onchange="this.form.submit()">{% for item in names %}<option value="{{ item }}" {% if item == name %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
+<noscript><button class="btn secondary">Προβολή</button></noscript>
+</form>
+{% if rows %}<div class="chart-box"><canvas id="labChart"></canvas></div>{% else %}<p class="muted">Δεν υπάρχουν δεδομένα.</p>{% endif %}
+</section>
+{{ chart|json_script:"lab-chart-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+const payload = JSON.parse(document.getElementById("lab-chart-data").textContent);
+if (payload.labels && payload.labels.length) {
+ new Chart(document.getElementById("labChart"), {type:"line",data:{labels:payload.labels,datasets:[{label:"{{ name|escapejs }} " + (payload.units || ""),data:payload.values,tension:.25}]},options:{responsive:true,maintainAspectRatio:false}});
+}
+</script>
+{% endblock %}
