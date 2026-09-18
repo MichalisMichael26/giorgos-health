@@ -61,7 +61,7 @@ def get_child_profile():
         return profile
     return ChildProfile.objects.create(
         name="Γιώργος",
-        birth_date=datetime(2026, 6, 27).date(),
+        birth_date=ChildProfile.FIXED_BIRTH_DATE,
     )
 
 
@@ -1140,7 +1140,7 @@ def medication_delete(request, pk):
 @login_required
 def appointment_list(request):
     return render(request, "appointments/list.html", {
-        "appointments": MedicalAppointment.objects.all(),
+        "appointments": MedicalAppointment.objects.order_by("-date", "-time"),
         "today": timezone.localdate(),
     })
 

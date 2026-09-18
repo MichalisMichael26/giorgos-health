@@ -218,3 +218,12 @@ The Emergency Card now has separate phone fields for:
 - optional other contact
 
 Phone numbers are deliberately left blank until entered by the user. On mobile, populated numbers are tappable `tel:` links.
+
+
+## Locked birth date and appointment ordering
+- Giorgos' birth date is fixed to 27/06/2026.
+- The profile and Emergency Card forms show the date but do not allow editing.
+- The ChildProfile model enforces the fixed date on every save.
+- Migration 0008 also corrects any existing ChildProfile row to 27/06/2026.
+- Medical appointments are displayed newest date/time first on the appointments page.
+- Dashboard upcoming appointment reminders remain chronological so the next appointment is still shown first.

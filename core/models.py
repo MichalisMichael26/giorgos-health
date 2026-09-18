@@ -1,3 +1,4 @@
+from datetime import date
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -189,7 +190,7 @@ class MedicalAppointment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["date", "time"]
+        ordering = ["-date", "-time"]
 
     @property
     def weekday_name(self):
@@ -237,6 +238,13 @@ class ChildProfile(models.Model):
     class Meta:
         verbose_name = "Προφίλ παιδιού"
         verbose_name_plural = "Προφίλ παιδιού"
+
+    FIXED_BIRTH_DATE = date(2026, 6, 27)
+
+    def save(self, *args, **kwargs):
+        # Birth date is intentionally fixed for this single-child private app.
+        self.birth_date = self.FIXED_BIRTH_DATE
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

@@ -76,6 +76,11 @@ class DiaperEntryForm(forms.ModelForm):
 
 
 class EmergencyProfileForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["birth_date"].disabled = True
+        self.fields["birth_date"].help_text = "Κλειδωμένη ημερομηνία γέννησης: 27/06/2026."
+
     class Meta:
         model = ChildProfile
         fields = [

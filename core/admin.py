@@ -47,11 +47,13 @@ class MedicalAppointmentAdmin(admin.ModelAdmin):
     list_display = ("date", "time", "purpose", "doctor", "clinic", "status")
     list_filter = ("status", "date")
     search_fields = ("purpose", "doctor", "clinic", "notes")
+    ordering = ("-date", "-time")
 
 
 @admin.register(ChildProfile)
 class ChildProfileAdmin(admin.ModelAdmin):
     list_display = ("name", "full_name", "birth_date", "updated_at")
+    readonly_fields = ("birth_date",)
 
 
 @admin.register(MedicalDocument)
