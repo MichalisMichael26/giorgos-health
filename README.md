@@ -303,3 +303,15 @@ Migration `0011_seed_discharge_lab_results.py` imports structured laboratory val
 - ammonia 69 μg/dL with a note that its exact collection date is not separately stated
 
 No reference ranges are invented. Units not printed in the discharge table are left blank.
+
+
+## Laboratory comparison table
+The laboratory page now defaults to a compact comparison matrix instead of individual cards:
+- one test per row
+- one date per column, newest first
+- grouped into hematology, renal/electrolytes/glucose, liver/metabolic, and blood gases
+- sticky test-name column on mobile
+- horizontal swipe on small screens
+- tap any value to edit it
+- direct chart link per test
+- no clinical colour-coding is inferred unless reference ranges are explicitly entered

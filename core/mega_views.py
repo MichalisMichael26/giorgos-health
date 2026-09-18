@@ -240,14 +240,112 @@ def reviewed_products(request):
     )
 
 
+def _lab_category(test_name):
+    name = (test_name or "").casefold()
+
+    if name.startswith("abg ") or name in {"lactate", "abg glucose"}:
+        return "Αέρια αίματος"
+
+    if name in {
+        "wbc", "neutrophils", "lymphocytes", "monocytes",
+        "hemoglobin", "hematocrit", "mcv", "mch", "platelets", "crp"
+    }:
+        return "Αιματολογικά"
+
+    if name in {
+        "alp", "ggt", "alt", "ast", "ldh", "cpk",
+        "triglycerides", "uric acid", "ammonia"
+    }:
+        return "Ήπαρ / μεταβολικά"
+
+    if name in {"urea", "creatinine", "sodium", "potassium", "glucose"}:
+        return "Νεφρά / ηλεκτρολύτες / γλυκόζη"
+
+    return "Άλλα"
+
+
 @login_required
 def lab_list(request):
     q = (request.GET.get("q") or "").strip()
-    qs = LabResult.objects.all()
+    qs = LabResult.objects.all().order_by("-date", "-time", "test_name")
+
     if q:
-        qs = qs.filter(Q(test_name__icontains=q) | Q(laboratory__icontains=q) | Q(notes__icontains=q))
-    test_names = list(LabResult.objects.order_by("test_name").values_list("test_name", flat=True).distinct())
-    return render(request, "labs/list.html", {"items": qs, "q": q, "test_names": test_names})
+        qs = qs.filter(
+            Q(test_name__icontains=q)
+            | Q(laboratory__icontains=q)
+            | Q(notes__icontains=q)
+        )
+
+    items = list(qs)
+    dates = sorted({item.date for item in items}, reverse=True)
+
+    category_order = [
+        "Αιματολογικά",
+        "Νεφρά / ηλεκτρολύτες / γλυκόζη",
+        "Ήπαρ / μεταβολικά",
+        "Αέρια αίματος",
+        "Άλλα",
+    ]
+
+    grouped = {}
+    for item in items:
+        category = _lab_category(item.test_name)
+        grouped.setdefault(category, {}).setdefault(item.test_name, {}).setdefault(item.date, []).append(item)
+
+    sections = []
+    for category in category_order:
+        tests = grouped.get(category)
+        if not tests:
+            continue
+
+        rows = []
+        for test_name in sorted(tests, key=lambda value: value.casefold()):
+            by_date = tests[test_name]
+            cells = []
+            units = []
+
+            for lab_date in dates:
+                cell_items = by_date.get(lab_date, [])
+                cells.append(cell_items)
+                for entry in cell_items:
+                    if entry.unit and entry.unit not in units:
+                        units.append(entry.unit)
+
+            rows.append({
+                "test_name": test_name,
+                "unit": " / ".join(units),
+                "cells": cells,
+            })
+
+        sections.append({
+            "name": category,
+            "slug": (
+                category.casefold()
+                .replace(" ", "-")
+                .replace("/", "-")
+                .replace("ά", "α")
+                .replace("έ", "ε")
+                .replace("ή", "η")
+                .replace("ί", "ι")
+                .replace("ό", "ο")
+                .replace("ύ", "υ")
+                .replace("ώ", "ω")
+            ),
+            "rows": rows,
+        })
+
+    return render(
+        request,
+        "labs/list.html",
+        {
+            "items": items,
+            "q": q,
+            "dates": dates,
+            "sections": sections,
+            "result_count": len(items),
+            "date_count": len(dates),
+        },
+    )
 
 
 @login_required

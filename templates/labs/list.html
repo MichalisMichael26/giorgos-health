@@ -1,22 +1,112 @@
 {% extends "base.html" %}
 {% block title %}Εργαστηριακές τιμές{% endblock %}
 {% block content %}
-<div class="page-head">
-    <div><h1>🧪 Εργαστηριακές τιμές</h1><p class="muted">AST, ALT, γλυκόζη, τριγλυκερίδια και οποιαδήποτε άλλη αριθμητική εξέταση.</p></div>
-    <div class="page-head-actions"><a class="btn secondary" href="{% url 'lab_chart' %}">📈 Γραφήματα</a><a class="btn primary" href="{% url 'lab_create' %}">+ Νέα τιμή</a></div>
+
+<div class="page-head labs-page-head">
+    <div>
+        <h1>🧪 Εργαστηριακές τιμές</h1>
+        <p class="muted">
+            Κάθε εξέταση σε μία γραμμή και οι ημερομηνίες δίπλα-δίπλα για άμεση σύγκριση.
+        </p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn secondary" href="{% url 'lab_chart' %}">📈 Γραφήματα</a>
+        <a class="btn primary" href="{% url 'lab_create' %}">+ Νέα τιμή</a>
+    </div>
 </div>
-<form class="global-search-form panel" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Αναζήτηση εξέτασης"><button class="btn secondary">Αναζήτηση</button></form>
-<div class="lab-grid">
-{% for item in items %}
-<article class="lab-card">
-    <div><span>{{ item.date|date:"d/m/Y" }}</span>{% if item.time %}<small>{{ item.time|time:"H:i" }}</small>{% endif %}</div>
-    <h2>{{ item.test_name }}</h2>
-    <strong class="lab-value">{{ item.value|floatformat:"-4" }} {{ item.unit }}</strong>
-    {% if item.reference_min != None or item.reference_max != None %}<small>Reference: {{ item.reference_min|default:"—" }} – {{ item.reference_max|default:"—" }} {{ item.unit }}</small>{% endif %}
-    {% if item.laboratory %}<p>🏥 {{ item.laboratory }}</p>{% endif %}
-    {% if item.notes %}<p class="muted">{{ item.notes }}</p>{% endif %}
-    <div class="row-actions"><a class="mini-action" href="{% url 'lab_edit' item.pk %}">Edit</a><a class="mini-action danger-link" href="{% url 'lab_delete' item.pk %}">Delete</a></div>
-</article>
-{% empty %}<div class="panel empty-state"><div class="empty-icon">🧪</div><h2>Δεν υπάρχουν εργαστηριακές τιμές</h2></div>{% endfor %}
+
+<section class="lab-table-summary">
+    <div><strong>{{ result_count }}</strong><span>καταχωρημένες τιμές</span></div>
+    <div><strong>{{ date_count }}</strong><span>ημερομηνίες εξετάσεων</span></div>
+    {% if dates %}
+    <div><strong>{{ dates.0|date:"d/m/Y" }}</strong><span>πιο πρόσφατη εξέταση</span></div>
+    {% endif %}
+</section>
+
+<form class="global-search-form panel lab-search-panel" method="get">
+    <input type="search" name="q" value="{{ q }}" placeholder="Αναζήτηση π.χ. AST, ALT, τριγλυκερίδια">
+    <button class="btn secondary" type="submit">Αναζήτηση</button>
+    {% if q %}<a class="btn secondary" href="{% url 'lab_list' %}">Καθαρισμός</a>{% endif %}
+</form>
+
+{% if sections %}
+<nav class="lab-category-nav" aria-label="Κατηγορίες εξετάσεων">
+    {% for section in sections %}
+    <a href="#lab-{{ forloop.counter }}">{{ section.name }}</a>
+    {% endfor %}
+</nav>
+
+<div class="lab-table-note">
+    <span>💡</span>
+    <p>
+        Σύρε οριζόντια στο κινητό για τις ημερομηνίες. Η στήλη <strong>Εξέταση</strong>
+        μένει σταθερή. Πάτησε πάνω σε μια τιμή για Edit.
+    </p>
 </div>
+
+{% for section in sections %}
+<section class="panel lab-matrix-section" id="lab-{{ forloop.counter }}">
+    <div class="lab-section-head">
+        <div>
+            <h2>{{ section.name }}</h2>
+            <small>{{ section.rows|length }} εξετάσεις</small>
+        </div>
+        <a href="#top" class="lab-back-top">↑ πάνω</a>
+    </div>
+
+    <div class="lab-matrix-wrap">
+        <table class="lab-matrix">
+            <thead>
+                <tr>
+                    <th class="lab-test-sticky">Εξέταση</th>
+                    <th class="lab-unit-col">Μονάδα</th>
+                    {% for lab_date in dates %}
+                    <th class="{% if forloop.first %}lab-latest-col{% endif %}">
+                        {{ lab_date|date:"d/m/Y" }}
+                        {% if forloop.first %}<small>πιο πρόσφατη</small>{% endif %}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in section.rows %}
+                <tr>
+                    <th class="lab-test-sticky" scope="row">
+                        <span>{{ row.test_name }}</span>
+                        <a href="{% url 'lab_chart' %}?name={{ row.test_name|urlencode }}" aria-label="Γράφημα {{ row.test_name }}">📈</a>
+                    </th>
+                    <td class="lab-unit-col">{{ row.unit|default:"—" }}</td>
+
+                    {% for cell in row.cells %}
+                    <td class="lab-value-cell {% if forloop.first %}lab-latest-col{% endif %}">
+                        {% if cell %}
+                            {% for item in cell %}
+                            <a class="lab-value-link" href="{% url 'lab_edit' item.pk %}">
+                                <strong>{{ item.value|floatformat:"-4" }}</strong>
+                                {% if cell|length > 1 %}
+                                <small>{% if item.time %}{{ item.time|time:"H:i" }}{% else %}#{{ forloop.counter }}{% endif %}</small>
+                                {% endif %}
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <span class="lab-empty-value">—</span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endfor %}
+
+{% else %}
+<section class="panel empty-state">
+    <div class="empty-icon">🧪</div>
+    <h2>{% if q %}Δεν βρέθηκαν αποτελέσματα{% else %}Δεν υπάρχουν εργαστηριακές τιμές{% endif %}</h2>
+    {% if q %}<p class="muted">Δοκίμασε διαφορετική αναζήτηση.</p>{% endif %}
+</section>
+{% endif %}
+
 {% endblock %}
