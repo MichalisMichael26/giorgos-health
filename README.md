@@ -315,3 +315,14 @@ The laboratory page now defaults to a compact comparison matrix instead of indiv
 - tap any value to edit it
 - direct chart link per test
 - no clinical colour-coding is inferred unless reference ranges are explicitly entered
+
+
+## Diaper stool consistency quick choices
+The diaper form now includes a ready-made consistency selector:
+- Σχηματισμένη
+- Μαλακή
+- Πολτώδης
+- Υδαρής / πολύ υδαρής («πορδοζούμι»)
+
+The stored value remains the formal description `Υδαρής / πολύ υδαρής`.
+Older free-text consistency values remain editable and are preserved.

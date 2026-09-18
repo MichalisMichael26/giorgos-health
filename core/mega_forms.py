@@ -70,6 +70,17 @@ class DiaperWithPhotoForm(forms.ModelForm):
         required=False,
         widget=forms.ClearableFileInput(attrs={"accept": "image/*", "capture": "environment"}),
     )
+    stool_consistency = forms.ChoiceField(
+        label="Σύσταση",
+        required=False,
+        choices=[
+            ("", "---------"),
+            ("Σχηματισμένη", "Σχηματισμένη"),
+            ("Μαλακή", "Μαλακή"),
+            ("Πολτώδης", "Πολτώδης"),
+            ("Υδαρής / πολύ υδαρής", "Υδαρής / πολύ υδαρής («πορδοζούμι»)"),
+        ],
+    )
 
     class Meta:
         model = DiaperEntry
@@ -79,6 +90,17 @@ class DiaperWithPhotoForm(forms.ModelForm):
             "time": TimeInput(format="%H:%M"),
             "notes": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Preserve any older free-text value if one already exists.
+        if self.instance and self.instance.pk and self.instance.stool_consistency:
+            current = self.instance.stool_consistency
+            values = [value for value, _ in self.fields["stool_consistency"].choices]
+            if current not in values:
+                self.fields["stool_consistency"].choices = list(
+                    self.fields["stool_consistency"].choices
+                ) + [(current, current)]
 
     def clean_photo(self):
         upload = self.cleaned_data.get("photo")
