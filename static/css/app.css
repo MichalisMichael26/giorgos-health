@@ -4834,3 +4834,74 @@ html.night .print-clinical-btn {
     background: #243247;
     border-color: #43546d;
 }
+
+
+/* ===== Allergies health page ===== */
+.critical-allergy {
+    border-color: #e5c5c2;
+    background: #fff7f6;
+}
+
+.allergy-alert-box,
+.allergy-empty-box {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 16px;
+    border-radius: 14px;
+}
+
+.allergy-alert-box {
+    border: 1px solid #e3b7b2;
+    background: #fff1f0;
+}
+
+.allergy-empty-box {
+    border: 1px solid var(--line);
+    background: #f7fafc;
+}
+
+.allergy-alert-icon {
+    font-size: 26px;
+    line-height: 1;
+}
+
+.allergy-alert-box p,
+.allergy-empty-box p {
+    margin: 5px 0 0;
+}
+
+.allergy-rule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 10px;
+}
+
+.allergy-rule-card {
+    display: grid;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.allergy-rule-card span {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.allergy-rule-card small {
+    color: var(--muted);
+}
+
+html.night .critical-allergy,
+html.night .allergy-alert-box {
+    background: #3a292b;
+    border-color: #654246;
+}
+
+html.night .allergy-empty-box,
+html.night .allergy-rule-card {
+    background: #223047;
+}

@@ -18,6 +18,13 @@
         <span>👨‍⚕️</span>
         <div><strong>Doctor View</strong><small>Καθαρή εικόνα για γιατρό / νοσοκομείο</small></div>
     </a>
+    <a href="{% url 'allergies_view' %}" class="health-critical-card critical-allergy">
+        <span>⚠️</span>
+        <div>
+            <strong>Αλλεργίες</strong>
+            <small>{% if profile.known_allergies %}Υπάρχουν καταχωρημένες αλλεργίες{% else %}Δεν έχουν καταχωρηθεί γνωστές αλλεργίες{% endif %}</small>
+        </div>
+    </a>
     <a href="{% url 'product_scanner' %}" class="health-critical-card critical-checker">
         <span>📷</span>
         <div><strong>Scan προϊόντος / φαρμάκου</strong><small>Barcode + κάμερα συστατικών + αυτόματος checker</small></div>

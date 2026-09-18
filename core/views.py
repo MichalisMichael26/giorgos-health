@@ -603,7 +603,21 @@ def child_profile_edit(request):
 
 @login_required
 def more(request):
-    return render(request, "more.html")
+    return render(request, "more.html", {"profile": get_child_profile()})
+
+
+@login_required
+def allergies_view(request):
+    profile = get_child_profile()
+    active_rules = SafetyRule.objects.filter(active=True).order_by("guidance", "term")
+    return render(
+        request,
+        "allergies.html",
+        {
+            "profile": profile,
+            "active_rules": active_rules,
+        },
+    )
 
 
 @login_required

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Αλλεργίες{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>⚠️ Αλλεργίες</h1>
+        <p class="muted">Γνωστές αλλεργίες και ξεχωριστά οι καταχωρημένοι διατροφικοί / φαρμακευτικοί περιορισμοί.</p>
+    </div>
+    {% if not is_readonly_doctor %}
+    <a class="btn primary" href="{% url 'child_profile_edit' %}">✏️ Επεξεργασία</a>
+    {% endif %}
+</div>
+
+<section class="panel allergy-main-panel">
+    <div class="panel-head">
+        <div>
+            <h2>Γνωστές αλλεργίες</h2>
+            <p class="muted">Εμφανίζονται και στον 48ωρο κλινικό φάκελο.</p>
+        </div>
+    </div>
+
+    {% if profile.known_allergies %}
+    <div class="allergy-alert-box">
+        <span class="allergy-alert-icon">⚠️</span>
+        <div>
+            <strong>Καταχωρημένες αλλεργίες</strong>
+            <p class="preline">{{ profile.known_allergies }}</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="allergy-empty-box">
+        <span>✓</span>
+        <div>
+            <strong>Δεν έχουν καταχωρηθεί γνωστές αλλεργίες</strong>
+            <p class="muted">Αυτό σημαίνει μόνο ότι το πεδίο είναι κενό στο Giorgos Health.</p>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<section class="panel allergy-rules-panel">
+    <div class="panel-head">
+        <div>
+            <h2>🚫 Περιορισμοί / κανόνες αποφυγής</h2>
+            <p class="muted">Αυτά δεν χαρακτηρίζονται αυτόματα ως αλλεργίες.</p>
+        </div>
+        {% if not is_readonly_doctor %}
+        <a href="{% url 'safety_rule_list' %}">Διαχείριση κανόνων</a>
+        {% endif %}
+    </div>
+
+    {% if active_rules %}
+    <div class="allergy-rule-grid">
+        {% for rule in active_rules %}
+        <div class="allergy-rule-card">
+            <strong>{{ rule.term }}</strong>
+            <span>{{ rule.get_guidance_display }}</span>
+            <small>{{ rule.get_applies_to_display }}{% if rule.note %} · {{ rule.note }}{% endif %}</small>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">Δεν υπάρχουν ενεργοί κανόνες αποφυγής.</p>
+    {% endif %}
+</section>
+
+<div class="medical-note">
+    Οι αλλεργίες και οι διατροφικοί/φαρμακευτικοί περιορισμοί είναι διαφορετικές κατηγορίες και εμφανίζονται ξεχωριστά.
+</div>
+{% endblock %}

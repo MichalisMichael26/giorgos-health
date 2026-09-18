@@ -526,3 +526,12 @@ It includes:
 
 The page is optimized for browser printing and **Print / Save as PDF**.
 It reproduces stored data and does not add clinical interpretation.
+
+
+## Allergies in Health menu
+The Health hub now has a prominent **Allergies** card.
+The dedicated Allergies page:
+- shows the ChildProfile `known_allergies` field;
+- clearly separates allergies from active food/medicine restriction rules;
+- lets parent users jump to profile editing;
+- remains read-only for the configured Dr Savvas account through the existing server-side read-only protection.
