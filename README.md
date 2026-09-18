@@ -493,3 +493,9 @@ Automatic fixed feeding reminders now use an exact lead time of **11 minutes** b
 Existing generated meal reminders are updated by the normal automatic reminder sync; when their timing changes,
 their push-delivery flags are reset so the new 11-minute schedule can be delivered.
 The native Android alarm schedule API reads the same `notify_minutes_before` value, so it inherits the 11-minute timing.
+
+
+## History timeline Maxijul
+Meal entries in the existing daily History timeline now show Maxijul alongside formula when it was recorded.
+Example: `Formula: 5 · Maxijul: 1 scoop`.
+No meal-duration tracking was added.

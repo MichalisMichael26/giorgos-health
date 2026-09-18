@@ -462,7 +462,14 @@ def build_history_days(start_date, end_date):
                     f"{item.consumed_ml if item.consumed_ml is not None else '—'} ml"
                     + (f" από {item.offered_ml} ml" if item.offered_ml is not None else "")
                 ),
-                "extra": f"Formula: {item.formula}" if item.formula else "",
+                "extra": " · ".join(
+                    part
+                    for part in [
+                        f"Formula: {item.formula}" if item.formula else "",
+                        f"Maxijul: {item.supplement} scoop" if item.supplement else "",
+                    ]
+                    if part
+                ),
             })
 
         for item in day_glucose:
