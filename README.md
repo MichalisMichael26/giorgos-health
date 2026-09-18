@@ -383,3 +383,22 @@ The active `render.yaml` was intentionally not changed to add a paid/extra Cron 
 - PushSubscription endpoint/keys and the VAPID private key are internal and are explicitly excluded from Audit Log snapshots.
 - They are not added to JSON/Excel/ZIP exports.
 - The VAPID private key is generated inside the deployed app and stored in PostgreSQL, not committed to GitHub.
+
+
+## Web Push send fix
+The first push implementation stored the VAPID private key as PEM text in PostgreSQL
+but passed that PEM string directly to `pywebpush.webpush()`. `pywebpush` treats a
+non-file string as encoded DER/raw key material, so delivery could fail even with a valid
+active device subscription.
+
+The sender now parses the stored PEM explicitly with `py_vapid.Vapid.from_pem()` and
+passes a Vapid object to `webpush()`.
+
+The Test Push endpoint now distinguishes:
+- no active subscribed device
+- expired subscription (404/410)
+- authentication rejection (401/403)
+- other HTTP delivery failures
+- pre-network/key processing failures
+
+No push endpoint or subscription encryption key is returned to the browser.

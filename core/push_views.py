@@ -108,24 +108,57 @@ def push_test(request):
     if is_readonly_doctor(request.user):
         return JsonResponse({"ok": False, "error": "read_only"}, status=403)
 
-    successes, failures = send_test_push(request.user)
+    result = send_test_push(request.user)
 
-    if successes:
+    if result["successes"]:
         return JsonResponse(
             {
                 "ok": True,
-                "successes": successes,
-                "failures": failures,
+                "activeDevices": result["active_devices"],
+                "successes": result["successes"],
+                "failures": result["failures"],
                 "message": "Η δοκιμαστική ειδοποίηση στάλθηκε.",
             }
+        )
+
+    if result["active_devices"] == 0:
+        return JsonResponse(
+            {
+                "ok": False,
+                "activeDevices": 0,
+                "successes": 0,
+                "failures": 0,
+                "message": "Δεν υπάρχει ενεργή συσκευή. Πάτησε πρώτα «Ενεργοποίηση» από το κινητό.",
+            },
+            status=400,
+        )
+
+    status = result["last_status"]
+    if status in {404, 410}:
+        message = (
+            "Η αποθηκευμένη push σύνδεση της συσκευής έχει λήξει. "
+            "Πάτησε «Απενεργοποίηση» και μετά «Ενεργοποίηση» ξανά."
+        )
+    elif status in {401, 403}:
+        message = (
+            "Η συσκευή είναι ενεργή, αλλά ο push server απέρριψε την ταυτοποίηση. "
+            "Η ρύθμιση VAPID χρειάζεται επανέλεγχο."
+        )
+    elif status:
+        message = f"Υπάρχει ενεργή συσκευή, αλλά η αποστολή απέτυχε (HTTP {status})."
+    else:
+        message = (
+            "Υπάρχει ενεργή συσκευή, αλλά η αποστολή απέτυχε πριν φτάσει στον push server."
         )
 
     return JsonResponse(
         {
             "ok": False,
+            "activeDevices": result["active_devices"],
             "successes": 0,
-            "failures": failures,
-            "message": "Δεν υπάρχει ενεργή συσκευή ή η αποστολή απέτυχε.",
+            "failures": result["failures"],
+            "status": status,
+            "message": message,
         },
         status=400,
     )

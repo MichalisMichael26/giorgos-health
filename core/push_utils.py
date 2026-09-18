@@ -6,6 +6,7 @@ from datetime import timedelta
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from django.utils import timezone
+from py_vapid import Vapid
 from pywebpush import WebPushException, webpush
 
 from .access import is_readonly_doctor
@@ -103,10 +104,15 @@ def _send_to_subscription(subscription, payload):
     )
 
     try:
+        # pywebpush treats ordinary strings as DER/base64 key material or as a
+        # filesystem path. Our key is stored in PostgreSQL as PEM text, so parse
+        # it explicitly into a Vapid object before sending.
+        vapid_key = Vapid.from_pem(config.private_key_pem.encode("utf-8"))
+
         response = webpush(
             subscription_info=info,
             data=json.dumps(payload, ensure_ascii=False),
-            vapid_private_key=config.private_key_pem,
+            vapid_private_key=vapid_key,
             vapid_claims={"sub": subject},
             ttl=300,
         )
@@ -135,14 +141,31 @@ def send_test_push(user):
         "data": {"url": "/reminders/"},
     }
 
+    subscriptions = list(
+        PushSubscription.objects.filter(user=user, active=True)
+    )
+
     successes = 0
     failures = 0
-    for sub in PushSubscription.objects.filter(user=user, active=True):
-        ok, _, _ = _send_to_subscription(sub, payload)
+    last_status = None
+    last_error = ""
+
+    for sub in subscriptions:
+        ok, status, error = _send_to_subscription(sub, payload)
         successes += int(ok)
         failures += int(not ok)
 
-    return successes, failures
+        if not ok:
+            last_status = status
+            last_error = error or ""
+
+    return {
+        "active_devices": len(subscriptions),
+        "successes": successes,
+        "failures": failures,
+        "last_status": last_status,
+        "last_error": last_error,
+    }
 
 
 def send_reminder_push(reminder, delivery_kind="initial"):
