@@ -11,6 +11,7 @@
     {% endif %}
 </div>
 
+{% if not is_readonly_doctor %}
 <section class="panel auto-reminder-rules">
     <div class="auto-reminder-rules-head">
         <div>
@@ -48,6 +49,51 @@
         </div>
     </div>
 </section>
+{% endif %}
+
+{% if not is_readonly_doctor %}
+<section class="panel next-auto-reminders">
+    <div class="next-auto-head">
+        <div>
+            <h2>⏰ Επόμενες αυτόματες υπενθυμίσεις</h2>
+            <p class="muted">Οι επόμενες ειδοποιήσεις που έχει προγραμματίσει το Giorgos Health.</p>
+        </div>
+    </div>
+
+    {% if next_auto_notifications %}
+    <div class="next-auto-list">
+        {% for row in next_auto_notifications %}
+        <div class="next-auto-row">
+            <div class="next-auto-icon">
+                {% if row.item.reminder_type == "meal" %}🍼
+                {% elif row.item.reminder_type == "appointment" %}📅
+                {% elif row.item.reminder_type == "medication" %}💊
+                {% elif row.item.reminder_type == "vaccine" %}💉
+                {% elif row.item.reminder_type == "measurement" %}🩸
+                {% elif row.item.reminder_type == "lab" %}🧪
+                {% else %}🔔{% endif %}
+            </div>
+            <div class="next-auto-main">
+                <strong>{{ row.item.title }}</strong>
+                <small>
+                    Ειδοποίηση: {{ row.notification_at|date:"d/m/Y H:i" }}
+                    {% if row.item.notify_minutes_before %}
+                        · γεγονός: {{ row.item.due_at|date:"H:i" }}
+                    {% endif %}
+                </small>
+            </div>
+            <span class="automatic-reminder-badge">⚙️ Auto</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="next-auto-empty">
+        <strong>Οι αυτόματοι κανόνες είναι ενεργοί.</strong>
+        <span>Δεν υπάρχει άλλη αυτόματη ειδοποίηση που να εκκρεμεί αυτή τη στιγμή.</span>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
 
 {% if not is_readonly_doctor %}
 <section class="panel push-setup-panel" id="push-setup-panel">
@@ -156,8 +202,13 @@
 </article>
 {% empty %}
 <div class="panel empty-state">
-    <div class="empty-icon">🔔</div>
-    <h2>Δεν υπάρχουν υπενθυμίσεις</h2>
+    <div class="empty-icon">✓</div>
+    {% if is_readonly_doctor %}
+        <h2>Δεν υπάρχουν επιπλέον καταχωρημένες υπενθυμίσεις</h2>
+    {% else %}
+        <h2>Δεν υπάρχουν χειροκίνητες υπενθυμίσεις</h2>
+        <p class="muted">Οι αυτόματες υπενθυμίσεις γεύματος, ραντεβού και χαμηλής κατανάλωσης εμφανίζονται ξεχωριστά πιο πάνω.</p>
+    {% endif %}
 </div>
 {% endfor %}
 </div>

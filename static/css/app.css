@@ -4511,3 +4511,100 @@ html.night .automatic-reminder-badge {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ===== Next automatic reminders ===== */
+.next-auto-reminders {
+    display: grid;
+    gap: 12px;
+}
+
+.next-auto-head h2 {
+    margin: 0 0 4px;
+    font-size: 18px;
+}
+
+.next-auto-head p {
+    margin: 0;
+}
+
+.next-auto-list {
+    display: grid;
+    gap: 8px;
+}
+
+.next-auto-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 10px 11px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: rgba(255,255,255,.7);
+}
+
+.next-auto-icon {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: #eef4ff;
+    font-size: 19px;
+}
+
+.next-auto-main {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: grid;
+    gap: 3px;
+}
+
+.next-auto-main strong {
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.next-auto-main small {
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.35;
+}
+
+.next-auto-empty {
+    display: grid;
+    gap: 3px;
+    padding: 11px 12px;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+}
+
+.next-auto-empty strong {
+    font-size: 13px;
+}
+
+.next-auto-empty span {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+html.night .next-auto-row {
+    background: rgba(26,39,57,.72);
+}
+
+html.night .next-auto-icon {
+    background: #293f5a;
+}
+
+@media (max-width: 560px) {
+    .next-auto-row {
+        align-items: flex-start;
+    }
+
+    .next-auto-row .automatic-reminder-badge {
+        align-self: center;
+    }
+}

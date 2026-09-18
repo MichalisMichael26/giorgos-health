@@ -421,3 +421,19 @@ The app now creates/synchronizes these rules automatically:
 
 Automatic reminders have stable `source_key` identifiers so repeated syncs cannot create duplicates.
 The push dispatcher runs `sync_all_automatic_reminders()` before each dispatch.
+
+
+## Reminder page visibility fix
+The reminder page now synchronizes automatic reminders when a parent opens it,
+then displays the next five automatic notification times in a compact panel.
+
+The repetitive meal schedule is no longer mistaken for "no reminders":
+- automatic reminders appear under `Επόμενες αυτόματες υπενθυμίσεις`
+- manual reminders remain in a separate list
+- the empty state now says only that there are no *manual* reminders
+
+The Dr Savvas/read-only doctor account:
+- never registers a push subscription
+- is excluded from all push delivery
+- does not see push activation/test controls
+- does not run automatic-reminder synchronization from a GET request

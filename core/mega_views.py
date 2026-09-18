@@ -402,15 +402,48 @@ def lab_chart(request):
 @login_required
 def reminder_list(request):
     now = timezone.now()
+    readonly_doctor = user_role(request.user) == "doctor_readonly"
 
-    # Fixed 8x/day feeding reminders run automatically in the background.
-    # Do not flood the page with 16 schedule rows (today + tomorrow).
-    items = HealthReminder.objects.exclude(
-        source_key__startswith="meal-schedule:"
+    # Parent view may safely synchronize automatic reminders on page load.
+    # Doctor GET requests remain strictly read-only and never create/update rows.
+    if not readonly_doctor:
+        from .auto_reminders import sync_all_automatic_reminders
+        sync_all_automatic_reminders(now=now)
+
+    # Manual reminders stay in their own list. Automatic reminders are shown
+    # separately below as a compact "next notifications" panel.
+    items = HealthReminder.objects.filter(auto_generated=False)
+
+    # Show the next automatic notifications separately so the page never gives
+    # the false impression that there are "no reminders".
+    next_auto_notifications = []
+    auto_items = HealthReminder.objects.filter(
+        auto_generated=True,
+        active=True,
+        completed=False,
     )
 
+    for reminder in auto_items:
+        notification_at = reminder.due_at - timedelta(
+            minutes=reminder.notify_minutes_before or 0
+        )
+
+        # Keep future notifications and very recent due notifications visible.
+        if notification_at < now - timedelta(minutes=5):
+            continue
+
+        next_auto_notifications.append(
+            {
+                "item": reminder,
+                "notification_at": notification_at,
+            }
+        )
+
+    next_auto_notifications.sort(key=lambda row: row["notification_at"])
+    next_auto_notifications = next_auto_notifications[:5]
+
     push_device_count = 0
-    if not user_role(request.user) == "doctor_readonly":
+    if not readonly_doctor:
         from .models import PushSubscription
         push_device_count = PushSubscription.objects.filter(
             user=request.user,
@@ -424,6 +457,7 @@ def reminder_list(request):
             "items": items,
             "now": now,
             "push_device_count": push_device_count,
+            "next_auto_notifications": next_auto_notifications,
             "fixed_meal_times": [
                 "01:30", "04:30", "07:30", "10:30",
                 "13:30", "16:30", "19:30", "22:30",
