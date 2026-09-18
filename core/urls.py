@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, advanced_views, mega_views, push_views
+from . import views, advanced_views, mega_views, push_views, native_alarm_views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
@@ -91,6 +91,9 @@ urlpatterns = [
     path("labs/<int:pk>/edit/", mega_views.lab_edit, name="lab_edit"),
     path("labs/<int:pk>/delete/", mega_views.lab_delete, name="lab_delete"),
     path("labs/chart/", mega_views.lab_chart, name="lab_chart"),
+
+    # Native Android alarm companion
+    path("native/alarm-schedule/", native_alarm_views.native_alarm_schedule, name="native_alarm_schedule"),
 
     # Mobile push notifications
     path("service-worker.js", push_views.service_worker, name="service_worker"),

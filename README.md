@@ -437,3 +437,12 @@ The Dr Savvas/read-only doctor account:
 - is excluded from all push delivery
 - does not see push activation/test controls
 - does not run automatic-reminder synchronization from a GET request
+
+
+## Native Android alarm API
+Authenticated endpoint: `/native/alarm-schedule/`
+
+It uses the existing Django login session and returns the next 14 days of active reminders,
+including the exact `notify_at_epoch_ms` timestamp needed by Android AlarmManager.
+
+The `drsavvas` / doctor-readonly account always receives `enabled: false` and zero alarm items.
