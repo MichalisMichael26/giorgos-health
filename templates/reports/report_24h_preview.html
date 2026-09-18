@@ -4,7 +4,7 @@
 {% block content %}
 <div class="report-page">
     <div class="report-toolbar no-print">
-        <a class="btn secondary" href="javascript:window.close()">← Κλείσιμο</a>
+        <a class="btn secondary" href="{% url 'dashboard' %}">← Επιστροφή</a>
         <div class="report-toolbar-actions">
             <button class="btn secondary" type="button" onclick="window.print()">🖨️ Εκτύπωση</button>
             <a class="btn primary" href="{% url 'report_24h_pdf' %}">⬇ Λήψη PDF</a>
@@ -16,6 +16,7 @@
             <img src="{% static 'images/logo.png' %}" alt="Giorgos Health" class="report-logo">
             <div>
                 <h1>Giorgos Health</h1>
+                <div class="report-patient-name">Giorgos Panayiotis Michael</div>
                 <h2>24ωρη Αναφορά</h2>
                 <p>{{ start_dt|date:"d/m/Y H:i" }} – {{ end_dt|date:"d/m/Y H:i" }}</p>
             </div>

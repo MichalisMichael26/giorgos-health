@@ -4,7 +4,7 @@
 {% block content %}
 <div class="report-page">
     <div class="report-toolbar no-print">
-        <a class="btn secondary" href="javascript:window.close()">← Κλείσιμο</a>
+        <a class="btn secondary" href="{% url 'history' %}?start={{ start_date|date:'Y-m-d' }}&end={{ end_date|date:'Y-m-d' }}">← Επιστροφή</a>
         <div class="report-toolbar-actions">
             <button class="btn secondary" type="button" onclick="window.print()">🖨️ Εκτύπωση</button>
             <a class="btn primary"
@@ -19,6 +19,7 @@
             <img src="{% static 'images/logo.png' %}" alt="Giorgos Health" class="report-logo">
             <div>
                 <h1>Giorgos Health</h1>
+                <div class="report-patient-name">Giorgos Panayiotis Michael</div>
                 <h2>Αναφορά Ιστορικού</h2>
                 <p>{{ start_date|date:"d/m/Y" }} – {{ end_date|date:"d/m/Y" }}</p>
             </div>

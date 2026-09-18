@@ -1702,3 +1702,45 @@ html.night .medical-note {
         font-size: 20px;
     }
 }
+
+
+/* ===== Mobile report reliability / patient heading ===== */
+.report-patient-name {
+    margin: 1px 0 5px;
+    color: #1f2a44;
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: .01em;
+}
+
+.report-sheet,
+.report-section,
+.report-table-wrap {
+    min-width: 0;
+}
+
+.report-table-wrap {
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 720px) {
+    .report-page {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .report-header > div {
+        min-width: 0;
+    }
+
+    .report-header h1,
+    .report-header h2,
+    .report-patient-name,
+    .report-header p {
+        overflow-wrap: anywhere;
+    }
+
+    .report-toolbar-actions {
+        grid-template-columns: 1fr;
+    }
+}

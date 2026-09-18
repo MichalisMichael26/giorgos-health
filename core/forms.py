@@ -116,13 +116,35 @@ class MedicationEntryForm(forms.ModelForm):
 
 
 class MedicalAppointmentForm(forms.ModelForm):
+    PROVIDER_CHOICES = [
+        ("savvas", "Δρ Σάββας Σάββα - Παιδίατρος (Κλινική)"),
+        ("grafakou", "Δρ Όλγα Γραφάκου (Κλινική ΝΑΜΙΙ)"),
+        ("other", "Άλλο - να γράψω εγώ"),
+    ]
+
+    doctor_choice = forms.ChoiceField(
+        label="Ιατρός / Κλινική",
+        choices=PROVIDER_CHOICES,
+        initial="savvas",
+    )
+    other_doctor = forms.CharField(
+        label="Άλλος ιατρός",
+        required=False,
+        max_length=160,
+        widget=forms.TextInput(attrs={"placeholder": "Γράψε το όνομα του ιατρού"}),
+    )
+    other_clinic = forms.CharField(
+        label="Κλινική / νοσοκομείο",
+        required=False,
+        max_length=180,
+        widget=forms.TextInput(attrs={"placeholder": "Προαιρετικά, γράψε κλινική ή νοσοκομείο"}),
+    )
+
     class Meta:
         model = MedicalAppointment
         fields = [
             "date",
             "time",
-            "doctor",
-            "clinic",
             "purpose",
             "reminder_days_before",
             "status",
@@ -134,6 +156,66 @@ class MedicalAppointmentForm(forms.ModelForm):
             "reminder_days_before": forms.NumberInput(attrs={"min": "0", "max": "90", "step": "1"}),
             "notes": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.order_fields([
+            "date",
+            "time",
+            "doctor_choice",
+            "other_doctor",
+            "other_clinic",
+            "purpose",
+            "reminder_days_before",
+            "status",
+            "notes",
+        ])
+
+        if self.instance and self.instance.pk:
+            doctor = (self.instance.doctor or "").strip()
+            clinic = (self.instance.clinic or "").strip()
+
+            if doctor == "Δρ Σάββας Σάββα - Παιδίατρος" and clinic == "Κλινική":
+                self.fields["doctor_choice"].initial = "savvas"
+            elif doctor == "Δρ Όλγα Γραφάκου" and clinic == "Κλινική ΝΑΜΙΙ":
+                self.fields["doctor_choice"].initial = "grafakou"
+            else:
+                self.fields["doctor_choice"].initial = "other"
+                self.fields["other_doctor"].initial = doctor
+                self.fields["other_clinic"].initial = clinic
+
+    def clean(self):
+        cleaned = super().clean()
+        choice = cleaned.get("doctor_choice")
+
+        if choice == "savvas":
+            cleaned["_resolved_doctor"] = "Δρ Σάββας Σάββα - Παιδίατρος"
+            cleaned["_resolved_clinic"] = "Κλινική"
+        elif choice == "grafakou":
+            cleaned["_resolved_doctor"] = "Δρ Όλγα Γραφάκου"
+            cleaned["_resolved_clinic"] = "Κλινική ΝΑΜΙΙ"
+        elif choice == "other":
+            other_doctor = (cleaned.get("other_doctor") or "").strip()
+            other_clinic = (cleaned.get("other_clinic") or "").strip()
+
+            if not other_doctor:
+                self.add_error("other_doctor", "Γράψε το όνομα του ιατρού.")
+            cleaned["_resolved_doctor"] = other_doctor
+            cleaned["_resolved_clinic"] = other_clinic
+
+        return cleaned
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.doctor = self.cleaned_data.get("_resolved_doctor", "")
+        instance.clinic = self.cleaned_data.get("_resolved_clinic", "")
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+
+        return instance
 
 
 

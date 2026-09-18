@@ -85,3 +85,20 @@ For babies after the first week until around 6 months, when a current weight exi
 A clinician-defined daily target can be saved in the child's profile. When present, it is displayed prominently and used as the main comparison target instead of the general guide.
 
 These values are informational population guides and do not replace individualized advice from a pediatrician or dietitian.
+
+
+## Appointment doctor presets
+Medical appointments now offer three doctor/provider choices:
+- Δρ Σάββας Σάββα - Παιδίατρος (Κλινική)
+- Δρ Όλγα Γραφάκου (Κλινική ΝΑΜΙΙ)
+- Άλλο, with free-text doctor and optional clinic/hospital
+
+No database migration is required for this change because the existing doctor and clinic model fields are reused.
+
+
+## Mobile report fix
+- Report previews now open as dedicated pages in the same browser tab.
+- This avoids mobile/PWA/new-tab session issues.
+- Report previews use a normal Return link instead of window.close().
+- Both HTML report previews show the Giorgos Health logo and the full name Giorgos Panayiotis Michael.
+- Both generated PDF report types also show the Giorgos Health logo and the full name.

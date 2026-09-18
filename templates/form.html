@@ -73,6 +73,32 @@
         dateInput.addEventListener("change", updateWeekday);
         updateWeekday();
     }
+
+    const doctorChoice = document.getElementById("id_doctor_choice");
+    const otherDoctor = document.getElementById("id_other_doctor");
+    const otherClinic = document.getElementById("id_other_clinic");
+
+    function paragraphFor(element) {
+        return element ? element.closest("p") : null;
+    }
+
+    function updateDoctorFields() {
+        if (!doctorChoice) return;
+
+        const showOther = doctorChoice.value === "other";
+        const doctorRow = paragraphFor(otherDoctor);
+        const clinicRow = paragraphFor(otherClinic);
+
+        if (doctorRow) doctorRow.hidden = !showOther;
+        if (clinicRow) clinicRow.hidden = !showOther;
+
+        if (otherDoctor) otherDoctor.required = showOther;
+    }
+
+    if (doctorChoice) {
+        doctorChoice.addEventListener("change", updateDoctorFields);
+        updateDoctorFields();
+    }
 })();
 </script>
 {% endblock %}

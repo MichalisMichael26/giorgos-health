@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import datetime, time, timedelta
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -502,6 +503,18 @@ def _register_pdf_font():
     return "Helvetica"
 
 
+def _report_logo_path():
+    """Find the app logo both locally and after collectstatic."""
+    candidates = [
+        Path(settings.BASE_DIR) / "static" / "images" / "logo.png",
+        Path(settings.BASE_DIR) / "staticfiles" / "images" / "logo.png",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
+    return None
+
+
 def _pdf_styles():
     from reportlab.lib import colors
     from reportlab.lib.enums import TA_CENTER
@@ -565,7 +578,7 @@ def history_pdf(request):
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     start_date, end_date = history_range(request)
     days = build_history_days(start_date, end_date)
@@ -583,17 +596,25 @@ def history_pdf(request):
         leftMargin=14 * mm,
         topMargin=14 * mm,
         bottomMargin=14 * mm,
-        title="Giorgos Health - Ιστορικό",
+        title="Giorgos Panayiotis Michael - Giorgos Health - Ιστορικό",
         author="Giorgos Health",
     )
 
-    story = [
+    story = []
+    logo_path = _report_logo_path()
+    if logo_path:
+        logo = Image(logo_path, width=22*mm, height=22*mm)
+        logo.hAlign = "CENTER"
+        story.extend([logo, Spacer(1, 2*mm)])
+
+    story.extend([
         Paragraph("Giorgos Health", styles["title"]),
+        Paragraph("Giorgos Panayiotis Michael", styles["heading"]),
         Paragraph(
             f"Ιστορικό από {start_date.strftime('%d/%m/%Y')} έως {end_date.strftime('%d/%m/%Y')}",
             styles["subtitle"],
         ),
-    ]
+    ])
 
     if not days:
         story.append(Paragraph("Δεν υπάρχουν καταχωρήσεις για αυτή την περίοδο.", styles["body"]))
@@ -785,7 +806,7 @@ def report_24h_pdf(request):
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     report_data = _rolling_24h_data()
     end_dt = report_data["end_dt"]
@@ -809,12 +830,20 @@ def report_24h_pdf(request):
         leftMargin=14*mm,
         topMargin=14*mm,
         bottomMargin=14*mm,
-        title="Giorgos Health - 24ωρη Αναφορά",
+        title="Giorgos Panayiotis Michael - Giorgos Health - 24ωρη Αναφορά",
         author="Giorgos Health",
     )
 
-    story = [
+    story = []
+    logo_path = _report_logo_path()
+    if logo_path:
+        logo = Image(logo_path, width=22*mm, height=22*mm)
+        logo.hAlign = "CENTER"
+        story.extend([logo, Spacer(1, 2*mm)])
+
+    story.extend([
         Paragraph("Giorgos Health", styles["title"]),
+        Paragraph("Giorgos Panayiotis Michael", styles["heading"]),
         Paragraph("24ωρη Αναφορά", styles["heading"]),
         Paragraph(
             f"Περίοδος: {start_dt.strftime('%d/%m/%Y %H:%M')} – {end_dt.strftime('%d/%m/%Y %H:%M')}",
@@ -826,7 +855,7 @@ def report_24h_pdf(request):
             styles["body"],
         ),
         Spacer(1, 4*mm),
-    ]
+    ])
 
     if latest_growth:
         story.append(Paragraph(

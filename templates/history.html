@@ -20,8 +20,6 @@
         </div>
         <button class="btn primary" type="submit">Προβολή</button>
         <a class="btn pdf-btn"
-           target="_blank"
-           rel="noopener"
            href="{% url 'history_report_preview' %}?start={{ start_date|date:'Y-m-d' }}&end={{ end_date|date:'Y-m-d' }}">
             📄 Προβολή report
         </a>
