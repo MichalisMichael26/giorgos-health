@@ -49,7 +49,7 @@ class MealEntryForm(forms.ModelForm):
         ]
         labels = {
             "formula": "Formula (κουταλάκια)",
-            "supplement": "Συμπλήρωμα (κουταλάκια)",
+            "supplement": "Maxijul (scoops)",
         }
         widgets = {
             "date": DateInput(),
@@ -235,29 +235,81 @@ class ChildProfileForm(forms.ModelForm):
         self.fields["birth_date"].disabled = True
         self.fields["birth_date"].help_text = "Κλειδωμένη ημερομηνία γέννησης: 27/06/2026."
 
+        # Legacy generic target fields remain in the database only for backwards
+        # compatibility. The UI now uses plan-specific targets exclusively.
+        self.fields["target_with_maxijul_min_ml"].help_text = (
+            "Συμπληρώνεται μόνο από συγκεκριμένη οδηγία της μεταβολικής ομάδας/παιδιάτρου."
+        )
+        self.fields["target_without_maxijul_min_ml"].help_text = (
+            "Συμπληρώνεται μόνο αν έχει δοθεί συγκεκριμένος στόχος χωρίς Maxijul."
+        )
+
     class Meta:
         model = ChildProfile
         fields = [
             "name",
             "full_name",
             "birth_date",
-            "clinician_target_min_ml",
-            "clinician_target_max_ml",
-            "clinician_target_note",
+            "maxijul_plan_active",
+            "planned_maxijul_scoops_per_feed",
+            "target_with_maxijul_min_ml",
+            "target_with_maxijul_max_ml",
+            "target_without_maxijul_min_ml",
+            "target_without_maxijul_max_ml",
+            "feeding_target_note",
+            "maxijul_scoop_grams",
+            "maxijul_kcal_per_100g",
+            "maxijul_carbs_per_100g",
         ]
         widgets = {
             "birth_date": DateInput(),
-            "clinician_target_min_ml": forms.NumberInput(attrs={"min": "0", "step": "1", "inputmode": "numeric"}),
-            "clinician_target_max_ml": forms.NumberInput(attrs={"min": "0", "step": "1", "inputmode": "numeric"}),
+            "planned_maxijul_scoops_per_feed": forms.NumberInput(
+                attrs={"min": "0", "step": "0.25", "inputmode": "decimal"}
+            ),
+            "target_with_maxijul_min_ml": forms.NumberInput(
+                attrs={"min": "0", "step": "1", "inputmode": "numeric"}
+            ),
+            "target_with_maxijul_max_ml": forms.NumberInput(
+                attrs={"min": "0", "step": "1", "inputmode": "numeric"}
+            ),
+            "target_without_maxijul_min_ml": forms.NumberInput(
+                attrs={"min": "0", "step": "1", "inputmode": "numeric"}
+            ),
+            "target_without_maxijul_max_ml": forms.NumberInput(
+                attrs={"min": "0", "step": "1", "inputmode": "numeric"}
+            ),
+            "maxijul_scoop_grams": forms.NumberInput(
+                attrs={"min": "0", "step": "0.01", "inputmode": "decimal"}
+            ),
+            "maxijul_kcal_per_100g": forms.NumberInput(
+                attrs={"min": "0", "step": "0.1", "inputmode": "decimal"}
+            ),
+            "maxijul_carbs_per_100g": forms.NumberInput(
+                attrs={"min": "0", "step": "0.1", "inputmode": "decimal"}
+            ),
         }
 
     def clean(self):
         cleaned = super().clean()
-        minimum = cleaned.get("clinician_target_min_ml")
-        maximum = cleaned.get("clinician_target_max_ml")
-        if minimum is not None and maximum is not None and minimum > maximum:
-            self.add_error(
-                "clinician_target_max_ml",
-                "Το μέγιστο πρέπει να είναι ίσο ή μεγαλύτερο από το ελάχιστο.",
-            )
+
+        pairs = [
+            (
+                "target_with_maxijul_min_ml",
+                "target_with_maxijul_max_ml",
+            ),
+            (
+                "target_without_maxijul_min_ml",
+                "target_without_maxijul_max_ml",
+            ),
+        ]
+
+        for minimum_name, maximum_name in pairs:
+            minimum = cleaned.get(minimum_name)
+            maximum = cleaned.get(maximum_name)
+            if minimum is not None and maximum is not None and minimum > maximum:
+                self.add_error(
+                    maximum_name,
+                    "Το μέγιστο πρέπει να είναι ίσο ή μεγαλύτερο από το ελάχιστο.",
+                )
+
         return cleaned

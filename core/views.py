@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, time, timedelta
 from pathlib import Path
+import re
 
 from django.conf import settings
 from django.contrib import messages
@@ -152,47 +153,181 @@ def weight_based_formula_guide(latest_growth, age_days):
     }
 
 
-def daily_milk_guide(profile, latest_growth, today, consumed_today):
+
+def _numeric_scoops(value):
+    """
+    Parse the existing MealEntry.supplement field as Maxijul scoops.
+    It accepts values such as "1", "1.0", "1 scoop" or "1 κουταλιά".
+    """
+    text = str(value or "").strip().replace(",", ".")
+    if not text:
+        return 0.0
+
+    match = re.search(r"[-+]?\d*\.?\d+", text)
+    if not match:
+        return 0.0
+
+    try:
+        return max(float(match.group(0)), 0.0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def maxijul_day_summary(profile, meals):
+    meals = list(meals)
+    recorded = [
+        meal
+        for meal in meals
+        if meal.status != "missed" and meal.consumed_ml is not None
+    ]
+
+    prepared_scoops = 0.0
+    consumed_scoops = 0.0
+    with_maxijul = 0
+    without_maxijul = 0
+
+    for meal in recorded:
+        scoops = _numeric_scoops(meal.supplement)
+
+        if scoops > 0:
+            with_maxijul += 1
+            prepared_scoops += scoops
+
+            # Maxijul is mixed through the prepared bottle. Estimate actual
+            # intake proportionally to consumed/offered volume. If offered
+            # volume is unavailable, fall back to the full entered scoop amount.
+            if meal.offered_ml and meal.offered_ml > 0:
+                ratio = min(max((meal.consumed_ml or 0) / meal.offered_ml, 0), 1)
+                consumed_scoops += scoops * ratio
+            elif (meal.consumed_ml or 0) > 0:
+                consumed_scoops += scoops
+        else:
+            without_maxijul += 1
+
+    if recorded:
+        if with_maxijul and without_maxijul:
+            mode = "mixed"
+        elif with_maxijul:
+            mode = "with_maxijul"
+        else:
+            mode = "without_maxijul"
+    else:
+        mode = (
+            "planned_with_maxijul"
+            if profile.maxijul_plan_active
+            else "planned_without_maxijul"
+        )
+
+    scoop_grams = float(profile.maxijul_scoop_grams or 0)
+    kcal_per_100g = float(profile.maxijul_kcal_per_100g or 0)
+    carbs_per_100g = float(profile.maxijul_carbs_per_100g or 0)
+
+    grams = consumed_scoops * scoop_grams
+    kcal = grams * kcal_per_100g / 100 if grams and kcal_per_100g else 0
+    carbs = grams * carbs_per_100g / 100 if grams and carbs_per_100g else 0
+
+    return {
+        "mode": mode,
+        "recorded_meals": len(recorded),
+        "with_maxijul_meals": with_maxijul,
+        "without_maxijul_meals": without_maxijul,
+        "prepared_scoops": round(prepared_scoops, 2),
+        "total_scoops": round(consumed_scoops, 2),
+        "grams": round(grams, 1),
+        "kcal": round(kcal, 1),
+        "carbs_g": round(carbs, 1),
+        "planned_scoops_per_feed": profile.planned_maxijul_scoops_per_feed,
+    }
+
+
+def _normalized_target(minimum, maximum):
+    if minimum is None and maximum is None:
+        return None, None
+
+    target_min = minimum if minimum is not None else maximum
+    target_max = maximum if maximum is not None else minimum
+    return target_min, target_max
+
+
+def daily_milk_guide(profile, latest_growth, today, meals_today):
+    meals_today = list(meals_today)
+    consumed_today = sum(item.consumed_ml or 0 for item in meals_today)
+
     age = child_age_details(profile.birth_date, today)
     age_guide = age_based_milk_guide(age["days"])
     weight_guide = weight_based_formula_guide(latest_growth, age["days"])
+    maxijul = maxijul_day_summary(profile, meals_today)
 
-    clinician_min = profile.clinician_target_min_ml
-    clinician_max = profile.clinician_target_max_ml
-    has_clinician_target = clinician_min is not None or clinician_max is not None
+    with_min, with_max = _normalized_target(
+        profile.target_with_maxijul_min_ml,
+        profile.target_with_maxijul_max_ml,
+    )
+    without_min, without_max = _normalized_target(
+        profile.target_without_maxijul_min_ml,
+        profile.target_without_maxijul_max_ml,
+    )
 
-    if has_clinician_target:
-        target_min = clinician_min if clinician_min is not None else clinician_max
-        target_max = clinician_max if clinician_max is not None else clinician_min
-        active_source = "clinician"
-    elif age_guide["min"] is not None:
-        target_min = age_guide["min"]
-        target_max = age_guide["max"]
-        active_source = "general"
-    else:
-        target_min = None
-        target_max = None
-        active_source = "none"
+    mode = maxijul["mode"]
+    target_min = None
+    target_max = None
+    active_source = "reference_only"
+    active_label = "Δεν έχει οριστεί εξατομικευμένος στόχος"
+    has_active_target = False
+
+    if mode in {"with_maxijul", "planned_with_maxijul"}:
+        if with_min is not None or with_max is not None:
+            target_min, target_max = with_min, with_max
+            active_source = "with_maxijul"
+            active_label = "Εξατομικευμένος στόχος · με Maxijul"
+            has_active_target = True
+        else:
+            active_source = "with_maxijul_missing"
+            active_label = "Με Maxijul · αναμονή εξατομικευμένου στόχου"
+
+    elif mode in {"without_maxijul", "planned_without_maxijul"}:
+        if without_min is not None or without_max is not None:
+            target_min, target_max = without_min, without_max
+            active_source = "without_maxijul"
+            active_label = "Εξατομικευμένος στόχος · χωρίς Maxijul"
+            has_active_target = True
+        else:
+            active_source = "without_maxijul_missing"
+            active_label = "Χωρίς Maxijul · αναμονή εξατομικευμένου στόχου"
+
+    elif mode == "mixed":
+        active_source = "mixed"
+        active_label = "Μικτή ημέρα · δεν εφαρμόζεται αυτόματα ένας στόχος"
 
     progress = None
-    if target_max and target_max > 0:
+    if has_active_target and target_max and target_max > 0:
         progress = min(round((consumed_today / target_max) * 100), 100)
 
     return {
         "age": age,
         "age_guide": age_guide,
         "weight_guide": weight_guide,
-        "clinician_min": clinician_min,
-        "clinician_max": clinician_max,
-        "clinician_note": profile.clinician_target_note,
-        "has_clinician_target": has_clinician_target,
+        "maxijul": maxijul,
+        "with_maxijul_min": profile.target_with_maxijul_min_ml,
+        "with_maxijul_max": profile.target_with_maxijul_max_ml,
+        "without_maxijul_min": profile.target_without_maxijul_min_ml,
+        "without_maxijul_max": profile.target_without_maxijul_max_ml,
+        "feeding_target_note": profile.feeding_target_note,
+        "has_with_maxijul_target": (
+            profile.target_with_maxijul_min_ml is not None
+            or profile.target_with_maxijul_max_ml is not None
+        ),
+        "has_without_maxijul_target": (
+            profile.target_without_maxijul_min_ml is not None
+            or profile.target_without_maxijul_max_ml is not None
+        ),
+        "has_active_target": has_active_target,
         "active_source": active_source,
+        "active_label": active_label,
         "target_min": target_min,
         "target_max": target_max,
         "consumed_today": consumed_today,
         "progress": progress,
     }
-
 
 
 def meal_timing_context(now_local):
@@ -407,7 +542,7 @@ def dashboard(request):
     latest_growth = GrowthMeasurement.objects.first()
     profile = get_child_profile()
     consumed_total = sum(item.consumed_ml or 0 for item in meals_today)
-    milk_guide = daily_milk_guide(profile, latest_growth, today, consumed_total)
+    milk_guide = daily_milk_guide(profile, latest_growth, today, meals_today)
 
     previous_days = build_history_days(today - timedelta(days=3), today - timedelta(days=1))
     reminder_appointments, upcoming_appointments = appointment_reminder_items(today)
@@ -445,7 +580,7 @@ def child_profile_edit(request):
     form = ChildProfileForm(request.POST or None, instance=profile)
     if form.is_valid():
         form.save()
-        messages.success(request, "Τα στοιχεία και ο ημερήσιος στόχος ενημερώθηκαν.")
+        messages.success(request, "Τα στοιχεία και οι στόχοι σίτισης ενημερώθηκαν.")
         return redirect("dashboard")
     return render(
         request,
@@ -815,6 +950,9 @@ def _rolling_24h_data():
     latest_growth = GrowthMeasurement.objects.first()
     total_ml = sum(item.consumed_ml or 0 for item in meals)
 
+    profile = get_child_profile()
+    maxijul_24h = maxijul_day_summary(profile, meals)
+
     glucose_values = [float(item.value) for item in glucose]
     glucose_min = min(glucose_values) if glucose_values else None
     glucose_max = max(glucose_values) if glucose_values else None
@@ -827,6 +965,7 @@ def _rolling_24h_data():
         "medications": medications,
         "latest_growth": latest_growth,
         "total_ml": total_ml,
+        "maxijul_24h": maxijul_24h,
         "glucose_min": glucose_min,
         "glucose_max": glucose_max,
     }
@@ -886,6 +1025,7 @@ def report_24h_pdf(request):
     medications = report_data["medications"]
     latest_growth = report_data["latest_growth"]
     total_ml = report_data["total_ml"]
+    maxijul_24h = report_data["maxijul_24h"]
 
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = (
@@ -924,6 +1064,11 @@ def report_24h_pdf(request):
             f"Φάρμακα/συμπληρώματα: {len(medications)}",
             styles["body"],
         ),
+        Paragraph(
+            f"Maxijul 24ώρου: {maxijul_24h['total_scoops']:g} scoops · "
+            f"≈ {maxijul_24h['grams']:g} g · ≈ {maxijul_24h['kcal']:g} kcal",
+            styles["body"],
+        ),
         Spacer(1, 4*mm),
     ])
 
@@ -938,7 +1083,7 @@ def report_24h_pdf(request):
 
     if meals:
         story.append(Paragraph("Γεύματα", styles["heading"]))
-        rows = [["Ημ/νία", "Ώρα", "Προσφ.", "Ήπιε", "Formula"]]
+        rows = [["Ημ/νία", "Ώρα", "Προσφ.", "Ήπιε", "Formula", "Maxijul"]]
         for item in meals:
             event_time = item.actual_time or item.scheduled_time
             rows.append([
@@ -947,8 +1092,9 @@ def report_24h_pdf(request):
                 f"{item.offered_ml} ml" if item.offered_ml is not None else "—",
                 f"{item.consumed_ml} ml" if item.consumed_ml is not None else "—",
                 item.formula or "—",
+                f"{_numeric_scoops(item.supplement):g} scoop" if _numeric_scoops(item.supplement) else "—",
             ])
-        table = Table(rows, colWidths=[25*mm, 22*mm, 30*mm, 30*mm, 63*mm], repeatRows=1)
+        table = Table(rows, colWidths=[22*mm, 20*mm, 26*mm, 26*mm, 55*mm, 26*mm], repeatRows=1)
         table.setStyle(TableStyle([
             ("FONTNAME", (0,0), (-1,-1), font_name),
             ("FONTSIZE", (0,0), (-1,-1), 7.5),

@@ -407,7 +407,7 @@ No push endpoint or subscription encryption key is returned to the browser.
 ## Automatic reminder rules
 The app now creates/synchronizes these rules automatically:
 
-1. **Fixed feeding schedule** — push 10 minutes before:
+1. **Fixed feeding schedule** — push 11 minutes before:
    `01:30, 04:30, 07:30, 10:30, 13:30, 16:30, 19:30, 22:30`.
    The repetitive schedule rows are kept out of the main reminder-card list to avoid clutter.
 
@@ -446,3 +446,50 @@ It uses the existing Django login session and returns the next 14 days of active
 including the exact `notify_at_epoch_ms` timestamp needed by Android AlarmManager.
 
 The `drsavvas` / doctor-readonly account always receives `enabled: false` and zero alarm items.
+
+
+## Specialized feeding guide safety update
+The dashboard no longer uses general population formula-volume guides as Giorgos' active target.
+
+- The 150–200 ml/kg/day weight reference remains visible only as a standard-formula population reference.
+- The age-based volume guide is also explicitly labelled as a standard-formula reference.
+- Giorgos' current intake is not compared against those population ranges.
+- A progress bar is shown only when a clinician-specific ml/24h target is entered in the Child Profile.
+- The dashboard explains that Giorgos receives energy-fortified feeding and that the metabolic/clinical team's individualized target takes precedence.
+
+
+## Dual feeding targets
+Giorgos Health now separates individualized 24-hour volume targets into:
+- **With Maxijul**
+- **Without Maxijul**
+
+The old generic clinician target fields remain in the database for backwards compatibility,
+but are hidden from the current UI and are NOT automatically copied into either new plan.
+This avoids assuming that an old target belonged to the fortified plan.
+
+Daily behavior:
+- all recorded feeds contain Maxijul -> use the **With Maxijul** target, if entered;
+- all recorded feeds contain no Maxijul -> use the **Without Maxijul** target, if entered;
+- a mixture of both -> label the day **Mixed** and apply no automatic target;
+- no feeds yet -> use the configured current-plan toggle only to select which plan is expected.
+
+The dashboard also shows Maxijul scoops, estimated grams, kcal and carbohydrate from the
+configured scoop/nutrition values. These estimates do not convert Maxijul calories into
+"equivalent formula ml".
+
+
+### Maxijul intake estimate
+The app distinguishes between:
+- scoops added to prepared bottles;
+- estimated scoops actually consumed.
+
+When offered_ml is available, consumed Maxijul is estimated proportionally:
+`entered scoops × consumed_ml / offered_ml`, capped at 100% of the entered scoop amount.
+This assumes the powder is evenly mixed through the prepared bottle.
+
+
+## 11-minute meal reminders
+Automatic fixed feeding reminders now use an exact lead time of **11 minutes** before the scheduled meal.
+Existing generated meal reminders are updated by the normal automatic reminder sync; when their timing changes,
+their push-delivery flags are reset so the new 11-minute schedule can be delivered.
+The native Android alarm schedule API reads the same `notify_minutes_before` value, so it inherits the 11-minute timing.

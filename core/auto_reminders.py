@@ -19,7 +19,7 @@ FIXED_MEAL_TIMES = [
 LOW_MEAL_THRESHOLD_ML = 50
 LOW_MEAL_FOLLOWUP_MINUTES = 60
 APPOINTMENT_NOTIFY_MINUTES_BEFORE = 24 * 60
-MEAL_NOTIFY_MINUTES_BEFORE = 10
+MEAL_NOTIFY_MINUTES_BEFORE = 11
 
 
 def _aware(local_date, local_time):
@@ -61,7 +61,7 @@ def sync_fixed_meal_reminders(now=None, include_tomorrow=True):
     Ensure reminders exist for the fixed Giorgos feeding schedule.
 
     The reminder's due_at is the scheduled feeding time and the push is sent
-    10 minutes before it.
+    11 minutes before it.
     """
     now = now or timezone.now()
     local_today = timezone.localtime(now).date()
@@ -86,7 +86,7 @@ def sync_fixed_meal_reminders(now=None, include_tomorrow=True):
                     "reminder_type": "meal",
                     "title": f"Προγραμματισμένο γεύμα {scheduled_time.strftime('%H:%M')}",
                     "due_at": _aware(day, scheduled_time),
-                    "notes": "Αυτόματη υπενθύμιση: 10 λεπτά πριν από την προγραμματισμένη ώρα γεύματος.",
+                    "notes": "Αυτόματη υπενθύμιση: 11 λεπτά πριν από την προγραμματισμένη ώρα γεύματος.",
                     "notify_minutes_before": MEAL_NOTIFY_MINUTES_BEFORE,
                     "repeat_if_incomplete_minutes": 0,
                     "active": True,

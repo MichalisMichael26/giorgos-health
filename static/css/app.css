@@ -4608,3 +4608,218 @@ html.night .next-auto-icon {
         align-self: center;
     }
 }
+
+
+/* ===== Specialized feeding guide note ===== */
+.specialized-feeding-note {
+    border: 1px solid #efd89a;
+    background: #fff8e7;
+}
+
+.specialized-feeding-note p {
+    margin: 0;
+}
+
+.specialized-feeding-note strong {
+    color: #795b16;
+}
+
+html.night .specialized-feeding-note {
+    background: #3b3320;
+    border-color: #67582e;
+}
+
+html.night .specialized-feeding-note strong {
+    color: #f0d88d;
+}
+
+
+/* ===== Dual feeding targets / Maxijul ===== */
+.feeding-mode-card {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #f6f8fb;
+}
+
+.feeding-mode-card > div:first-child {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.feeding-mode-card > div:first-child > strong {
+    font-size: 18px;
+}
+
+.feeding-mode-card > div:first-child > small {
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.feeding-mode-fortified {
+    background: #eef6ff;
+    border-color: #c7dcf3;
+}
+
+.feeding-mode-mixed {
+    background: #fff7e8;
+    border-color: #ecd59f;
+}
+
+.active-feeding-target {
+    flex: 0 0 auto;
+    min-width: 185px;
+    display: grid;
+    align-content: center;
+    gap: 3px;
+    padding: 10px 12px;
+    border-radius: 13px;
+    background: rgba(255,255,255,.75);
+    text-align: right;
+}
+
+.active-feeding-target span {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.active-feeding-target strong {
+    font-size: 15px;
+}
+
+.target-missing strong {
+    color: var(--muted);
+}
+
+.feeding-target-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.feeding-target-mini {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: rgba(255,255,255,.7);
+}
+
+.feeding-target-mini.active {
+    border-color: #9dbce0;
+    background: #edf5ff;
+}
+
+.feeding-target-mini span,
+.feeding-target-mini small {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.feeding-target-mini strong {
+    font-size: 15px;
+}
+
+.maxijul-summary-card {
+    display: grid;
+    gap: 4px;
+}
+
+.feeding-target-source-note {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    font-size: 11px;
+}
+
+.feeding-target-source-note span {
+    color: var(--muted);
+}
+
+.feeding-current-target-panel {
+    margin-top: 12px;
+}
+
+.feeding-current-target-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.feeding-current-target-grid > div {
+    display: grid;
+    gap: 3px;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+}
+
+.feeding-current-target-grid span,
+.feeding-current-target-grid small {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.feeding-current-target-grid strong {
+    font-size: 14px;
+}
+
+.feeding-target-history-note {
+    margin: 10px 0 0;
+    font-size: 10px;
+}
+
+html.night .feeding-mode-card {
+    background: #223247;
+}
+
+html.night .feeding-mode-fortified {
+    background: #213951;
+    border-color: #3a5877;
+}
+
+html.night .feeding-mode-mixed {
+    background: #3b3321;
+    border-color: #65552e;
+}
+
+html.night .active-feeding-target,
+html.night .feeding-target-mini {
+    background: rgba(24,36,53,.72);
+}
+
+html.night .feeding-target-mini.active {
+    background: #263e59;
+    border-color: #4d6f94;
+}
+
+@media (max-width: 720px) {
+    .feeding-mode-card {
+        display: grid;
+    }
+
+    .active-feeding-target {
+        min-width: 0;
+        text-align: left;
+    }
+
+    .feeding-target-pair,
+    .feeding-current-target-grid {
+        grid-template-columns: 1fr;
+    }
+}

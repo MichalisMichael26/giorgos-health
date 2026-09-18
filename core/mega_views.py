@@ -769,12 +769,20 @@ def daily_summary_data(day):
     consumed = sum(m.consumed_ml or 0 for m in meals)
     avg_meal = round(consumed / len(meals), 1) if meals else None
     glucose_values = [float(g.value) for g in glucose]
+
+    profile = get_profile()
+    maxijul = None
+    if profile:
+        from .views import maxijul_day_summary
+        maxijul = maxijul_day_summary(profile, meals)
+
     return {
         "date": day,
         "meals": meals,
         "meal_count": len(meals),
         "consumed": consumed,
         "avg_meal": avg_meal,
+        "maxijul": maxijul,
         "glucose": glucose,
         "glucose_count": len(glucose),
         "glucose_avg": round(sum(glucose_values) / len(glucose_values), 1) if glucose_values else None,
@@ -820,6 +828,16 @@ def daily_summary_pdf(request):
         Paragraph(day.strftime("%d/%m/%Y"), styles["subtitle"]),
         Spacer(1, 4*mm),
         Paragraph(f"Γεύματα: {summary['meal_count']} · Σύνολο: {summary['consumed']} ml · Μ.ό.: {summary['avg_meal'] or '—'} ml", styles["body"]),
+        Paragraph(
+            (
+                f"Maxijul: {summary['maxijul']['total_scoops']:g} scoops · "
+                f"≈ {summary['maxijul']['grams']:g} g · "
+                f"≈ {summary['maxijul']['kcal']:g} kcal"
+            )
+            if summary.get("maxijul")
+            else "Maxijul: —",
+            styles["body"],
+        ),
         Paragraph(f"Γλυκόζη: {summary['glucose_count']} μετρήσεις · Μ.ό.: {summary['glucose_avg'] if summary['glucose_avg'] is not None else '—'} mg/dL", styles["body"]),
         Paragraph(f"Φάρμακα/συμπληρώματα: {len(summary['medications'])}", styles["body"]),
         Paragraph(f"Πάνες: {len(summary['diapers'])} · Συμπτώματα: {len(summary['symptoms'])}", styles["body"]),

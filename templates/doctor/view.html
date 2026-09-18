@@ -9,6 +9,44 @@
 <div><span>Σήμερα γεύματα</span><strong>{{ today_stats.meal_count }}</strong></div><div><span>Σήμερα ml</span><strong>{{ today_stats.consumed_ml }}</strong></div><div><span>Σήμερα γλυκόζες</span><strong>{{ today_stats.glucose_count }}</strong></div><div><span>7ημ. μ.ό. γλυκόζης</span><strong>{% if glucose_avg_7 != None %}{{ glucose_avg_7 }}{% else %}—{% endif %}</strong></div>
 </section>
 {% if profile and profile.current_feeding_plan %}<section class="doctor-section"><h2>🍼 Τρέχον πλάνο σίτισης</h2><p class="preline">{{ profile.current_feeding_plan }}</p></section>{% endif %}
+{% if milk_guide_today %}
+<section class="doctor-section">
+    <h2>🍼 Σημερινό πλάνο / στόχος σίτισης</h2>
+    <p><strong>{{ milk_guide_today.active_label }}</strong></p>
+
+    {% if milk_guide_today.has_active_target %}
+    <p>
+        Ενεργός εξατομικευμένος στόχος:
+        <strong>
+            {% if milk_guide_today.target_min != None and milk_guide_today.target_max != None and milk_guide_today.target_min != milk_guide_today.target_max %}
+                {{ milk_guide_today.target_min }}–{{ milk_guide_today.target_max }} ml / 24ωρο
+            {% elif milk_guide_today.target_min != None %}
+                {{ milk_guide_today.target_min }} ml / 24ωρο
+            {% else %}
+                {{ milk_guide_today.target_max }} ml / 24ωρο
+            {% endif %}
+        </strong>
+    </p>
+    {% else %}
+    <p>Ενεργός εξατομικευμένος στόχος: <strong>δεν έχει καταχωρηθεί</strong></p>
+    {% endif %}
+
+    <p>
+        Σήμερα: {{ today_stats.consumed_ml }} ml ·
+        Maxijul εκτ. {{ milk_guide_today.maxijul.total_scoops|floatformat:"-2" }} scoops
+        (≈ {{ milk_guide_today.maxijul.grams|floatformat:"-1" }} g /
+        {{ milk_guide_today.maxijul.kcal|floatformat:"-1" }} kcal)
+    </p>
+
+    {% if milk_guide_today.active_source == "mixed" %}
+    <p><strong>Μικτή ημέρα:</strong> υπάρχουν γεύματα και με και χωρίς Maxijul, οπότε δεν εφαρμόζεται αυτόματα ένας από τους δύο στόχους.</p>
+    {% endif %}
+
+    {% if milk_guide_today.feeding_target_note %}
+    <p><small>{{ milk_guide_today.feeding_target_note }}</small></p>
+    {% endif %}
+</section>
+{% endif %}
 <section class="doctor-two-col">
 <div class="doctor-section"><h2>📏 Ανάπτυξη</h2>{% if latest_growth %}<p><strong>{{ latest_growth.date|date:"d/m/Y" }}</strong></p><p>Βάρος: {{ latest_growth.weight_kg|default:"—" }} kg {% if growth_bands.weight %}<span class="percentile-pill">{{ growth_bands.weight }}</span>{% endif %}</p><p>Μήκος: {{ latest_growth.length_cm|default:"—" }} cm {% if growth_bands.length %}<span class="percentile-pill">{{ growth_bands.length }}</span>{% endif %}</p><p>Κεφάλι: {{ latest_growth.head_cm|default:"—" }} cm {% if growth_bands.head %}<span class="percentile-pill">{{ growth_bands.head }}</span>{% endif %}</p>{% else %}<p>Χωρίς δεδομένα.</p>{% endif %}</div>
 <div class="doctor-section"><h2>🩸 Γλυκόζη 7 ημερών</h2><p>Μ.ό.: <strong>{% if glucose_avg_7 != None %}{{ glucose_avg_7 }} mg/dL{% else %}—{% endif %}</strong></p><p>Εύρος: {% if glucose_min_7 != None %}{{ glucose_min_7|floatformat:0 }}–{{ glucose_max_7|floatformat:0 }} mg/dL{% else %}—{% endif %}</p>{% if latest_glucose %}<p>Τελευταία: {{ latest_glucose.value|floatformat:"-1" }} mg/dL · {{ latest_glucose.date|date:"d/m" }} {{ latest_glucose.time|time:"H:i" }}</p>{% endif %}</div>

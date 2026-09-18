@@ -26,7 +26,7 @@ class MealEntry(models.Model):
     offered_ml = models.PositiveIntegerField("Προσφέρθηκαν (ml)", blank=True, null=True)
     consumed_ml = models.PositiveIntegerField("Ήπιε (ml)", blank=True, null=True)
     formula = models.CharField("Formula", max_length=120, blank=True)
-    supplement = models.CharField("Συμπλήρωμα", max_length=120, blank=True)
+    supplement = models.CharField("Maxijul (scoops)", max_length=120, blank=True)
     status = models.CharField(
         "Κατάσταση",
         max_length=20,
@@ -217,6 +217,66 @@ class ChildProfile(models.Model):
         max_length=220,
         blank=True,
         help_text="Π.χ. οδηγία παιδιάτρου / διαιτολόγου και ημερομηνία.",
+    )
+
+    # Feeding-plan-specific targets. These are deliberately separate because
+    # an energy-fortified regimen must not silently reuse a standard-formula
+    # population volume target.
+    target_with_maxijul_min_ml = models.PositiveIntegerField(
+        "Με Maxijul — ελάχιστο ml/24ωρο",
+        blank=True,
+        null=True,
+    )
+    target_with_maxijul_max_ml = models.PositiveIntegerField(
+        "Με Maxijul — μέγιστο ml/24ωρο",
+        blank=True,
+        null=True,
+    )
+    target_without_maxijul_min_ml = models.PositiveIntegerField(
+        "Χωρίς Maxijul — ελάχιστο ml/24ωρο",
+        blank=True,
+        null=True,
+    )
+    target_without_maxijul_max_ml = models.PositiveIntegerField(
+        "Χωρίς Maxijul — μέγιστο ml/24ωρο",
+        blank=True,
+        null=True,
+    )
+    feeding_target_note = models.CharField(
+        "Σημείωση εξατομικευμένων στόχων",
+        max_length=300,
+        blank=True,
+        help_text="Πηγή/ημερομηνία οδηγίας μεταβολικής ομάδας ή παιδιάτρου.",
+    )
+    maxijul_plan_active = models.BooleanField(
+        "Τρέχον πλάνο με Maxijul",
+        default=True,
+        help_text="Χρησιμοποιείται μόνο όταν δεν υπάρχουν ακόμη γεύματα για τη σημερινή ημέρα.",
+    )
+    planned_maxijul_scoops_per_feed = models.DecimalField(
+        "Προγραμματισμένα scoops Maxijul / γεύμα",
+        max_digits=5,
+        decimal_places=2,
+        default=1,
+    )
+    maxijul_scoop_grams = models.DecimalField(
+        "Maxijul — γραμμάρια ανά scoop",
+        max_digits=5,
+        decimal_places=2,
+        default=4.20,
+        help_text="Ελέγξτε ότι αντιστοιχεί στο scoop που χρησιμοποιείτε.",
+    )
+    maxijul_kcal_per_100g = models.DecimalField(
+        "Maxijul — kcal / 100 g",
+        max_digits=6,
+        decimal_places=1,
+        default=380,
+    )
+    maxijul_carbs_per_100g = models.DecimalField(
+        "Maxijul — υδατάνθρακες g / 100 g",
+        max_digits=6,
+        decimal_places=1,
+        default=95,
     )
     emergency_instructions = models.TextField("Βασικές ιατρικές οδηγίες", blank=True)
     treating_doctors = models.TextField(

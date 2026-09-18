@@ -13,6 +13,57 @@
 <div class="metric-card"><span>Συνολικά ml</span><strong>{{ stats.consumed_sum }} ml</strong></div>
 <div class="metric-card"><span>Γεύματα</span><strong>{{ stats.count }}</strong></div>
 </section>
+
+{% if milk_guide_today %}
+<section class="panel feeding-current-target-panel">
+    <div class="panel-head">
+        <div>
+            <h2>🎯 Σημερινός εξατομικευμένος στόχος</h2>
+            <p class="muted">{{ milk_guide_today.active_label }}</p>
+        </div>
+        <a href="{% url 'child_profile_edit' %}">Ρυθμίσεις</a>
+    </div>
+
+    <div class="feeding-current-target-grid">
+        <div>
+            <span>Πλάνο σήμερα</span>
+            <strong>
+                {% if milk_guide_today.maxijul.mode == "with_maxijul" or milk_guide_today.maxijul.mode == "planned_with_maxijul" %}
+                    Με Maxijul
+                {% elif milk_guide_today.maxijul.mode == "without_maxijul" or milk_guide_today.maxijul.mode == "planned_without_maxijul" %}
+                    Χωρίς Maxijul
+                {% else %}
+                    Μικτή ημέρα
+                {% endif %}
+            </strong>
+        </div>
+        <div>
+            <span>Ενεργός στόχος</span>
+            <strong>
+                {% if milk_guide_today.has_active_target %}
+                    {% if milk_guide_today.target_min != None and milk_guide_today.target_max != None and milk_guide_today.target_min != milk_guide_today.target_max %}
+                        {{ milk_guide_today.target_min }}–{{ milk_guide_today.target_max }} ml
+                    {% elif milk_guide_today.target_min != None %}
+                        {{ milk_guide_today.target_min }} ml
+                    {% else %}
+                        {{ milk_guide_today.target_max }} ml
+                    {% endif %}
+                {% else %}
+                    —
+                {% endif %}
+            </strong>
+        </div>
+        <div>
+            <span>Maxijul σήμερα · εκτ. κατανάλωση</span>
+            <strong>{{ milk_guide_today.maxijul.total_scoops|floatformat:"-2" }} scoops</strong>
+            <small>≈ {{ milk_guide_today.maxijul.kcal|floatformat:"-1" }} kcal</small>
+        </div>
+    </div>
+    <p class="muted feeding-target-history-note">
+        Ο στόχος παραπάνω αφορά το σημερινό πλάνο και δεν εφαρμόζεται αναδρομικά στις ιστορικές ημέρες του γραφήματος.
+    </p>
+</section>
+
 {{ chart_data|json_script:"feeding-chart-data" }}
 <section class="chart-card"><div class="chart-card-head"><div><span>📊</span><h2>Κατανάλωση ανά ημέρα</h2></div><small>{{ period_label }}</small></div><div class="chart-wrap"><canvas id="feedingMlChart"></canvas></div></section>
 <section class="panel"><div class="panel-head"><h2>Ημερήσια εικόνα</h2></div><div class="table-wrap"><table class="responsive-table"><thead><tr><th>Ημερομηνία</th><th>Γεύματα</th><th>Ήπιε</th><th>Μ.ό.</th><th>% προσφερόμενου</th></tr></thead><tbody>{% for row in day_rows %}<tr><td data-label="Ημερομηνία">{{ row.date|date:"d/m/Y" }}</td><td data-label="Γεύματα">{{ row.count }}</td><td data-label="Ήπιε">{{ row.consumed_sum }} ml</td><td data-label="Μ.ό.">{% if row.avg_consumed != None %}{{ row.avg_consumed }} ml{% else %}—{% endif %}</td><td data-label="Ποσοστό">{% if row.intake_ratio != None %}{{ row.intake_ratio }}%{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>

@@ -419,6 +419,16 @@ def feeding_performance(request):
         label = f"{days} ημέρες"
     stats = feeding_stats(start, today)
 
+    profile = get_profile()
+    latest_growth = GrowthMeasurement.objects.first()
+    from .views import daily_milk_guide
+    today_meals = list(MealEntry.objects.filter(date=today).order_by("scheduled_time"))
+    milk_guide_today = (
+        daily_milk_guide(profile, latest_growth, today, today_meals)
+        if profile
+        else None
+    )
+
     day_rows = []
     current = start
     while current <= today:
@@ -434,7 +444,14 @@ def feeding_performance(request):
     return render(
         request,
         "feeding/performance.html",
-        {"period": raw, "period_label": label, "stats": stats, "chart_data": chart_data, "day_rows": reversed(day_rows)},
+        {
+            "period": raw,
+            "period_label": label,
+            "stats": stats,
+            "chart_data": chart_data,
+            "day_rows": reversed(day_rows),
+            "milk_guide_today": milk_guide_today,
+        },
     )
 
 
@@ -445,6 +462,15 @@ def doctor_view(request):
     last7 = today - timedelta(days=6)
     latest_growth = GrowthMeasurement.objects.first()
     latest_glucose = GlucoseReading.objects.first()
+
+    from .views import daily_milk_guide
+    meals_today = list(MealEntry.objects.filter(date=today).order_by("scheduled_time"))
+    milk_guide_today = daily_milk_guide(
+        profile,
+        latest_growth,
+        today,
+        meals_today,
+    ) if profile else None
     glucose_7 = list(GlucoseReading.objects.filter(date__range=(last7, today)))
     glucose_values = [float(item.value) for item in glucose_7]
     growth_bands = None
@@ -463,6 +489,7 @@ def doctor_view(request):
         "latest_growth": latest_growth,
         "growth_bands": growth_bands,
         "latest_glucose": latest_glucose,
+        "milk_guide_today": milk_guide_today,
         "glucose_avg_7": round(sum(glucose_values) / len(glucose_values), 1) if glucose_values else None,
         "glucose_min_7": min(glucose_values) if glucose_values else None,
         "glucose_max_7": max(glucose_values) if glucose_values else None,

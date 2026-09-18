@@ -124,83 +124,153 @@
 <section class="panel milk-guide-panel">
     <div class="panel-head">
         <div>
-            <h2>🍼 Ημερήσιος οδηγός γάλακτος</h2>
+            <h2>🍼 Ημερήσια πρόσληψη & πλάνο σίτισης</h2>
             <p class="muted">{{ profile.name }} · {{ milk_guide.age.display }}</p>
         </div>
-        <a href="{% url 'child_profile_edit' %}">Ρυθμίσεις</a>
+        <a href="{% url 'child_profile_edit' %}">Ρυθμίσεις στόχων</a>
     </div>
 
-    {% if milk_guide.has_clinician_target %}
-    <div class="clinician-target-card">
+    <div class="feeding-mode-card
+        {% if milk_guide.active_source == 'mixed' %}feeding-mode-mixed{% elif milk_guide.maxijul.mode == 'with_maxijul' or milk_guide.maxijul.mode == 'planned_with_maxijul' %}feeding-mode-fortified{% endif %}">
         <div>
-            <span class="guide-kicker">⭐ Στόχος ιατρού</span>
+            <span class="guide-kicker">Σημερινό πλάνο</span>
             <strong>
-                {% if milk_guide.clinician_min != None and milk_guide.clinician_max != None %}
-                    {{ milk_guide.clinician_min }}–{{ milk_guide.clinician_max }} ml / 24ωρο
-                {% elif milk_guide.clinician_min != None %}
-                    {{ milk_guide.clinician_min }} ml / 24ωρο
+                {% if milk_guide.maxijul.mode == "with_maxijul" %}
+                    Με Maxijul
+                {% elif milk_guide.maxijul.mode == "planned_with_maxijul" %}
+                    Με Maxijul · βάσει τρέχοντος πλάνου
+                {% elif milk_guide.maxijul.mode == "without_maxijul" %}
+                    Χωρίς Maxijul
+                {% elif milk_guide.maxijul.mode == "planned_without_maxijul" %}
+                    Χωρίς Maxijul · βάσει τρέχοντος πλάνου
                 {% else %}
-                    {{ milk_guide.clinician_max }} ml / 24ωρο
+                    Μικτή ημέρα
                 {% endif %}
             </strong>
-            {% if milk_guide.clinician_note %}<small>{{ milk_guide.clinician_note }}</small>{% endif %}
+            <small>{{ milk_guide.active_label }}</small>
         </div>
-        <span class="clinician-badge">Εξατομικευμένος</span>
+
+        {% if milk_guide.has_active_target %}
+        <div class="active-feeding-target">
+            <span>Ενεργός στόχος</span>
+            <strong>
+                {% if milk_guide.target_min != None and milk_guide.target_max != None and milk_guide.target_min != milk_guide.target_max %}
+                    {{ milk_guide.target_min }}–{{ milk_guide.target_max }} ml / 24ωρο
+                {% elif milk_guide.target_min != None %}
+                    {{ milk_guide.target_min }} ml / 24ωρο
+                {% else %}
+                    {{ milk_guide.target_max }} ml / 24ωρο
+                {% endif %}
+            </strong>
+        </div>
+        {% else %}
+        <div class="active-feeding-target target-missing">
+            <span>Ενεργός στόχος</span>
+            <strong>Δεν έχει καταχωρηθεί</strong>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
+
+    <div class="feeding-target-pair">
+        <div class="feeding-target-mini {% if milk_guide.active_source == 'with_maxijul' %}active{% endif %}">
+            <span>Με Maxijul</span>
+            <strong>
+                {% if milk_guide.has_with_maxijul_target %}
+                    {% if milk_guide.with_maxijul_min != None and milk_guide.with_maxijul_max != None and milk_guide.with_maxijul_min != milk_guide.with_maxijul_max %}
+                        {{ milk_guide.with_maxijul_min }}–{{ milk_guide.with_maxijul_max }} ml
+                    {% elif milk_guide.with_maxijul_min != None %}
+                        {{ milk_guide.with_maxijul_min }} ml
+                    {% else %}
+                        {{ milk_guide.with_maxijul_max }} ml
+                    {% endif %}
+                {% else %}
+                    —
+                {% endif %}
+            </strong>
+            <small>Εξατομικευμένος στόχος / 24ωρο</small>
+        </div>
+
+        <div class="feeding-target-mini {% if milk_guide.active_source == 'without_maxijul' %}active{% endif %}">
+            <span>Χωρίς Maxijul</span>
+            <strong>
+                {% if milk_guide.has_without_maxijul_target %}
+                    {% if milk_guide.without_maxijul_min != None and milk_guide.without_maxijul_max != None and milk_guide.without_maxijul_min != milk_guide.without_maxijul_max %}
+                        {{ milk_guide.without_maxijul_min }}–{{ milk_guide.without_maxijul_max }} ml
+                    {% elif milk_guide.without_maxijul_min != None %}
+                        {{ milk_guide.without_maxijul_min }} ml
+                    {% else %}
+                        {{ milk_guide.without_maxijul_max }} ml
+                    {% endif %}
+                {% else %}
+                    —
+                {% endif %}
+            </strong>
+            <small>Εξατομικευμένος στόχος / 24ωρο</small>
+        </div>
+    </div>
 
     <div class="milk-guide-grid">
         <div class="milk-guide-main">
             <span class="guide-kicker">Σήμερα μέχρι τώρα</span>
             <strong>{{ consumed_total }} ml</strong>
-            {% if milk_guide.target_max %}
-            <div class="milk-progress" aria-label="Πρόοδος ημερήσιας ποσότητας">
+
+            {% if milk_guide.has_active_target and milk_guide.target_max %}
+            <div class="milk-progress" aria-label="Πρόοδος εξατομικευμένου ημερήσιου στόχου">
                 <div style="width: {{ milk_guide.progress }}%;"></div>
             </div>
-            <small>
-                {% if milk_guide.active_source == "clinician" %}
-                    Σε σχέση με τον καταχωρημένο στόχο ιατρού
-                {% else %}
-                    Σε σχέση με τον γενικό ηλικιακό οδηγό
-                {% endif %}
-            </small>
+            <small>Σε σχέση με τον ενεργό εξατομικευμένο στόχο</small>
+            {% elif milk_guide.active_source == "mixed" %}
+            <small>Μικτή ημέρα: δεν εφαρμόζεται αυτόματα στόχος με/χωρίς Maxijul.</small>
+            {% else %}
+            <small>Δεν υπάρχει καταχωρημένος εξατομικευμένος στόχος για το σημερινό πλάνο.</small>
             {% endif %}
         </div>
 
-        <div class="milk-guide-reference">
-            <span class="guide-kicker">Γενικός οδηγός ηλικίας</span>
-            <strong>
-                {% if milk_guide.age_guide.kind == "about" %}
-                    ≈ {{ milk_guide.age_guide.min }} ml / ημέρα
-                {% elif milk_guide.age_guide.min != None %}
-                    {{ milk_guide.age_guide.min }}–{{ milk_guide.age_guide.max }} ml / ημέρα
-                {% else %}
-                    —
-                {% endif %}
-            </strong>
+        <div class="milk-guide-reference maxijul-summary-card">
+            <span class="guide-kicker">Maxijul σήμερα · εκτ. κατανάλωση</span>
+            <strong>{{ milk_guide.maxijul.total_scoops|floatformat:"-2" }} scoops</strong>
             <small>
-                {{ milk_guide.age_guide.label }}
-                {% if milk_guide.age_guide.milk_type %} · {{ milk_guide.age_guide.milk_type }}{% endif %}
+                ≈ {{ milk_guide.maxijul.grams|floatformat:"-1" }} g
+                · ≈ {{ milk_guide.maxijul.kcal|floatformat:"-1" }} kcal
+                · ≈ {{ milk_guide.maxijul.carbs_g|floatformat:"-1" }} g υδατ.
+            </small>
+            <small>
+                Προστέθηκαν {{ milk_guide.maxijul.prepared_scoops|floatformat:"-2" }} scoops στα παρασκευασμένα γεύματα
+                · εκτ. κατανάλωση {{ milk_guide.maxijul.total_scoops|floatformat:"-2" }} scoops
+            </small>
+            <small>
+                Γεύματα με Maxijul: {{ milk_guide.maxijul.with_maxijul_meals }}
+                · χωρίς: {{ milk_guide.maxijul.without_maxijul_meals }}
             </small>
         </div>
 
         {% if milk_guide.weight_guide %}
         <div class="milk-guide-reference">
-            <span class="guide-kicker">Γενικός οδηγός βάσει βάρους</span>
+            <span class="guide-kicker">Γενική αναφορά · τυπική φόρμουλα</span>
             <strong>{{ milk_guide.weight_guide.min }}–{{ milk_guide.weight_guide.max }} ml / 24ωρο</strong>
             <small>
                 Με τελευταίο βάρος {{ milk_guide.weight_guide.weight|floatformat:"-3" }} kg
                 · περίπου 150–200 ml/kg/ημέρα
+                · <strong>δεν χρησιμοποιείται ως στόχος για τον Γιώργη</strong>
             </small>
         </div>
         {% endif %}
     </div>
 
-    <div class="milk-guide-footnote">
+    {% if milk_guide.feeding_target_note %}
+    <div class="feeding-target-source-note">
+        <strong>📝 Σημείωση στόχων</strong>
+        <span>{{ milk_guide.feeding_target_note }}</span>
+    </div>
+    {% endif %}
+
+    <div class="milk-guide-footnote specialized-feeding-note">
         <span>ℹ️</span>
         <p>
-            Πρόκειται για γενικούς οδηγούς και όχι για ιατρική συνταγή.
-            Αν υπάρχει εξατομικευμένο πλάνο από παιδίατρο ή διαιτολόγο, ακολουθείται εκείνο.
+            Ο στόχος αλλάζει μόνο μεταξύ των <strong>δύο εξατομικευμένων πλάνων</strong>
+            που έχουν καταχωρηθεί: «με Maxijul» και «χωρίς Maxijul».
+            Αν η ημέρα περιέχει και τα δύο, το app δεν επιλέγει αυθαίρετα έναν στόχο.
+            Οι γενικές τιμές για τυπική φόρμουλα παραμένουν μόνο ως αναφορά.
         </p>
     </div>
 </section>
