@@ -207,3 +207,14 @@ Migration 0006 seeds these active "avoid" rules:
 - sugar
 
 The rules apply to both foods and medicines/preparations and remain editable from the checker rules page.
+
+
+## Structured emergency phone contacts
+The Emergency Card now has separate phone fields for:
+- father
+- mother
+- Dr Savvas Savva
+- Dr Olga Grafakou
+- optional other contact
+
+Phone numbers are deliberately left blank until entered by the user. On mobile, populated numbers are tappable `tel:` links.

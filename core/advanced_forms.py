@@ -83,6 +83,10 @@ class EmergencyProfileForm(forms.ModelForm):
             "birth_date",
             "emergency_instructions",
             "treating_doctors",
+            "father_phone",
+            "mother_phone",
+            "dr_savvas_phone",
+            "dr_grafakou_phone",
             "emergency_contacts",
             "current_feeding_plan",
         ]
@@ -90,7 +94,11 @@ class EmergencyProfileForm(forms.ModelForm):
             "birth_date": DateInput(),
             "emergency_instructions": forms.Textarea(attrs={"rows": 5}),
             "treating_doctors": forms.Textarea(attrs={"rows": 4}),
-            "emergency_contacts": forms.Textarea(attrs={"rows": 4}),
+            "father_phone": forms.TextInput(attrs={"type": "tel", "inputmode": "tel", "placeholder": "+357 ..."}),
+            "mother_phone": forms.TextInput(attrs={"type": "tel", "inputmode": "tel", "placeholder": "+357 ..."}),
+            "dr_savvas_phone": forms.TextInput(attrs={"type": "tel", "inputmode": "tel", "placeholder": "+357 ..."}),
+            "dr_grafakou_phone": forms.TextInput(attrs={"type": "tel", "inputmode": "tel", "placeholder": "+357 ..."}),
+            "emergency_contacts": forms.Textarea(attrs={"rows": 3, "placeholder": "Άλλη επαφή / κλινική / νοσοκομείο"}),
             "current_feeding_plan": forms.Textarea(attrs={"rows": 5}),
         }
 

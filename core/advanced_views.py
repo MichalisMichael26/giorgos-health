@@ -816,8 +816,19 @@ def export_pdf(request):
             story.append(Paragraph("Βασικές ιατρικές οδηγίες: " + escape(profile.emergency_instructions), styles["small"]))
         if profile.treating_doctors:
             story.append(Paragraph("Θεράποντες ιατροί: " + escape(profile.treating_doctors), styles["small"]))
+        phone_parts = []
+        if profile.father_phone:
+            phone_parts.append("Μπαμπάς: " + profile.father_phone)
+        if profile.mother_phone:
+            phone_parts.append("Μαμά: " + profile.mother_phone)
+        if profile.dr_savvas_phone:
+            phone_parts.append("Δρ Σάββας Σάββα: " + profile.dr_savvas_phone)
+        if profile.dr_grafakou_phone:
+            phone_parts.append("Δρ Όλγα Γραφάκου: " + profile.dr_grafakou_phone)
         if profile.emergency_contacts:
-            story.append(Paragraph("Τηλέφωνα: " + escape(profile.emergency_contacts), styles["small"]))
+            phone_parts.append("Άλλη επαφή: " + profile.emergency_contacts)
+        if phone_parts:
+            story.append(Paragraph("Τηλέφωνα: " + escape(" | ".join(phone_parts)), styles["small"]))
     story.append(Spacer(1, 4*mm))
 
     sections = [

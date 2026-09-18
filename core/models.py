@@ -222,7 +222,15 @@ class ChildProfile(models.Model):
         blank=True,
         default="Δρ Σάββας Σάββα - Παιδίατρος\nΔρ Όλγα Γραφάκου - Κλινική ΝΑΜΙΙ",
     )
-    emergency_contacts = models.TextField("Τηλέφωνα επικοινωνίας", blank=True)
+    father_phone = models.CharField("Τηλέφωνο μπαμπά", max_length=40, blank=True)
+    mother_phone = models.CharField("Τηλέφωνο μαμάς", max_length=40, blank=True)
+    dr_savvas_phone = models.CharField("Τηλέφωνο Δρ Σάββας Σάββα", max_length=40, blank=True)
+    dr_grafakou_phone = models.CharField("Τηλέφωνο Δρ Όλγα Γραφάκου", max_length=40, blank=True)
+    emergency_contacts = models.TextField(
+        "Άλλο τηλέφωνο / επαφή",
+        blank=True,
+        help_text="Προαιρετικά: άλλο τηλέφωνο, κλινική, νοσοκομείο ή επαφή.",
+    )
     current_feeding_plan = models.TextField("Τρέχον πλάνο σίτισης", blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 

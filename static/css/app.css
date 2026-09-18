@@ -2757,3 +2757,80 @@ html.night .checker-baseline-rules p {
         flex-direction: column;
     }
 }
+
+
+/* ===== Structured emergency phone contacts ===== */
+.emergency-contacts-section {
+    min-width: 0;
+}
+
+.emergency-contact-groups {
+    display: grid;
+    gap: 12px;
+}
+
+.emergency-contact-group {
+    display: grid;
+    gap: 7px;
+}
+
+.emergency-contact-group h3 {
+    margin: 0 0 2px;
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.emergency-phone-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 11px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(248,251,255,.8);
+    color: var(--text);
+}
+
+.emergency-phone-link > span {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: rgba(228,241,255,.9);
+}
+
+.emergency-phone-link > div {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.emergency-phone-link strong,
+.emergency-phone-link small {
+    overflow-wrap: anywhere;
+}
+
+.emergency-phone-link small {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+html.night .emergency-phone-link {
+    background: rgba(29,41,61,.88);
+}
+
+@media print {
+    .emergency-phone-link {
+        padding: 5px 0;
+        border: 0;
+        background: transparent;
+    }
+
+    .emergency-phone-link > span {
+        display: none;
+    }
+}

@@ -8,7 +8,55 @@
 <section><h2>⚠️ Βασικές ιατρικές οδηγίες</h2><p class="preline">{% if profile and profile.emergency_instructions %}{{ profile.emergency_instructions }}{% else %}Δεν έχουν καταχωρηθεί ακόμη οδηγίες.{% endif %}</p></section>
 <section><h2>🍼 Τρέχον πλάνο σίτισης</h2><p class="preline">{% if profile and profile.current_feeding_plan %}{{ profile.current_feeding_plan }}{% else %}Δεν έχει καταχωρηθεί ακόμη πλάνο.{% endif %}</p></section>
 <section><h2>🩺 Θεράποντες ιατροί</h2><p class="preline">{% if profile %}{{ profile.treating_doctors|default:"—" }}{% endif %}</p></section>
-<section><h2>☎️ Τηλέφωνα</h2><p class="preline">{% if profile %}{{ profile.emergency_contacts|default:"—" }}{% endif %}</p></section>
+<section class="emergency-contacts-section">
+<h2>☎️ Τηλέφωνα</h2>
+{% if profile %}
+<div class="emergency-contact-groups">
+    <div class="emergency-contact-group">
+        <h3>Γονείς</h3>
+        {% if profile.father_phone %}
+        <a class="emergency-phone-link" href="tel:{{ profile.father_phone|cut:' ' }}">
+            <span>📞</span><div><strong>Μπαμπάς</strong><small>{{ profile.father_phone }}</small></div>
+        </a>
+        {% endif %}
+        {% if profile.mother_phone %}
+        <a class="emergency-phone-link" href="tel:{{ profile.mother_phone|cut:' ' }}">
+            <span>📞</span><div><strong>Μαμά</strong><small>{{ profile.mother_phone }}</small></div>
+        </a>
+        {% endif %}
+        {% if not profile.father_phone and not profile.mother_phone %}
+        <p class="muted">Δεν έχουν καταχωρηθεί ακόμη τηλέφωνα γονέων.</p>
+        {% endif %}
+    </div>
+
+    <div class="emergency-contact-group">
+        <h3>Θεράποντες ιατροί</h3>
+        {% if profile.dr_savvas_phone %}
+        <a class="emergency-phone-link" href="tel:{{ profile.dr_savvas_phone|cut:' ' }}">
+            <span>📞</span><div><strong>Δρ Σάββας Σάββα</strong><small>Παιδίατρος · {{ profile.dr_savvas_phone }}</small></div>
+        </a>
+        {% endif %}
+        {% if profile.dr_grafakou_phone %}
+        <a class="emergency-phone-link" href="tel:{{ profile.dr_grafakou_phone|cut:' ' }}">
+            <span>📞</span><div><strong>Δρ Όλγα Γραφάκου</strong><small>Κλινική ΝΑΜΙΙ · {{ profile.dr_grafakou_phone }}</small></div>
+        </a>
+        {% endif %}
+        {% if not profile.dr_savvas_phone and not profile.dr_grafakou_phone %}
+        <p class="muted">Δεν έχουν καταχωρηθεί ακόμη τηλέφωνα ιατρών.</p>
+        {% endif %}
+    </div>
+
+    {% if profile.emergency_contacts %}
+    <div class="emergency-contact-group">
+        <h3>Άλλη επαφή</h3>
+        <p class="preline">{{ profile.emergency_contacts }}</p>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<p>—</p>
+{% endif %}
+</section>
 </div>
 <div class="emergency-vitals">{% if latest_growth %}<span>Τελευταίο βάρος <strong>{{ latest_growth.weight_kg|default:"—" }} kg</strong> · {{ latest_growth.date|date:"d/m/Y" }}</span>{% endif %}{% if latest_glucose %}<span>Τελευταία γλυκόζη <strong>{{ latest_glucose.value|floatformat:"-1" }} mg/dL</strong> · {{ latest_glucose.date|date:"d/m/Y" }} {{ latest_glucose.time|time:"H:i" }}</span>{% endif %}</div>
 <footer>Η κάρτα περιέχει πληροφορίες που έχουν καταχωρηθεί από τους χρήστες του Giorgos Health.</footer>
