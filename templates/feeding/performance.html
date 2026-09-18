@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Feeding Performance{% endblock %}
+{% block content %}
+<div class="page-head">
+<div><h1>🍼 Feeding performance</h1><p class="muted">Μέσος όρος ανά γεύμα, ποσοστό κατανάλωσης και πλήρη/μερικά γεύματα.</p></div>
+<div class="period-tabs"><a class="{% if period == '7' %}active{% endif %}" href="?period=7">7 ημέρες</a><a class="{% if period == '30' %}active{% endif %}" href="?period=30">30</a><a class="{% if period == '90' %}active{% endif %}" href="?period=90">90</a><a class="{% if period == 'all' %}active{% endif %}" href="?period=all">Πάντα</a></div>
+</div>
+<section class="performance-grid">
+<div class="metric-card"><span>Μ.ό. ml / γεύμα</span><strong>{% if stats.avg_consumed != None %}{{ stats.avg_consumed }} ml{% else %}—{% endif %}</strong></div>
+<div class="metric-card"><span>Κατανάλωση προσφερόμενου</span><strong>{% if stats.intake_ratio != None %}{{ stats.intake_ratio }}%{% else %}—{% endif %}</strong></div>
+<div class="metric-card"><span>Πλήρη γεύματα</span><strong>{{ stats.completed }}</strong></div>
+<div class="metric-card"><span>Μερικά γεύματα</span><strong>{{ stats.partial }}</strong></div>
+<div class="metric-card"><span>Συνολικά ml</span><strong>{{ stats.consumed_sum }} ml</strong></div>
+<div class="metric-card"><span>Γεύματα</span><strong>{{ stats.count }}</strong></div>
+</section>
+{{ chart_data|json_script:"feeding-chart-data" }}
+<section class="chart-card"><div class="chart-card-head"><div><span>📊</span><h2>Κατανάλωση ανά ημέρα</h2></div><small>{{ period_label }}</small></div><div class="chart-wrap"><canvas id="feedingMlChart"></canvas></div></section>
+<section class="panel"><div class="panel-head"><h2>Ημερήσια εικόνα</h2></div><div class="table-wrap"><table class="responsive-table"><thead><tr><th>Ημερομηνία</th><th>Γεύματα</th><th>Ήπιε</th><th>Μ.ό.</th><th>% προσφερόμενου</th></tr></thead><tbody>{% for row in day_rows %}<tr><td data-label="Ημερομηνία">{{ row.date|date:"d/m/Y" }}</td><td data-label="Γεύματα">{{ row.count }}</td><td data-label="Ήπιε">{{ row.consumed_sum }} ml</td><td data-label="Μ.ό.">{% if row.avg_consumed != None %}{{ row.avg_consumed }} ml{% else %}—{% endif %}</td><td data-label="Ποσοστό">{% if row.intake_ratio != None %}{{ row.intake_ratio }}%{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>(function(){const node=document.getElementById('feeding-chart-data');if(!node||typeof Chart==='undefined')return;const d=JSON.parse(node.textContent);new Chart(document.getElementById('feedingMlChart'),{type:'bar',data:{labels:d.labels,datasets:[{data:d.consumed,borderRadius:7,maxBarThickness:34}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});})();</script>
+{% endblock %}

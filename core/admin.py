@@ -1,11 +1,17 @@
 from django.contrib import admin
+
 from .models import (
+    AuditLog,
+    ChildProfile,
+    DiaperEntry,
     GlucoseReading,
     GrowthMeasurement,
     MealEntry,
-    MedicationEntry,
     MedicalAppointment,
-    ChildProfile,
+    MedicalDocument,
+    MedicationEntry,
+    SymptomEntry,
+    VaccineEntry,
 )
 
 
@@ -41,13 +47,42 @@ class MedicalAppointmentAdmin(admin.ModelAdmin):
     search_fields = ("purpose", "doctor", "clinic", "notes")
 
 
-
 @admin.register(ChildProfile)
 class ChildProfileAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "birth_date",
-        "clinician_target_min_ml",
-        "clinician_target_max_ml",
-        "updated_at",
-    )
+    list_display = ("name", "full_name", "birth_date", "updated_at")
+
+
+@admin.register(MedicalDocument)
+class MedicalDocumentAdmin(admin.ModelAdmin):
+    list_display = ("date", "title", "category", "original_filename", "file_size")
+    list_filter = ("category", "date")
+    search_fields = ("title", "original_filename", "notes")
+    exclude = ("data",)
+
+
+@admin.register(VaccineEntry)
+class VaccineEntryAdmin(admin.ModelAdmin):
+    list_display = ("date", "name", "dose_label", "next_date")
+    list_filter = ("date",)
+    search_fields = ("name", "dose_label", "notes")
+
+
+@admin.register(SymptomEntry)
+class SymptomEntryAdmin(admin.ModelAdmin):
+    list_display = ("date", "time", "symptom", "severity", "relation_to_feed")
+    list_filter = ("severity", "relation_to_feed", "date")
+    search_fields = ("symptom", "notes")
+
+
+@admin.register(DiaperEntry)
+class DiaperEntryAdmin(admin.ModelAdmin):
+    list_display = ("date", "time", "kind", "stool_color", "stool_consistency")
+    list_filter = ("kind", "date")
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = ("timestamp", "user", "action", "model_name", "object_repr")
+    list_filter = ("action", "model_name")
+    search_fields = ("object_repr", "object_id")
+    readonly_fields = ("timestamp", "user", "action", "model_name", "object_id", "object_repr", "changes")

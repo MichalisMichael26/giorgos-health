@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Emergency Card{% endblock %}
+{% block content %}
+<div class="page-head no-print"><div><h1>🆘 Επείγουσα κάρτα</h1><p class="muted">Τα βασικά στοιχεία συγκεντρωμένα για γρήγορη πρόσβαση.</p></div><div class="page-actions"><button class="btn secondary" onclick="window.print()" type="button">🖨️ Εκτύπωση</button><a class="btn primary" href="{% url 'emergency_edit' %}">Edit</a></div></div>
+<article class="emergency-card-page">
+<header><div class="emergency-symbol">✚</div><div><span>GIORGOS HEALTH · EMERGENCY INFORMATION</span><h1>{% if profile %}{{ profile.full_name }}{% else %}Giorgos Panayiotis Michael{% endif %}</h1><p>{% if profile %}Ημερομηνία γέννησης: {{ profile.birth_date|date:"d/m/Y" }}{% endif %}</p></div></header>
+<div class="emergency-grid">
+<section><h2>⚠️ Βασικές ιατρικές οδηγίες</h2><p class="preline">{% if profile and profile.emergency_instructions %}{{ profile.emergency_instructions }}{% else %}Δεν έχουν καταχωρηθεί ακόμη οδηγίες.{% endif %}</p></section>
+<section><h2>🍼 Τρέχον πλάνο σίτισης</h2><p class="preline">{% if profile and profile.current_feeding_plan %}{{ profile.current_feeding_plan }}{% else %}Δεν έχει καταχωρηθεί ακόμη πλάνο.{% endif %}</p></section>
+<section><h2>🩺 Θεράποντες ιατροί</h2><p class="preline">{% if profile %}{{ profile.treating_doctors|default:"—" }}{% endif %}</p></section>
+<section><h2>☎️ Τηλέφωνα</h2><p class="preline">{% if profile %}{{ profile.emergency_contacts|default:"—" }}{% endif %}</p></section>
+</div>
+<div class="emergency-vitals">{% if latest_growth %}<span>Τελευταίο βάρος <strong>{{ latest_growth.weight_kg|default:"—" }} kg</strong> · {{ latest_growth.date|date:"d/m/Y" }}</span>{% endif %}{% if latest_glucose %}<span>Τελευταία γλυκόζη <strong>{{ latest_glucose.value|floatformat:"-1" }} mg/dL</strong> · {{ latest_glucose.date|date:"d/m/Y" }} {{ latest_glucose.time|time:"H:i" }}</span>{% endif %}</div>
+<footer>Η κάρτα περιέχει πληροφορίες που έχουν καταχωρηθεί από τους χρήστες του Giorgos Health.</footer>
+</article>
+{% endblock %}

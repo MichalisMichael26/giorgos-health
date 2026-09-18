@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}WHO Growth Percentiles{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>📈 WHO Growth Percentiles</h1>
+        <p class="muted">Καμπύλες ανάπτυξης για αγόρια 0–5 ετών με βάση τα WHO Child Growth Standards.</p>
+    </div>
+    <a class="btn secondary" href="{% url 'growth_list' %}">← Ανάπτυξη</a>
+</div>
+{% if latest_bands %}
+<section class="performance-grid percentile-summary">
+    <div class="metric-card"><span>Τελευταίο βάρος</span><strong>{{ latest_bands.weight|default:"—" }}</strong><small>ζώνη percentile</small></div>
+    <div class="metric-card"><span>Τελευταίο μήκος/ύψος</span><strong>{{ latest_bands.length|default:"—" }}</strong><small>ζώνη percentile</small></div>
+    <div class="metric-card"><span>Περίμετρος κεφαλής</span><strong>{{ latest_bands.head|default:"—" }}</strong><small>ζώνη percentile</small></div>
+    <div class="metric-card"><span>Ηλικία μέτρησης</span><strong>{{ latest_bands.age_months }} μην.</strong><small>{{ latest_bands.date|date:"d/m/Y" }}</small></div>
+</section>
+{% endif %}
+<div class="who-note panel">
+    <strong>ℹ️ Πώς διαβάζεται</strong>
+    <p>Οι γραμμές είναι οι επίσημες καμπύλες P3, P15, P50, P85 και P97 του WHO. Το app εμφανίζει ζώνη percentile και όχι ψευδή «ακριβή» εκατοστιαία θέση μεταξύ των δημοσιευμένων καμπυλών. Η κλινική ερμηνεία γίνεται από τον παιδίατρο.</p>
+</div>
+{{ payload|json_script:"who-growth-data" }}
+<div class="charts-grid who-charts">
+    <section class="chart-card"><div class="chart-card-head"><div><span>⚖️</span><h2>Βάρος για ηλικία</h2></div><small>kg</small></div><div class="chart-wrap who-chart-wrap"><canvas id="whoWeight"></canvas></div></section>
+    <section class="chart-card"><div class="chart-card-head"><div><span>📏</span><h2>Μήκος / ύψος για ηλικία</h2></div><small>cm</small></div><div class="chart-wrap who-chart-wrap"><canvas id="whoLength"></canvas></div></section>
+    <section class="chart-card"><div class="chart-card-head"><div><span>👶</span><h2>Περίμετρος κεφαλής</h2></div><small>cm</small></div><div class="chart-wrap who-chart-wrap"><canvas id="whoHead"></canvas></div></section>
+</div>
+<div class="panel who-source">
+    <strong>Πηγή</strong>
+    <p>World Health Organization — Child Growth Standards, simplified percentile field tables for boys.</p>
+    <div class="row-actions">
+        <a class="mini-action" href="https://www.who.int/tools/child-growth-standards/standards/weight-for-age" target="_blank" rel="noopener">WHO Weight-for-age</a>
+        <a class="mini-action" href="https://www.who.int/toolkits/child-growth-standards/standards/length-height-for-age" target="_blank" rel="noopener">WHO Length/height</a>
+        <a class="mini-action" href="https://www.who.int/tools/child-growth-standards/standards/head-circumference-for-age" target="_blank" rel="noopener">WHO Head circumference</a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+const n=document.getElementById('who-growth-data'); if(!n||typeof Chart==='undefined') return; const d=JSON.parse(n.textContent);
+const curveLabels=[['p3','P3'],['p15','P15'],['p50','P50'],['p85','P85'],['p97','P97']];
+function datasets(curves,actual,label){
+ const colors={P3:'#b7c4d6',P15:'#8fa7c3',P50:'#506f98',P85:'#8fa7c3',P97:'#b7c4d6'};
+ const out=curveLabels.map(([key,name])=>({label:name,data:curves.months.map((m,i)=>({x:m,y:curves[key][i]})),borderColor:colors[name],backgroundColor:colors[name],borderWidth:name==='P50'?2.5:1.3,pointRadius:0,tension:.2,fill:false}));
+ out.push({label:label,data:actual,showLine:true,borderColor:'#d46b55',backgroundColor:'#d46b55',borderWidth:3,pointRadius:5,pointHoverRadius:7,tension:.15}); return out;
+}
+function chart(id,curves,actual,unit,label){new Chart(document.getElementById(id),{type:'line',data:{datasets:datasets(curves,actual,label)},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'nearest',intersect:false},plugins:{legend:{position:'bottom',labels:{boxWidth:18,font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y} ${unit}`}}},scales:{x:{type:'linear',min:0,max:60,title:{display:true,text:'Ηλικία (μήνες)'},ticks:{stepSize:6}},y:{title:{display:true,text:unit}}}}});}
+chart('whoWeight',d.weight,d.actual_weight,'kg','Γιώργος'); chart('whoLength',d.length,d.actual_length,'cm','Γιώργος'); chart('whoHead',d.head,d.actual_head,'cm','Γιώργος');
+})();
+</script>
+{% endblock %}

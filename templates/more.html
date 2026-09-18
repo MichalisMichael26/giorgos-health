@@ -10,11 +10,21 @@
 
 <div class="more-grid">
     <a href="{% url 'child_profile_edit' %}" class="more-card"><span>👶</span><div><strong>Στοιχεία & στόχος</strong><small>Ηλικία και ημερήσιος στόχος γάλακτος</small></div></a>
+    <a href="{% url 'document_list' %}" class="more-card"><span>📁</span><div><strong>Έγγραφα</strong><small>Εξιτήρια, εξετάσεις, γνωματεύσεις</small></div></a>
+    <a href="{% url 'vaccine_list' %}" class="more-card"><span>💉</span><div><strong>Εμβόλια</strong><small>Ιστορικό, επόμενη δόση και reminders</small></div></a>
+    <a href="{% url 'growth_percentiles' %}" class="more-card"><span>📈</span><div><strong>WHO Percentiles</strong><small>Βάρος, μήκος και κεφάλι</small></div></a>
+    <a href="{% url 'feeding_performance' %}" class="more-card"><span>🍼</span><div><strong>Feeding performance</strong><small>Μ.ό., ποσοστό κατανάλωσης, πλήρη/μερικά</small></div></a>
+    <a href="{% url 'doctor_view' %}" class="more-card"><span>👨‍⚕️</span><div><strong>Doctor view</strong><small>Καθαρή read-only εικόνα για τον γιατρό</small></div></a>
+    <a href="{% url 'emergency_card' %}" class="more-card emergency-more-card"><span>🆘</span><div><strong>Επείγουσα κάρτα</strong><small>Οδηγίες, ιατροί, τηλέφωνα, feeding plan</small></div></a>
+    <a href="{% url 'audit_log' %}" class="more-card"><span>🧾</span><div><strong>Audit log</strong><small>Ποιος άλλαξε τι και πότε</small></div></a>
+    <a href="{% url 'export_center' %}" class="more-card"><span>💾</span><div><strong>Backup / Export</strong><small>ZIP, Excel και PDF</small></div></a>
+    <a href="{% url 'symptom_list' %}" class="more-card"><span>🌡️</span><div><strong>Συμπτώματα</strong><small>Επεισόδια, ένταση και σχέση με γεύμα</small></div></a>
+    <a href="{% url 'diaper_list' %}" class="more-card"><span>👶</span><div><strong>Πάνες / κενώσεις</strong><small>Ούρα και κενώσεις</small></div></a>
     <a href="{% url 'growth_list' %}" class="more-card"><span>📏</span><div><strong>Ανάπτυξη</strong><small>Βάρος, μήκος, κεφάλι</small></div></a>
     <a href="{% url 'medication_list' %}" class="more-card"><span>💊</span><div><strong>Φάρμακα</strong><small>Ποσότητα, ώρα και ιστορικό</small></div></a>
     <a href="{% url 'appointment_list' %}" class="more-card"><span>🩺</span><div><strong>Ραντεβού</strong><small>Επανέλεγχοι και reminders</small></div></a>
     <a href="{% url 'history' %}" class="more-card"><span>📅</span><div><strong>Ιστορικό</strong><small>Προηγούμενες ημέρες</small></div></a>
-    <a href="{% url 'analytics' %}" class="more-card"><span>📊</span><div><strong>Γραφήματα</strong><small>7 / 30 / 90 ημέρες</small></div></a>
+    <a href="{% url 'analytics' %}" class="more-card"><span>📊</span><div><strong>Γραφήματα</strong><small>7 / 30 / 90 ημέρες / πάντα</small></div></a>
     <a href="{% url 'report_24h_preview' %}" class="more-card"><span>📄</span><div><strong>24ωρη αναφορά</strong><small>Προβολή και προαιρετική λήψη PDF</small></div></a>
 </div>
 {% endblock %}

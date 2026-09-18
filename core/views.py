@@ -364,6 +364,9 @@ def dashboard(request):
     previous_days = build_history_days(today - timedelta(days=3), today - timedelta(days=1))
     reminder_appointments, upcoming_appointments = appointment_reminder_items(today)
 
+    from .advanced_views import dashboard_extras
+    extras = dashboard_extras(today)
+
     context = {
         "today": today,
         "meals_today": meals_today,
@@ -381,6 +384,7 @@ def dashboard(request):
         "previous_days": previous_days[:3],
         "reminder_appointments": reminder_appointments,
         "upcoming_appointments": upcoming_appointments,
+        **extras,
     }
     return render(request, "dashboard.html", context)
 

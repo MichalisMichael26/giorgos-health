@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Έγγραφα{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>📁 Έγγραφα</h1>
+        <p class="muted">Εξιτήρια, εξετάσεις, γνωματεύσεις και συνταγές σε ένα σημείο.</p>
+    </div>
+    <a class="btn primary" href="{% url 'document_create' %}">+ Νέο έγγραφο</a>
+</div>
+<div class="document-grid">
+{% for item in documents %}
+<article class="document-card">
+    <div class="document-icon">{% if item.category == 'lab' %}🧪{% elif item.category == 'discharge' %}🏥{% elif item.category == 'prescription' %}💊{% elif item.category == 'opinion' %}🩺{% else %}📄{% endif %}</div>
+    <div class="document-main">
+        <div class="document-meta"><span>{{ item.get_category_display }}</span><span>{{ item.date|date:"d/m/Y" }}</span></div>
+        <h2>{{ item.title }}</h2>
+        <p>{{ item.original_filename }} · {{ item.file_size|filesizeformat }}</p>
+        {% if item.notes %}<small>{{ item.notes }}</small>{% endif %}
+        <div class="row-actions">
+            <a class="mini-action" href="{% url 'document_view' item.pk %}">Προβολή</a>
+            <a class="mini-action" href="{% url 'document_download' item.pk %}">Λήψη</a>
+            <a class="mini-action" href="{% url 'document_edit' item.pk %}">Edit</a>
+            <a class="mini-action danger-link" href="{% url 'document_delete' item.pk %}">Delete</a>
+        </div>
+    </div>
+</article>
+{% empty %}
+<div class="panel empty-state"><div class="empty-icon">📂</div><h2>Δεν υπάρχουν έγγραφα</h2><p class="muted">Πρόσθεσε το πρώτο εξιτήριο, εξέταση ή γνωμάτευση.</p></div>
+{% endfor %}
+</div>
+<div class="panel storage-note"><strong>🔐 Αποθήκευση</strong><p>Τα αρχεία αποθηκεύονται μέσα στη βάση PostgreSQL και δεν εξαρτώνται από το προσωρινό filesystem του Render. Όριο 10 MB ανά αρχείο.</p></div>
+{% endblock %}

@@ -111,3 +111,60 @@ No database migration is required for this change because the existing doctor an
 - Closing the browser does not end a remembered session.
 - If the checkbox is disabled, the session ends with the browser session.
 - Authentication remains enabled; private data is not made public.
+
+## Advanced health features added
+
+### Medical documents
+- Discharge summaries, laboratory results, medical opinions, prescriptions and other documents.
+- PDF/JPG/PNG up to 10 MB per file.
+- Files are stored as PostgreSQL binary data rather than the Render ephemeral filesystem, so deploys do not remove them.
+- Documents are included in the full ZIP backup.
+
+### Vaccinations
+- Vaccine name, dose, administration date, next dose and reminder days.
+- Due reminders appear on the dashboard.
+
+### WHO growth percentiles
+- Boys 0–5 years.
+- Official WHO simplified percentile field tables are embedded for P3, P15, P50, P85 and P97.
+- Weight-for-age: WHO Child Growth Standards, birth to 5 years.
+- Length-for-age: WHO Child Growth Standards, birth to 2 years.
+- Height-for-age: WHO Child Growth Standards, 2 to 5 years.
+- Head-circumference-for-age: WHO Child Growth Standards, birth to 5 years.
+- The app reports percentile bands rather than claiming an exact percentile between published curves.
+
+WHO source pages:
+- https://www.who.int/tools/child-growth-standards/standards/weight-for-age
+- https://www.who.int/toolkits/child-growth-standards/standards/length-height-for-age
+- https://www.who.int/tools/child-growth-standards/standards/head-circumference-for-age
+
+### Feeding performance and comparison
+- Average consumed ml per feed.
+- Percentage of offered volume consumed.
+- Completed / partial / missed feeding counts.
+- 7 / 30 / 90 days / all-time views.
+- Dashboard today-vs-yesterday comparison and 7-day averages.
+
+### Doctor View
+- Read-only clinical summary with no editing controls.
+- Today's feeding/glucose summary, 7-day glucose range/average, growth with WHO percentile bands, medications, symptoms, upcoming appointments and vaccines.
+
+### Emergency card
+- Full name and date of birth.
+- User-entered medical instructions.
+- Treating doctors, contact numbers and current feeding plan.
+- Latest weight and glucose shown automatically.
+
+### Audit log
+- Records create/update/delete events after this upgrade.
+- Stores user, time, object and field-level before/after values.
+- Binary document content is intentionally excluded from audit payloads.
+
+### Backup / Export
+- Full ZIP: JSON + Excel + uploaded medical documents.
+- Excel workbook: separate sheet per data category.
+- PDF: printable full-data report.
+
+### Mobile quick add
+- Large + button on mobile.
+- Quick links for Meal, Glucose, Medication, Symptom and Diaper.

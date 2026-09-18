@@ -71,6 +71,28 @@
 </main>
 
 {% if user.is_authenticated %}
+<button type="button" class="mobile-quick-add" id="mobile-quick-add" aria-label="Γρήγορη καταχώρηση" aria-expanded="false">+</button>
+<div class="quick-add-backdrop" id="quick-add-modal" hidden>
+    <div class="quick-add-sheet" role="dialog" aria-modal="true" aria-labelledby="quick-add-title">
+        <div class="quick-add-head">
+            <div>
+                <strong id="quick-add-title">Γρήγορη καταχώρηση</strong>
+                <small>Τι θέλεις να προσθέσεις;</small>
+            </div>
+            <button type="button" id="quick-add-close" aria-label="Κλείσιμο">×</button>
+        </div>
+        <div class="quick-add-options">
+            <a href="{% url 'meal_create' %}"><span>🍼</span><strong>Γεύμα</strong></a>
+            <a href="{% url 'glucose_create' %}"><span>🩸</span><strong>Γλυκόζη</strong></a>
+            <a href="{% url 'medication_create' %}"><span>💊</span><strong>Φάρμακο</strong></a>
+            <a href="{% url 'symptom_create' %}"><span>🌡️</span><strong>Σύμπτωμα</strong></a>
+            <a href="{% url 'diaper_create' %}"><span>👶</span><strong>Πάνα</strong></a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if user.is_authenticated %}
 <nav class="mobile-bottom-nav" aria-label="Κύρια πλοήγηση">
     <a href="{% url 'dashboard' %}">
         <span>🏠</span><small>Αρχική</small>
@@ -110,5 +132,34 @@
     syncIcon();
 })();
 </script>
+
+<script>
+(function () {
+    const quickAddButton = document.getElementById("mobile-quick-add");
+    const modal = document.getElementById("quick-add-modal");
+    const close = document.getElementById("quick-add-close");
+    if (!quickAddButton || !modal || !close) return;
+
+    function openQuickAdd() {
+        modal.hidden = false;
+        quickAddButton.setAttribute("aria-expanded", "true");
+        close.focus();
+    }
+    function closeQuickAdd() {
+        modal.hidden = true;
+        quickAddButton.setAttribute("aria-expanded", "false");
+        quickAddButton.focus();
+    }
+    quickAddButton.addEventListener("click", openQuickAdd);
+    close.addEventListener("click", closeQuickAdd);
+    modal.addEventListener("click", function (event) {
+        if (event.target === modal) closeQuickAdd();
+    });
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !modal.hidden) closeQuickAdd();
+    });
+})();
+</script>
+
 </body>
 </html>

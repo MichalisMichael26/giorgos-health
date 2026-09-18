@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Audit Log{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>🧾 Audit log</h1><p class="muted">Ποιος δημιούργησε, άλλαξε ή διέγραψε μια καταχώρηση και τι ακριβώς άλλαξε.</p></div></div>
+<section class="panel"><form method="get" class="audit-filter"><label>Τύπος δεδομένων<select name="model" onchange="this.form.submit()"><option value="">Όλα</option>{% for model in models %}<option value="{{ model }}" {% if model_filter == model %}selected{% endif %}>{{ model }}</option>{% endfor %}</select></label></form></section>
+<div class="audit-list">
+{% for log in logs %}<article class="audit-card"><div class="audit-card-head"><div><span class="audit-action audit-{{ log.action }}">{{ log.get_action_display }}</span><strong>{{ log.model_name }}</strong></div><div><span>{{ log.timestamp|date:"d/m/Y H:i:s" }}</span><small>{% if log.user %}{{ log.user.username }}{% else %}System{% endif %}</small></div></div><p class="audit-object">{{ log.object_repr }} · ID {{ log.object_id }}</p><details><summary>Δες τις αλλαγές</summary><div class="audit-changes">{% for field, diff in log.changes.items %}<div><strong>{{ field }}</strong><span class="audit-old">{{ diff.old|default_if_none:"—" }}</span><span>→</span><span class="audit-new">{{ diff.new|default_if_none:"—" }}</span></div>{% endfor %}</div></details></article>{% empty %}<div class="panel empty-state"><h2>Δεν υπάρχουν audit entries ακόμη.</h2></div>{% endfor %}
+</div>
+{% endblock %}

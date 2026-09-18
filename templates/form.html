@@ -7,7 +7,7 @@
         <span>Ημέρα:</span>
         <strong id="weekday-preview-value"></strong>
     </div>
-    <form method="post" id="entry-form">
+    <form method="post" id="entry-form" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <div class="actions">

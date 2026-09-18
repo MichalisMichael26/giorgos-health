@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="form-card">
+    <h1>{{ title }}</h1>
+    <p class="muted">PDF, JPG ή PNG έως 10 MB.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="actions">
+            <button class="btn primary" type="submit">Αποθήκευση</button>
+            <a class="btn secondary" href="{% url 'document_list' %}">Ακύρωση</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

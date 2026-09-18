@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Doctor View{% endblock %}
+{% block content %}
+<div class="doctor-view-page">
+<div class="report-toolbar no-print"><a class="btn secondary" href="{% url 'dashboard' %}">← Επιστροφή</a><div class="report-toolbar-actions"><button class="btn primary" type="button" onclick="window.print()">🖨️ Εκτύπωση</button></div></div>
+<article class="doctor-sheet">
+<header class="doctor-header"><div><span class="doctor-kicker">GIORGOS HEALTH · DOCTOR VIEW</span><h1>{% if profile %}{{ profile.full_name }}{% else %}Giorgos Panayiotis Michael{% endif %}</h1><p>{% if profile %}DOB {{ profile.birth_date|date:"d/m/Y" }}{% endif %} · Ενημέρωση {{ today|date:"d/m/Y" }}</p></div><div class="doctor-badge">Read-only view</div></header>
+<section class="doctor-summary-grid">
+<div><span>Σήμερα γεύματα</span><strong>{{ today_stats.meal_count }}</strong></div><div><span>Σήμερα ml</span><strong>{{ today_stats.consumed_ml }}</strong></div><div><span>Σήμερα γλυκόζες</span><strong>{{ today_stats.glucose_count }}</strong></div><div><span>7ημ. μ.ό. γλυκόζης</span><strong>{% if glucose_avg_7 != None %}{{ glucose_avg_7 }}{% else %}—{% endif %}</strong></div>
+</section>
+{% if profile and profile.current_feeding_plan %}<section class="doctor-section"><h2>🍼 Τρέχον πλάνο σίτισης</h2><p class="preline">{{ profile.current_feeding_plan }}</p></section>{% endif %}
+<section class="doctor-two-col">
+<div class="doctor-section"><h2>📏 Ανάπτυξη</h2>{% if latest_growth %}<p><strong>{{ latest_growth.date|date:"d/m/Y" }}</strong></p><p>Βάρος: {{ latest_growth.weight_kg|default:"—" }} kg {% if growth_bands.weight %}<span class="percentile-pill">{{ growth_bands.weight }}</span>{% endif %}</p><p>Μήκος: {{ latest_growth.length_cm|default:"—" }} cm {% if growth_bands.length %}<span class="percentile-pill">{{ growth_bands.length }}</span>{% endif %}</p><p>Κεφάλι: {{ latest_growth.head_cm|default:"—" }} cm {% if growth_bands.head %}<span class="percentile-pill">{{ growth_bands.head }}</span>{% endif %}</p>{% else %}<p>Χωρίς δεδομένα.</p>{% endif %}</div>
+<div class="doctor-section"><h2>🩸 Γλυκόζη 7 ημερών</h2><p>Μ.ό.: <strong>{% if glucose_avg_7 != None %}{{ glucose_avg_7 }} mg/dL{% else %}—{% endif %}</strong></p><p>Εύρος: {% if glucose_min_7 != None %}{{ glucose_min_7|floatformat:0 }}–{{ glucose_max_7|floatformat:0 }} mg/dL{% else %}—{% endif %}</p>{% if latest_glucose %}<p>Τελευταία: {{ latest_glucose.value|floatformat:"-1" }} mg/dL · {{ latest_glucose.date|date:"d/m" }} {{ latest_glucose.time|time:"H:i" }}</p>{% endif %}</div>
+</section>
+<section class="doctor-section"><h2>🍼 Feeding performance · 7 ημέρες</h2><div class="doctor-inline-stats"><span>Σύνολο <strong>{{ feeding_7.consumed_sum }} ml</strong></span><span>Μ.ό. γεύματος <strong>{{ feeding_7.avg_consumed|default:"—" }} ml</strong></span><span>% προσφερόμενου <strong>{{ feeding_7.intake_ratio|default:"—" }}%</strong></span><span>Πλήρη/μερικά <strong>{{ feeding_7.completed }}/{{ feeding_7.partial }}</strong></span></div></section>
+{% if medications_today %}<section class="doctor-section"><h2>💊 Σήμερα</h2>{% for item in medications_today %}<p>{{ item.time|time:"H:i" }} · <strong>{{ item.name }}</strong> · {{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }}</p>{% endfor %}</section>{% endif %}
+{% if symptoms_7 %}<section class="doctor-section"><h2>🌡️ Πρόσφατα συμπτώματα</h2>{% for item in symptoms_7 %}<p>{{ item.date|date:"d/m" }} {{ item.time|time:"H:i" }} · <strong>{{ item.symptom }}</strong> · {{ item.get_severity_display }} · {{ item.get_relation_to_feed_display }}</p>{% endfor %}</section>{% endif %}
+<section class="doctor-two-col">{% if upcoming_appointments %}<div class="doctor-section"><h2>🩺 Ραντεβού</h2>{% for item in upcoming_appointments %}<p>{{ item.date|date:"d/m/Y" }} {{ item.time|time:"H:i" }} · {{ item.doctor }} · {{ item.purpose }}</p>{% endfor %}</div>{% endif %}{% if vaccines %}<div class="doctor-section"><h2>💉 Πρόσφατα εμβόλια</h2>{% for item in vaccines %}<p>{{ item.date|date:"d/m/Y" }} · {{ item.name }} {{ item.dose_label }}</p>{% endfor %}</div>{% endif %}</section>
+<footer class="doctor-footer">Giorgos Health · Read-only clinical summary · Δεν αντικαθιστά τον ιατρικό φάκελο.</footer>
+</article></div>
+{% endblock %}

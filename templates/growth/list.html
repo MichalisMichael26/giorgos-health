@@ -6,7 +6,10 @@
         <h1>📏 Ανάπτυξη</h1>
         <p class="muted">Βάρος, μήκος και περίμετρος κεφαλής.</p>
     </div>
-    <a class="btn primary" href="{% url 'growth_create' %}">+ Νέα μέτρηση</a>
+    <div class="page-actions">
+        <a class="btn secondary" href="{% url 'growth_percentiles' %}">📈 WHO Percentiles</a>
+        <a class="btn primary" href="{% url 'growth_create' %}">+ Νέα μέτρηση</a>
+    </div>
 </div>
 
 <div class="panel table-wrap">

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Εμβόλια{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1>💉 Εμβόλια</h1><p class="muted">Ιστορικό εμβολιασμών, επόμενες δόσεις και reminders.</p></div>
+    <a class="btn primary" href="{% url 'vaccine_create' %}">+ Νέο εμβόλιο</a>
+</div>
+<div class="panel table-wrap">
+<table class="responsive-table">
+<thead><tr><th>Ημερομηνία</th><th>Εμβόλιο</th><th>Δόση</th><th>Επόμενη</th><th>Reminder</th><th></th></tr></thead>
+<tbody>
+{% for item in vaccines %}
+<tr>
+<td data-label="Ημερομηνία">{{ item.date|date:"d/m/Y" }}</td>
+<td data-label="Εμβόλιο"><strong>{{ item.name }}</strong></td>
+<td data-label="Δόση">{{ item.dose_label|default:"—" }}</td>
+<td data-label="Επόμενη">{% if item.next_date %}{{ item.next_date|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+<td data-label="Reminder">{% if item.next_date %}{{ item.reminder_days_before }} ημέρες πριν{% else %}—{% endif %}</td>
+<td data-label="Ενέργειες" class="row-actions"><a class="mini-action" href="{% url 'vaccine_edit' item.pk %}">Edit</a><a class="mini-action danger-link" href="{% url 'vaccine_delete' item.pk %}">Delete</a></td>
+</tr>
+{% empty %}<tr><td colspan="6">Δεν υπάρχουν εμβόλια.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Backup & Export{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>💾 Backup / Export</h1><p class="muted">Κατέβασε όλα τα δεδομένα σου σε μορφή που μπορείς να κρατήσεις εκτός app.</p></div></div>
+<div class="export-grid">
+<a class="export-card" href="{% url 'export_zip' %}"><span>🗜️</span><div><strong>Πλήρες Backup ZIP</strong><p>JSON + Excel + όλα τα ανεβασμένα έγγραφα.</p></div><b>Λήψη</b></a>
+<a class="export-card" href="{% url 'export_excel' %}"><span>📊</span><div><strong>Excel</strong><p>Ξεχωριστό sheet για κάθε κατηγορία δεδομένων.</p></div><b>Λήψη</b></a>
+<a class="export-card" href="{% url 'export_pdf' %}"><span>📄</span><div><strong>PDF</strong><p>Εκτυπώσιμη πλήρης αναφορά με τα καταχωρημένα δεδομένα.</p></div><b>Λήψη</b></a>
+</div>
+<section class="panel backup-counts"><h2>Τι υπάρχει τώρα στο app</h2><div><span>🍼 {{ counts.meals }} γεύματα</span><span>🩸 {{ counts.glucose }} γλυκόζες</span><span>📏 {{ counts.growth }} μετρήσεις ανάπτυξης</span><span>📁 {{ counts.documents }} έγγραφα</span><span>🧾 {{ counts.audit }} audit entries</span></div></section>
+{% endblock %}

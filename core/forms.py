@@ -234,6 +234,7 @@ class ChildProfileForm(forms.ModelForm):
         model = ChildProfile
         fields = [
             "name",
+            "full_name",
             "birth_date",
             "clinician_target_min_ml",
             "clinician_target_max_ml",

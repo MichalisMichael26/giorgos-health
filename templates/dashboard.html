@@ -45,6 +45,40 @@
     </div>
 </section>
 
+<section class="panel comparison-panel">
+    <div class="panel-head">
+        <div>
+            <h2>📈 Σύγκριση ημερών</h2>
+            <p class="muted">Σήμερα σε σχέση με χθες και τον μέσο όρο 7 ημερών.</p>
+        </div>
+        <a href="{% url 'feeding_performance' %}">Feeding performance</a>
+    </div>
+    <div class="comparison-grid">
+        <div class="comparison-card">
+            <span>💧 ml σήμερα</span>
+            <strong>{{ day_comparison.today.consumed_ml }} ml</strong>
+            <small class="{% if day_comparison.ml_delta > 0 %}delta-up{% elif day_comparison.ml_delta < 0 %}delta-down{% endif %}">
+                {% if day_comparison.ml_delta > 0 %}+{% endif %}{{ day_comparison.ml_delta }} ml vs χθες
+            </small>
+        </div>
+        <div class="comparison-card">
+            <span>🍼 Γεύματα</span>
+            <strong>{{ day_comparison.today.meal_count }}</strong>
+            <small>{% if day_comparison.meal_delta > 0 %}+{% endif %}{{ day_comparison.meal_delta }} vs χθες</small>
+        </div>
+        <div class="comparison-card">
+            <span>🩸 Μετρήσεις</span>
+            <strong>{{ day_comparison.today.glucose_count }}</strong>
+            <small>{% if day_comparison.glucose_count_delta > 0 %}+{% endif %}{{ day_comparison.glucose_count_delta }} vs χθες</small>
+        </div>
+        <div class="comparison-card">
+            <span>7ήμερος μ.ό.</span>
+            <strong>{{ day_comparison.seven_day_avg_ml }} ml/ημέρα</strong>
+            <small>{% if day_comparison.seven_day_glucose_avg != None %}Μ.ό. γλυκόζης {{ day_comparison.seven_day_glucose_avg }} mg/dL{% else %}Χωρίς μετρήσεις γλυκόζης{% endif %}</small>
+        </div>
+    </div>
+</section>
+
 <section class="panel milk-guide-panel">
     <div class="panel-head">
         <div>
@@ -128,6 +162,26 @@
         </p>
     </div>
 </section>
+
+{% if vaccine_reminders %}
+<section class="panel vaccine-reminder-panel">
+    <div class="panel-head">
+        <h2>💉 Υπενθυμίσεις εμβολίων</h2>
+        <a href="{% url 'vaccine_list' %}">Όλα</a>
+    </div>
+    <div class="reminder-list">
+        {% for item in vaccine_reminders %}
+        <a href="{% url 'vaccine_edit' item.object.pk %}" class="reminder-item">
+            <div>
+                <strong>{{ item.label }} · {{ item.object.name }}</strong>
+                <span>{% if item.object.dose_label %}{{ item.object.dose_label }} · {% endif %}{{ item.object.next_date|date:"d/m/Y" }}</span>
+            </div>
+            <span>›</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 
 {% if reminder_appointments %}
 <section class="panel reminder-panel">
@@ -247,6 +301,8 @@
         <a href="{% url 'growth_create' %}"><span>📏</span><strong>Ανάπτυξη</strong></a>
         <a href="{% url 'history' %}"><span>📅</span><strong>Ιστορικό</strong></a>
         <a href="{% url 'report_24h_preview' %}"><span>📄</span><strong>24ωρο report</strong></a>
+        <a href="{% url 'doctor_view' %}"><span>👨‍⚕️</span><strong>Doctor view</strong></a>
+        <a href="{% url 'emergency_card' %}"><span>🆘</span><strong>Emergency</strong></a>
     </div>
 </section>
 
