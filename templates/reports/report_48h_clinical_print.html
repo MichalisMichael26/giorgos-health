@@ -1,0 +1,646 @@
+{% load static %}
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>48ωρος Κλινικός Φάκελος · Giorgos Health</title>
+    <style>
+        :root {
+            --ink: #1d2940;
+            --muted: #67748b;
+            --line: #dce3ee;
+            --soft: #f5f8fc;
+            --soft2: #eef4fb;
+            --warn: #fff7e7;
+            --danger-soft: #fff1f0;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #eef3f9;
+            color: var(--ink);
+            font-family: Arial, "DejaVu Sans", sans-serif;
+            font-size: 13px;
+            line-height: 1.42;
+        }
+        .toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 18px;
+            background: rgba(255,255,255,.96);
+            border-bottom: 1px solid var(--line);
+        }
+        .toolbar-actions { display: flex; gap: 8px; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 9px 14px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: white;
+            color: var(--ink);
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn.primary {
+            background: var(--ink);
+            color: white;
+            border-color: var(--ink);
+        }
+        .sheet {
+            width: min(1120px, calc(100% - 28px));
+            margin: 20px auto 40px;
+            padding: 28px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 18px 50px rgba(31,55,85,.10);
+        }
+        .report-head {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 18px;
+            align-items: center;
+            padding-bottom: 18px;
+            border-bottom: 2px solid var(--ink);
+        }
+        .logo {
+            width: 66px;
+            height: 66px;
+            object-fit: contain;
+        }
+        .report-head h1 {
+            margin: 0 0 4px;
+            font-size: 25px;
+        }
+        .report-head p { margin: 2px 0; color: var(--muted); }
+        .report-badge {
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: var(--soft);
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .critical-grid, .summary-grid, .identity-grid {
+            display: grid;
+            gap: 10px;
+        }
+        .identity-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin-top: 16px;
+        }
+        .summary-grid {
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            margin: 16px 0;
+        }
+        .critical-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .card {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 11px 12px;
+            background: var(--soft);
+            min-width: 0;
+        }
+        .card span, .metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .card strong { font-size: 14px; }
+        .metric {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        .metric strong { display: block; font-size: 18px; }
+        .metric small { color: var(--muted); }
+        .alert-card {
+            border: 1px solid #ecc9c6;
+            background: var(--danger-soft);
+        }
+        .warning-card {
+            border: 1px solid #eed8a7;
+            background: var(--warn);
+        }
+        .section {
+            margin-top: 22px;
+            break-inside: avoid-page;
+        }
+        .section.allow-break { break-inside: auto; }
+        .section h2 {
+            margin: 0 0 9px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--line);
+            font-size: 17px;
+        }
+        .section-note {
+            margin: -3px 0 10px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+        .preline { white-space: pre-line; }
+        .table-wrap { width: 100%; overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        th, td {
+            border: 1px solid var(--line);
+            padding: 6px 7px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: var(--soft2);
+            font-weight: 800;
+        }
+        tr { break-inside: avoid; }
+        .empty {
+            color: var(--muted);
+            font-style: italic;
+            padding: 8px 0;
+        }
+        .rules {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .rule {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            padding: 5px 8px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: white;
+            font-size: 11px;
+        }
+        .footer {
+            margin-top: 24px;
+            padding-top: 10px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 10px;
+        }
+        @media (max-width: 850px) {
+            .identity-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+            .summary-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+            .critical-grid { grid-template-columns: 1fr; }
+            .report-head { grid-template-columns: auto 1fr; }
+            .report-badge { grid-column: 1 / -1; width: fit-content; }
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+            body {
+                background: white;
+                font-size: 10pt;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .toolbar { display: none !important; }
+            .sheet {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            .report-head h1 { font-size: 19pt; }
+            .logo { width: 48px; height: 48px; }
+            .summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .identity-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .critical-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .section { margin-top: 13px; }
+            .section h2 { font-size: 12pt; }
+            table { font-size: 8pt; }
+            th, td { padding: 4px 5px; }
+            .card, .metric { padding: 7px 8px; }
+            a { color: inherit; text-decoration: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <a class="btn" href="{% url 'dashboard' %}">← Αρχική</a>
+    <div class="toolbar-actions">
+        <button class="btn primary" type="button" onclick="window.print()">🖨️ Εκτύπωση / Αποθήκευση PDF</button>
+    </div>
+</div>
+
+<main class="sheet">
+    <header class="report-head">
+        <img class="logo" src="{% static 'images/logo.png' %}" alt="Giorgos Health">
+        <div>
+            <h1>48ωρος Κλινικός Φάκελος</h1>
+            <p><strong>{{ profile.full_name }}</strong> · DOB {{ profile.birth_date|date:"d/m/Y" }}</p>
+            <p>{{ start_dt|date:"d/m/Y H:i" }} – {{ end_dt|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div class="report-badge">Giorgos Health</div>
+    </header>
+
+    <section class="identity-grid">
+        <div class="card">
+            <span>Ηλικία</span>
+            <strong>{{ age.display }}</strong>
+        </div>
+        <div class="card">
+            <span>Τελευταίο βάρος</span>
+            <strong>{% if latest_growth and latest_growth.weight_kg %}{{ latest_growth.weight_kg }} kg{% else %}—{% endif %}</strong>
+            {% if latest_growth %}<small>{{ latest_growth.date|date:"d/m/Y" }}</small>{% endif %}
+        </div>
+        <div class="card">
+            <span>Μήκος</span>
+            <strong>{% if latest_growth and latest_growth.length_cm %}{{ latest_growth.length_cm }} cm{% else %}—{% endif %}</strong>
+        </div>
+        <div class="card">
+            <span>Περίμετρος κεφαλής</span>
+            <strong>{% if latest_growth and latest_growth.head_cm %}{{ latest_growth.head_cm }} cm{% else %}—{% endif %}</strong>
+        </div>
+    </section>
+
+    <section class="summary-grid">
+        <div class="metric">
+            <span>Γεύματα 48ώρου</span>
+            <strong>{{ meals|length }}</strong>
+            <small>{{ total_ml }} ml ήπιε / {{ total_offered_ml }} ml προσφέρθηκαν</small>
+        </div>
+        <div class="metric">
+            <span>Maxijul · εκτ.</span>
+            <strong>{{ maxijul_48h.total_scoops|floatformat:"-2" }}</strong>
+            <small>scoops · ≈ {{ maxijul_48h.kcal|floatformat:"-1" }} kcal</small>
+        </div>
+        <div class="metric">
+            <span>Γλυκόζες</span>
+            <strong>{{ glucose|length }}</strong>
+            <small>{% if glucose_avg != None %}μ.ό. {{ glucose_avg }} mg/dL{% else %}—{% endif %}</small>
+        </div>
+        <div class="metric">
+            <span>Εύρος γλυκόζης</span>
+            <strong>{% if glucose_min != None %}{{ glucose_min|floatformat:"-1" }}–{{ glucose_max|floatformat:"-1" }}{% else %}—{% endif %}</strong>
+            <small>mg/dL</small>
+        </div>
+        <div class="metric">
+            <span>Φάρμακα / συμπλ.</span>
+            <strong>{{ medications|length }}</strong>
+            <small>καταχωρήσεις 48ώρου</small>
+        </div>
+        <div class="metric">
+            <span>Πάνες</span>
+            <strong>{{ diapers|length }}</strong>
+            <small>{{ wet_diapers }} με ούρα · {{ stool_diapers }} με κένωση</small>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>⚠️ Βασικές ιατρικές πληροφορίες</h2>
+        <div class="critical-grid">
+            <div class="card alert-card">
+                <span>Γνωστές αλλεργίες</span>
+                <strong class="preline">{% if profile.known_allergies %}{{ profile.known_allergies }}{% else %}Δεν έχουν καταχωρηθεί γνωστές αλλεργίες.{% endif %}</strong>
+            </div>
+            <div class="card warning-card">
+                <span>Βασικές ιατρικές οδηγίες</span>
+                <strong class="preline">{% if profile.emergency_instructions %}{{ profile.emergency_instructions }}{% else %}Δεν έχουν καταχωρηθεί ειδικές οδηγίες.{% endif %}</strong>
+            </div>
+            <div class="card">
+                <span>Τρέχον πλάνο σίτισης</span>
+                <strong class="preline">{% if profile.current_feeding_plan %}{{ profile.current_feeding_plan }}{% else %}Δεν έχει καταχωρηθεί κείμενο πλάνου.{% endif %}</strong>
+                <div style="margin-top:7px; color:var(--muted)">
+                    Ρύθμιση Maxijul: {% if profile.maxijul_plan_active %}ενεργή{% else %}μη ενεργή{% endif %}
+                    · {{ profile.planned_maxijul_scoops_per_feed|floatformat:"-2" }} scoop/γεύμα
+                    <br>
+                    Στόχος με Maxijul:
+                    {% if profile.target_with_maxijul_min_ml != None and profile.target_with_maxijul_max_ml != None %}
+                        {{ profile.target_with_maxijul_min_ml }}–{{ profile.target_with_maxijul_max_ml }} ml/24ωρο
+                    {% elif profile.target_with_maxijul_min_ml != None %}
+                        {{ profile.target_with_maxijul_min_ml }} ml/24ωρο
+                    {% elif profile.target_with_maxijul_max_ml != None %}
+                        {{ profile.target_with_maxijul_max_ml }} ml/24ωρο
+                    {% else %}δεν έχει καταχωρηθεί{% endif %}
+                    <br>
+                    Στόχος χωρίς Maxijul:
+                    {% if profile.target_without_maxijul_min_ml != None and profile.target_without_maxijul_max_ml != None %}
+                        {{ profile.target_without_maxijul_min_ml }}–{{ profile.target_without_maxijul_max_ml }} ml/24ωρο
+                    {% elif profile.target_without_maxijul_min_ml != None %}
+                        {{ profile.target_without_maxijul_min_ml }} ml/24ωρο
+                    {% elif profile.target_without_maxijul_max_ml != None %}
+                        {{ profile.target_without_maxijul_max_ml }} ml/24ωρο
+                    {% else %}δεν έχει καταχωρηθεί{% endif %}
+                </div>
+            </div>
+            <div class="card">
+                <span>Θεράποντες ιατροί</span>
+                <strong class="preline">{{ profile.treating_doctors|default:"—" }}</strong>
+                {% if profile.dr_savvas_phone or profile.dr_grafakou_phone %}
+                <div style="margin-top:7px; color:var(--muted)">
+                    {% if profile.dr_savvas_phone %}Δρ Σάββας: {{ profile.dr_savvas_phone }}{% endif %}
+                    {% if profile.dr_savvas_phone and profile.dr_grafakou_phone %}<br>{% endif %}
+                    {% if profile.dr_grafakou_phone %}Δρ Γραφάκου: {{ profile.dr_grafakou_phone }}{% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if profile.father_phone or profile.mother_phone or profile.emergency_contacts %}
+        <div class="card" style="margin-top:10px">
+            <span>Επικοινωνίες</span>
+            <strong>
+                {% if profile.father_phone %}Μπαμπάς: {{ profile.father_phone }}{% endif %}
+                {% if profile.father_phone and profile.mother_phone %} · {% endif %}
+                {% if profile.mother_phone %}Μαμά: {{ profile.mother_phone }}{% endif %}
+            </strong>
+            {% if profile.emergency_contacts %}<div class="preline" style="margin-top:5px">{{ profile.emergency_contacts }}</div>{% endif %}
+        </div>
+        {% endif %}
+
+        <div style="margin-top:10px">
+            <strong>Καταχωρημένοι περιορισμοί / κανόνες αποφυγής:</strong>
+            {% if safety_rules %}
+            <div class="rules" style="margin-top:6px">
+                {% for rule in safety_rules %}
+                <span class="rule">
+                    <strong>{{ rule.term }}</strong> · {{ rule.get_guidance_display }}
+                    {% if rule.note %} · {{ rule.note }}{% endif %}
+                </span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty">Δεν υπάρχουν ενεργοί κανόνες.</div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="section allow-break">
+        <h2>🍼 Γεύματα τελευταίων 48 ωρών</h2>
+        <p class="section-note">Οι θερμίδες Maxijul είναι εκτίμηση βάσει των καταχωρημένων scoops και της ποσότητας που καταναλώθηκε.</p>
+        {% if meals %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ημ/νία</th><th>Ώρα</th><th>Προσφέρθηκαν</th><th>Ήπιε</th>
+                        <th>Formula</th><th>Maxijul</th><th>Κατάσταση</th><th>Σημειώσεις</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in meals %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}</td>
+                        <td>{% if item.actual_time %}{{ item.actual_time|time:"H:i" }}{% else %}{{ item.scheduled_time|time:"H:i" }}{% endif %}</td>
+                        <td>{% if item.offered_ml != None %}{{ item.offered_ml }} ml{% else %}—{% endif %}</td>
+                        <td>{% if item.consumed_ml != None %}<strong>{{ item.consumed_ml }} ml</strong>{% else %}—{% endif %}</td>
+                        <td>{{ item.formula|default:"—" }}</td>
+                        <td>{% if item.supplement %}{{ item.supplement }} scoop{% else %}—{% endif %}</td>
+                        <td>{{ item.get_status_display }}</td>
+                        <td>{{ item.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">Δεν υπάρχουν γεύματα στο τελευταίο 48ωρο.</div>
+        {% endif %}
+    </section>
+
+    <section class="section allow-break">
+        <h2>🩸 Γλυκόζη τελευταίων 48 ωρών</h2>
+        {% if glucose %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Τιμή</th><th>Σχέση με γεύμα</th><th>Σημειώσεις</th></tr></thead>
+                <tbody>
+                {% for item in glucose %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}</td>
+                        <td>{{ item.time|time:"H:i" }}</td>
+                        <td><strong>{{ item.value|floatformat:"-1" }} mg/dL</strong></td>
+                        <td>{{ item.get_context_display }}</td>
+                        <td>{{ item.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">Δεν υπάρχουν μετρήσεις γλυκόζης στο τελευταίο 48ωρο.</div>
+        {% endif %}
+    </section>
+
+    <section class="section allow-break">
+        <h2>💊 Φάρμακα / συμπληρώματα τελευταίων 48 ωρών</h2>
+        {% if medications %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Όνομα</th><th>Ποσότητα</th><th>Σημειώσεις</th></tr></thead>
+                <tbody>
+                {% for item in medications %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}</td>
+                        <td>{{ item.time|time:"H:i" }}</td>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td>{{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }}</td>
+                        <td>{{ item.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">Δεν υπάρχουν καταχωρήσεις φαρμάκων/συμπληρωμάτων στο τελευταίο 48ωρο.</div>
+        {% endif %}
+    </section>
+
+    <section class="section allow-break">
+        <h2>🌡️ Συμπτώματα / επεισόδια τελευταίων 48 ωρών</h2>
+        {% if symptoms %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Σύμπτωμα</th><th>Ένταση</th><th>Σχέση με γεύμα</th><th>Σημειώσεις</th></tr></thead>
+                <tbody>
+                {% for item in symptoms %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}</td>
+                        <td>{{ item.time|time:"H:i" }}</td>
+                        <td><strong>{{ item.symptom }}</strong></td>
+                        <td>{{ item.get_severity_display }}</td>
+                        <td>{{ item.get_relation_to_feed_display }}</td>
+                        <td>{{ item.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">Δεν υπάρχουν καταχωρημένα συμπτώματα στο τελευταίο 48ωρο.</div>
+        {% endif %}
+    </section>
+
+    <section class="section allow-break">
+        <h2>👶 Πάνες / κενώσεις τελευταίων 48 ωρών</h2>
+        {% if diapers %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Τύπος</th><th>Χρώμα</th><th>Σύσταση</th><th>Σημειώσεις</th></tr></thead>
+                <tbody>
+                {% for item in diapers %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}</td>
+                        <td>{{ item.time|time:"H:i" }}</td>
+                        <td>{{ item.get_kind_display }}</td>
+                        <td>{{ item.stool_color|default:"—" }}</td>
+                        <td>{{ item.stool_consistency|default:"—" }}</td>
+                        <td>{{ item.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">Δεν υπάρχουν καταχωρήσεις πάνας στο τελευταίο 48ωρο.</div>
+        {% endif %}
+    </section>
+
+    <section class="section allow-break">
+        <h2>🧪 Εργαστηριακές εξετάσεις</h2>
+        {% if labs_48h %}
+        <p class="section-note">Καταχωρήσεις που εμπίπτουν στο τελευταίο 48ωρο.</p>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Εξέταση</th><th>Αποτέλεσμα</th><th>Μονάδα</th><th>Σημειώσεις</th></tr></thead>
+                <tbody>
+                {% for item in labs_48h %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}</td>
+                        <td>{% if item.time %}{{ item.time|time:"H:i" }}{% else %}—{% endif %}</td>
+                        <td><strong>{{ item.test_name }}</strong></td>
+                        <td>{{ item.value|floatformat:"-4" }}</td>
+                        <td>{{ item.unit|default:"—" }}</td>
+                        <td>{{ item.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% elif latest_lab_needs_fallback %}
+        <p class="section-note">Δεν υπάρχουν εξετάσεις στο τελευταίο 48ωρο. Εμφανίζεται το πιο πρόσφατο διαθέσιμο panel: {{ latest_lab_date|date:"d/m/Y" }}.</p>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Εξέταση</th><th>Αποτέλεσμα</th><th>Μονάδα</th><th>Σημειώσεις</th></tr></thead>
+                <tbody>
+                {% for item in latest_lab_panel %}
+                    <tr>
+                        <td><strong>{{ item.test_name }}</strong></td>
+                        <td>{{ item.value|floatformat:"-4" }}</td>
+                        <td>{{ item.unit|default:"—" }}</td>
+                        <td>{{ item.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">Δεν υπάρχουν καταχωρημένες εργαστηριακές εξετάσεις.</div>
+        {% endif %}
+    </section>
+
+    <section class="section allow-break">
+        <h2>📏 Ανάπτυξη / βάρος</h2>
+        {% if recent_growth %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Ημερομηνία</th><th>Βάρος</th><th>Μήκος</th><th>Κεφάλι</th><th>Σημειώσεις</th></tr></thead>
+                <tbody>
+                {% for item in recent_growth %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}</td>
+                        <td>{% if item.weight_kg %}<strong>{{ item.weight_kg }} kg</strong>{% else %}—{% endif %}</td>
+                        <td>{% if item.length_cm %}{{ item.length_cm }} cm{% else %}—{% endif %}</td>
+                        <td>{% if item.head_cm %}{{ item.head_cm }} cm{% else %}—{% endif %}</td>
+                        <td>{{ item.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">Δεν υπάρχουν μετρήσεις ανάπτυξης.</div>
+        {% endif %}
+    </section>
+
+    <section class="section allow-break">
+        <h2>💉 Εμβόλια</h2>
+        {% if vaccines %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Ημερομηνία</th><th>Εμβόλιο</th><th>Δόση</th><th>Επόμενη δόση</th><th>Σημειώσεις</th></tr></thead>
+                <tbody>
+                {% for item in vaccines %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}</td>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td>{{ item.dose_label|default:"—" }}</td>
+                        <td>{% if item.next_date %}{{ item.next_date|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                        <td>{{ item.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">Δεν υπάρχουν καταχωρημένα εμβόλια.</div>
+        {% endif %}
+    </section>
+
+    <section class="section allow-break">
+        <h2>🩺 Επόμενα ραντεβού</h2>
+        {% if upcoming_appointments %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Ημερομηνία</th><th>Ώρα</th><th>Ιατρός</th><th>Κλινική</th><th>Λόγος</th></tr></thead>
+                <tbody>
+                {% for item in upcoming_appointments %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}</td>
+                        <td>{{ item.time|time:"H:i" }}</td>
+                        <td>{{ item.doctor|default:"—" }}</td>
+                        <td>{{ item.clinic|default:"—" }}</td>
+                        <td>{{ item.purpose }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">Δεν υπάρχουν προγραμματισμένα ραντεβού.</div>
+        {% endif %}
+    </section>
+
+    <footer class="footer">
+        Δημιουργήθηκε από το Giorgos Health στις {{ end_dt|date:"d/m/Y H:i" }}.
+        Η αναφορά αναπαράγει τις καταχωρήσεις του συστήματος και δεν αποτελεί ανεξάρτητη ιατρική αξιολόγηση.
+    </footer>
+</main>
+
+</body>
+</html>

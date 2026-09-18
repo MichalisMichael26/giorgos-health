@@ -278,6 +278,11 @@ class ChildProfile(models.Model):
         decimal_places=1,
         default=95,
     )
+    known_allergies = models.TextField(
+        "Γνωστές αλλεργίες",
+        blank=True,
+        help_text="Καταχώρησε μόνο επιβεβαιωμένες/γνωστές αλλεργίες. Άφησέ το κενό αν δεν υπάρχουν.",
+    )
     emergency_instructions = models.TextField("Βασικές ιατρικές οδηγίες", blank=True)
     treating_doctors = models.TextField(
         "Θεράποντες ιατροί",

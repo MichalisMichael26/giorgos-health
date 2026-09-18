@@ -60,6 +60,7 @@ core/migrations/0011_seed_discharge_lab_results.py
 core/migrations/0012_mobile_push_notifications.py
 core/migrations/0013_automatic_health_reminders.py
 core/migrations/0014_dual_feeding_targets.py
+core/migrations/0015_childprofile_known_allergies.py
 core/migrations/__init__.py
 core/migrations/__pycache__/0001_initial.cpython-313.pyc
 core/migrations/__pycache__/0002_medications_appointments.cpython-313.pyc
@@ -140,6 +141,7 @@ templates/registration/login.html
 templates/reminders/list.html
 templates/reports/history_report_preview.html
 templates/reports/report_24h_preview.html
+templates/reports/report_48h_clinical_print.html
 templates/scanner/index.html
 templates/scanner/reviewed.html
 templates/search/results.html

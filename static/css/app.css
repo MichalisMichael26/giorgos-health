@@ -4823,3 +4823,14 @@ html.night .feeding-target-mini.active {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* 48h clinical print shortcut */
+.print-clinical-btn {
+    border-color: #b9c9dd;
+    background: #f7faff;
+}
+html.night .print-clinical-btn {
+    background: #243247;
+    border-color: #43546d;
+}

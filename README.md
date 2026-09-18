@@ -504,3 +504,25 @@ No meal-duration tracking was added.
 ## Feeding Performance template fix
 Fixed an unclosed `{% if milk_guide_today %}` block in `templates/feeding/performance.html`.
 This caused the Feeding Performance page to fail rendering after the dual Maxijul target update.
+
+
+## 48-hour clinical print report
+A new dashboard shortcut opens a print-friendly **48ωρος Κλινικός Φάκελος**.
+
+It includes:
+- child identity and age;
+- latest growth/weight and recent growth history;
+- known allergies (new ChildProfile field);
+- emergency instructions, current feeding plan, feeding targets and treating doctors;
+- active safety/restriction rules;
+- meals and Maxijul for the rolling last 48 hours;
+- glucose measurements and 48-hour min/max/average;
+- medications/supplements;
+- symptoms;
+- diapers/stools;
+- laboratory results from the 48-hour window, with the latest available lab panel as fallback;
+- full vaccine history;
+- upcoming medical appointments.
+
+The page is optimized for browser printing and **Print / Save as PDF**.
+It reproduces stored data and does not add clinical interpretation.

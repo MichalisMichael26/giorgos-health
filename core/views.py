@@ -30,6 +30,11 @@ from .models import (
     MedicationEntry,
     MedicalAppointment,
     ChildProfile,
+    VaccineEntry,
+    SymptomEntry,
+    DiaperEntry,
+    LabResult,
+    SafetyRule,
 )
 
 
@@ -976,6 +981,139 @@ def _rolling_24h_data():
         "glucose_min": glucose_min,
         "glucose_max": glucose_max,
     }
+
+
+
+def _events_in_window(queryset, start_dt, end_dt, time_getter):
+    items = []
+    for item in queryset:
+        event_time = time_getter(item)
+        if event_time is None:
+            continue
+        event_dt = _aware_event_datetime(item.date, event_time)
+        if start_dt <= event_dt <= end_dt:
+            items.append(item)
+    return items
+
+
+def _rolling_48h_clinical_data():
+    end_dt = timezone.localtime()
+    start_dt = end_dt - timedelta(hours=48)
+    date_start = start_dt.date()
+    date_end = end_dt.date()
+    today = end_dt.date()
+
+    profile = get_child_profile()
+
+    meals = _events_in_window(
+        MealEntry.objects.filter(date__range=(date_start, date_end)).order_by("date", "scheduled_time"),
+        start_dt,
+        end_dt,
+        lambda item: item.actual_time or item.scheduled_time,
+    )
+    glucose = _events_in_window(
+        GlucoseReading.objects.filter(date__range=(date_start, date_end)).order_by("date", "time"),
+        start_dt,
+        end_dt,
+        lambda item: item.time,
+    )
+    medications = _events_in_window(
+        MedicationEntry.objects.filter(date__range=(date_start, date_end)).order_by("date", "time"),
+        start_dt,
+        end_dt,
+        lambda item: item.time,
+    )
+    symptoms = _events_in_window(
+        SymptomEntry.objects.filter(date__range=(date_start, date_end)).order_by("date", "time"),
+        start_dt,
+        end_dt,
+        lambda item: item.time,
+    )
+    diapers = _events_in_window(
+        DiaperEntry.objects.filter(date__range=(date_start, date_end)).order_by("date", "time"),
+        start_dt,
+        end_dt,
+        lambda item: item.time,
+    )
+
+    # LabResult time can be absent. If it is absent, include the result when
+    # its calendar date falls inside the 48-hour report's date range.
+    labs_48h = []
+    for item in LabResult.objects.filter(date__range=(date_start, date_end)).order_by("date", "time", "test_name"):
+        if item.time:
+            event_dt = _aware_event_datetime(item.date, item.time)
+            if start_dt <= event_dt <= end_dt:
+                labs_48h.append(item)
+        else:
+            labs_48h.append(item)
+
+    latest_lab_date = LabResult.objects.order_by("-date").values_list("date", flat=True).first()
+    latest_lab_panel = (
+        list(LabResult.objects.filter(date=latest_lab_date).order_by("test_name"))
+        if latest_lab_date
+        else []
+    )
+
+    latest_growth = GrowthMeasurement.objects.first()
+    recent_growth = list(GrowthMeasurement.objects.order_by("-date")[:5])
+    vaccines = list(VaccineEntry.objects.order_by("-date", "name"))
+    safety_rules = list(SafetyRule.objects.filter(active=True).order_by("guidance", "term"))
+    upcoming_appointments = list(
+        MedicalAppointment.objects.filter(status="scheduled", date__gte=today)
+        .order_by("date", "time")[:8]
+    )
+
+    total_ml = sum(item.consumed_ml or 0 for item in meals)
+    total_offered_ml = sum(item.offered_ml or 0 for item in meals)
+    maxijul_48h = maxijul_day_summary(profile, meals)
+
+    glucose_values = [float(item.value) for item in glucose]
+    glucose_avg = round(sum(glucose_values) / len(glucose_values), 1) if glucose_values else None
+    glucose_min = min(glucose_values) if glucose_values else None
+    glucose_max = max(glucose_values) if glucose_values else None
+
+    wet_diapers = sum(1 for item in diapers if item.kind in {"wet", "both"})
+    stool_diapers = sum(1 for item in diapers if item.kind in {"stool", "both"})
+
+    age = child_age_details(profile.birth_date, today)
+
+    return {
+        "profile": profile,
+        "age": age,
+        "start_dt": start_dt,
+        "end_dt": end_dt,
+        "meals": meals,
+        "glucose": glucose,
+        "medications": medications,
+        "symptoms": symptoms,
+        "diapers": diapers,
+        "labs_48h": labs_48h,
+        "latest_lab_date": latest_lab_date,
+        "latest_lab_panel": latest_lab_panel,
+        "latest_lab_needs_fallback": bool(not labs_48h and latest_lab_panel),
+        "latest_growth": latest_growth,
+        "recent_growth": recent_growth,
+        "vaccines": vaccines,
+        "safety_rules": safety_rules,
+        "upcoming_appointments": upcoming_appointments,
+        "total_ml": total_ml,
+        "total_offered_ml": total_offered_ml,
+        "maxijul_48h": maxijul_48h,
+        "glucose_avg": glucose_avg,
+        "glucose_min": glucose_min,
+        "glucose_max": glucose_max,
+        "wet_diapers": wet_diapers,
+        "stool_diapers": stool_diapers,
+    }
+
+
+@login_required
+def report_48h_print(request):
+    return render(
+        request,
+        "reports/report_48h_clinical_print.html",
+        _rolling_48h_clinical_data(),
+    )
 
 
 @login_required

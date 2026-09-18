@@ -257,6 +257,7 @@ class ChildProfileForm(forms.ModelForm):
             "target_without_maxijul_min_ml",
             "target_without_maxijul_max_ml",
             "feeding_target_note",
+            "known_allergies",
             "maxijul_scoop_grams",
             "maxijul_kcal_per_100g",
             "maxijul_carbs_per_100g",
