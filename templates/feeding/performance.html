@@ -63,6 +63,7 @@
         Ο στόχος παραπάνω αφορά το σημερινό πλάνο και δεν εφαρμόζεται αναδρομικά στις ιστορικές ημέρες του γραφήματος.
     </p>
 </section>
+{% endif %}
 
 {{ chart_data|json_script:"feeding-chart-data" }}
 <section class="chart-card"><div class="chart-card-head"><div><span>📊</span><h2>Κατανάλωση ανά ημέρα</h2></div><small>{{ period_label }}</small></div><div class="chart-wrap"><canvas id="feedingMlChart"></canvas></div></section>

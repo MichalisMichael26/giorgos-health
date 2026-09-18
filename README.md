@@ -499,3 +499,8 @@ The native Android alarm schedule API reads the same `notify_minutes_before` val
 Meal entries in the existing daily History timeline now show Maxijul alongside formula when it was recorded.
 Example: `Formula: 5 · Maxijul: 1 scoop`.
 No meal-duration tracking was added.
+
+
+## Feeding Performance template fix
+Fixed an unclosed `{% if milk_guide_today %}` block in `templates/feeding/performance.html`.
+This caused the Feeding Performance page to fail rendering after the dual Maxijul target update.
