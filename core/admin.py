@@ -122,7 +122,16 @@ class LabResultAdmin(admin.ModelAdmin):
 
 @admin.register(HealthReminder)
 class HealthReminderAdmin(admin.ModelAdmin):
-    list_display = ("due_at", "reminder_type", "title", "active", "completed")
+    list_display = (
+        "due_at",
+        "reminder_type",
+        "title",
+        "notify_minutes_before",
+        "repeat_if_incomplete_minutes",
+        "push_notified_at",
+        "active",
+        "completed",
+    )
     list_filter = ("reminder_type", "active", "completed")
 
 

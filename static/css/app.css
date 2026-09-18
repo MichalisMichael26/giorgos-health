@@ -4225,3 +4225,178 @@ html.night .hospital-labs-table thead th {
         font-size: 10px;
     }
 }
+
+
+/* ===== Mobile push notifications ===== */
+.push-setup-panel {
+    display: grid;
+    gap: 14px;
+    border-color: #c8ddf7;
+    background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(239,247,255,.94));
+}
+
+.push-setup-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.push-setup-icon {
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 15px;
+    background: #e6f1ff;
+    font-size: 25px;
+}
+
+.push-setup-main h2 {
+    margin: 0 0 4px;
+    font-size: 18px;
+}
+
+.push-setup-main p {
+    margin: 0;
+    line-height: 1.45;
+}
+
+.push-status-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.push-status-line strong {
+    font-size: 13px;
+}
+
+.push-status-line small {
+    color: var(--muted);
+}
+
+.push-status-dot {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: #b8c1cf;
+    box-shadow: 0 0 0 4px rgba(184,193,207,.16);
+}
+
+.push-status-dot.active {
+    background: #34b36f;
+    box-shadow: 0 0 0 4px rgba(52,179,111,.16);
+}
+
+.push-setup-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.push-ios-note,
+.push-sound-note,
+.push-feedback {
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.push-ios-note {
+    display: grid;
+    gap: 3px;
+    background: #fff6df;
+    border: 1px solid #f0ddb0;
+}
+
+.push-sound-note {
+    background: rgba(255,255,255,.7);
+    border: 1px solid var(--line);
+    color: var(--muted);
+}
+
+.push-feedback {
+    background: #f3f6fa;
+}
+
+.push-feedback.success {
+    background: #ebf9f0;
+    color: #24734a;
+}
+
+.push-feedback.error {
+    background: #fff0f0;
+    color: #a33d3d;
+}
+
+.reminder-push-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 7px;
+}
+
+.reminder-push-meta small {
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: #eef4ff;
+    color: #526985;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+html.night .push-setup-panel {
+    background: linear-gradient(180deg, #203147, #1d2d42);
+    border-color: #395573;
+}
+
+html.night .push-setup-icon,
+html.night .reminder-push-meta small {
+    background: #2a425e;
+}
+
+html.night .push-sound-note {
+    background: rgba(20,31,46,.6);
+}
+
+html.night .push-ios-note {
+    background: #3c3320;
+    border-color: #66552d;
+}
+
+html.night .push-feedback.success {
+    background: #203c2b;
+    color: #bfe8ce;
+}
+
+html.night .push-feedback.error {
+    background: #44292c;
+    color: #f2c2c6;
+}
+
+@media (max-width: 720px) {
+    .push-setup-main {
+        align-items: flex-start;
+    }
+
+    .push-setup-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 21px;
+    }
+
+    .push-setup-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .push-setup-actions .btn:first-child {
+        grid-column: 1 / -1;
+    }
+}

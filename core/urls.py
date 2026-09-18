@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, advanced_views, mega_views
+from . import views, advanced_views, mega_views, push_views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
@@ -91,6 +91,13 @@ urlpatterns = [
     path("labs/<int:pk>/edit/", mega_views.lab_edit, name="lab_edit"),
     path("labs/<int:pk>/delete/", mega_views.lab_delete, name="lab_delete"),
     path("labs/chart/", mega_views.lab_chart, name="lab_chart"),
+
+    # Mobile push notifications
+    path("service-worker.js", push_views.service_worker, name="service_worker"),
+    path("push/config/", push_views.push_public_config, name="push_public_config"),
+    path("push/subscribe/", push_views.push_subscribe, name="push_subscribe"),
+    path("push/unsubscribe/", push_views.push_unsubscribe, name="push_unsubscribe"),
+    path("push/test/", push_views.push_test, name="push_test"),
 
     # Reminders
     path("reminders/", mega_views.reminder_list, name="reminder_list"),

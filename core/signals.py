@@ -10,10 +10,16 @@ from .models import AuditLog
 
 
 def _tracked_sender(sender):
+    sensitive_internal_models = {
+        "PushConfig",
+        "PushSubscription",
+        "PushDeliveryLog",
+    }
     return (
         getattr(sender, "_meta", None)
         and sender._meta.app_label == "core"
         and sender is not AuditLog
+        and sender.__name__ not in sensitive_internal_models
     )
 
 

@@ -184,6 +184,20 @@
 </script>
 
 
+
+{% if user.is_authenticated and not is_readonly_doctor %}
+<script>
+(function () {
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+            navigator.serviceWorker.register("{% url 'service_worker' %}", {scope: "/"}).catch(function () {});
+        });
+    }
+})();
+</script>
+{% endif %}
+
+
 {% if is_readonly_doctor %}
 <script>
 (function () {

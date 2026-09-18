@@ -347,3 +347,39 @@ Hospital Mode now shows the complete most-recent laboratory date as a compact ta
 
 The latest collection date is displayed once in the panel header. The table has an internal scroll area,
 a sticky header, links each test to its trend chart, and avoids automatic clinical colour-coding.
+
+
+## Mobile Web Push Notifications
+
+The app now supports real Web Push notifications for custom Health Reminders.
+
+### What it does
+- A parent can open `Υγεία → Υπενθυμίσεις` and tap `🔔 Ενεργοποίηση`.
+- The browser registers `/service-worker.js`.
+- A VAPID key pair is generated automatically once and stored in PostgreSQL.
+- The current device's push subscription is stored in PostgreSQL.
+- `python manage.py dispatch_push_reminders` sends due reminders to all active non-doctor devices.
+- Notifications request the device's normal notification sound and vibration (`silent: false`).
+- Tapping the notification opens `/reminders/`.
+- A reminder can notify at the exact time or 5/10/15/30/60 minutes before.
+- It can optionally send a second notification 5/10/15/30/60 minutes after the due time when the reminder is still incomplete.
+- A `🧪 Δοκιμή` button sends an immediate test push to the current user's subscribed devices.
+- Dr Savvas/read-only doctor accounts cannot subscribe or modify push settings.
+
+### iPhone / iPad
+On supported iOS/iPadOS versions, Web Push for web apps requires the site to be added to the Home Screen and opened from that Home Screen icon. The reminders page detects this and shows a setup note.
+
+### Server-side dispatch
+A Service Worker receives pushes, but the server still needs to *send* them at the right time.
+The project includes:
+- management command: `python manage.py dispatch_push_reminders`
+- example Render cron config: `render-push-cron.example.yaml`
+
+For near-minute reminders, schedule the command once per minute.
+
+The active `render.yaml` was intentionally not changed to add a paid/extra Cron service automatically. Configure the cron job in Render after deciding on the plan/billing.
+
+### Security
+- PushSubscription endpoint/keys and the VAPID private key are internal and are explicitly excluded from Audit Log snapshots.
+- They are not added to JSON/Excel/ZIP exports.
+- The VAPID private key is generated inside the deployed app and stored in PostgreSQL, not committed to GitHub.

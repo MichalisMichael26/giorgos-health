@@ -132,10 +132,43 @@ class LabResultForm(forms.ModelForm):
 class HealthReminderForm(forms.ModelForm):
     due_date = forms.DateField(label="Ημερομηνία", widget=DateInput())
     due_time = forms.TimeField(label="Ώρα", widget=TimeInput(format="%H:%M"))
+    notify_minutes_before = forms.TypedChoiceField(
+        label="Push ειδοποίηση",
+        coerce=int,
+        choices=[
+            (0, "Στην ακριβή ώρα"),
+            (5, "5 λεπτά πριν"),
+            (10, "10 λεπτά πριν"),
+            (15, "15 λεπτά πριν"),
+            (30, "30 λεπτά πριν"),
+            (60, "1 ώρα πριν"),
+        ],
+        initial=0,
+    )
+    repeat_if_incomplete_minutes = forms.TypedChoiceField(
+        label="2η ειδοποίηση αν δεν ολοκληρωθεί",
+        coerce=int,
+        choices=[
+            (0, "Όχι"),
+            (5, "5 λεπτά μετά"),
+            (10, "10 λεπτά μετά"),
+            (15, "15 λεπτά μετά"),
+            (30, "30 λεπτά μετά"),
+            (60, "1 ώρα μετά"),
+        ],
+        initial=0,
+    )
 
     class Meta:
         model = HealthReminder
-        fields = ["reminder_type", "title", "notes", "active"]
+        fields = [
+            "reminder_type",
+            "title",
+            "notify_minutes_before",
+            "repeat_if_incomplete_minutes",
+            "notes",
+            "active",
+        ]
         widgets = {"notes": forms.Textarea(attrs={"rows": 3})}
 
     def __init__(self, *args, **kwargs):
@@ -145,7 +178,16 @@ class HealthReminderForm(forms.ModelForm):
             local = timezone.localtime(instance.due_at)
             self.fields["due_date"].initial = local.date()
             self.fields["due_time"].initial = local.time().replace(second=0, microsecond=0)
-        self.order_fields(["reminder_type", "title", "due_date", "due_time", "notes", "active"])
+        self.order_fields([
+            "reminder_type",
+            "title",
+            "due_date",
+            "due_time",
+            "notify_minutes_before",
+            "repeat_if_incomplete_minutes",
+            "notes",
+            "active",
+        ])
 
 
 class DoctorQuestionForm(forms.ModelForm):

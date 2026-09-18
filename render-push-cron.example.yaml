@@ -1,0 +1,27 @@
+# OPTIONAL EXAMPLE ONLY.
+# Create a Render Cron Job that runs once per minute so push reminders can arrive
+# while the Giorgos Health web app is closed.
+#
+# Command:
+#   python manage.py dispatch_push_reminders
+#
+# Schedule:
+#   * * * * *
+#
+# The cron job must use the SAME PostgreSQL DATABASE_URL as the web service.
+services:
+  - type: cron
+    name: giorgos-health-push-dispatch
+    runtime: python
+    schedule: "* * * * *"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python manage.py dispatch_push_reminders"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: DEBUG
+        value: "False"
+      - key: VAPID_SUBJECT
+        value: "mailto:giorgos-health@example.com"

@@ -565,6 +565,18 @@ class HealthReminder(models.Model):
     title = models.CharField("Τίτλος", max_length=180)
     due_at = models.DateTimeField("Ημερομηνία / ώρα")
     notes = models.TextField("Σημειώσεις", blank=True)
+    notify_minutes_before = models.PositiveSmallIntegerField(
+        "Push ειδοποίηση (λεπτά πριν)",
+        default=0,
+        help_text="0 = στην ακριβή ώρα της υπενθύμισης.",
+    )
+    repeat_if_incomplete_minutes = models.PositiveSmallIntegerField(
+        "Επανάληψη αν δεν ολοκληρωθεί (λεπτά μετά)",
+        default=0,
+        help_text="0 = χωρίς δεύτερη ειδοποίηση.",
+    )
+    push_notified_at = models.DateTimeField("Πρώτη push ειδοποίηση", blank=True, null=True)
+    push_repeat_notified_at = models.DateTimeField("Επαναληπτική push ειδοποίηση", blank=True, null=True)
     active = models.BooleanField("Ενεργό", default=True)
     completed = models.BooleanField("Ολοκληρώθηκε", default=False)
     created_by = models.ForeignKey(
@@ -642,3 +654,66 @@ class BackupRun(models.Model):
 
     def __str__(self):
         return f"{self.created_at:%d/%m/%Y %H:%M} - {self.get_status_display()}"
+
+
+
+class PushSubscription(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="push_subscriptions",
+    )
+    endpoint = models.TextField("Push endpoint", unique=True)
+    p256dh = models.TextField("P256DH key")
+    auth = models.TextField("Auth key")
+    user_agent = models.TextField("Συσκευή / browser", blank=True)
+    active = models.BooleanField("Ενεργή", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_seen_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-last_seen_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.endpoint[:55]}"
+
+
+class PushConfig(models.Model):
+    private_key_pem = models.TextField("VAPID private key PEM")
+    public_key_b64 = models.TextField("VAPID public key")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Push configuration"
+        verbose_name_plural = "Push configuration"
+
+    def __str__(self):
+        return f"Push configuration {self.pk}"
+
+
+class PushDeliveryLog(models.Model):
+    reminder = models.ForeignKey(
+        HealthReminder,
+        on_delete=models.CASCADE,
+        related_name="push_delivery_logs",
+    )
+    subscription = models.ForeignKey(
+        PushSubscription,
+        on_delete=models.CASCADE,
+        related_name="delivery_logs",
+    )
+    delivery_kind = models.CharField(
+        "Τύπος αποστολής",
+        max_length=20,
+        choices=[("initial", "Αρχική"), ("repeat", "Επανάληψη")],
+    )
+    success = models.BooleanField("Επιτυχία", default=False)
+    status_code = models.IntegerField("HTTP status", blank=True, null=True)
+    error = models.TextField("Σφάλμα", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.reminder_id} - {self.delivery_kind} - {'OK' if self.success else 'FAILED'}"

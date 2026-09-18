@@ -2,43 +2,307 @@
 {% block title %}Υπενθυμίσεις{% endblock %}
 {% block content %}
 <div class="page-head">
-<div><h1>🔔 Υπενθυμίσεις</h1><p class="muted">Γεύμα, φάρμακο, εμβόλιο, μέτρηση ή εξέταση — οι ώρες ορίζονται από εσάς.</p></div>
-<a class="btn primary" href="{% url 'reminder_create' %}">+ Νέα υπενθύμιση</a>
+    <div>
+        <h1>🔔 Υπενθυμίσεις</h1>
+        <p class="muted">Γεύμα, φάρμακο, εμβόλιο, μέτρηση ή εξέταση — οι ώρες ορίζονται από εσάς.</p>
+    </div>
+    {% if not is_readonly_doctor %}
+    <a class="btn primary" href="{% url 'reminder_create' %}">+ Νέα υπενθύμιση</a>
+    {% endif %}
 </div>
-<section class="panel reminder-browser-panel">
-<div><strong>Ειδοποιήσεις browser</strong><p class="muted">Όσο το app είναι ανοικτό, μπορεί να εμφανίζει browser notification όταν μια υπενθύμιση είναι ληξιπρόθεσμη.</p></div>
-<button type="button" class="btn secondary" id="enable-notifications">Ενεργοποίηση</button>
+
+{% if not is_readonly_doctor %}
+<section class="panel push-setup-panel" id="push-setup-panel">
+    <div class="push-setup-main">
+        <div class="push-setup-icon">📱</div>
+        <div>
+            <h2>Ειδοποιήσεις στο κινητό</h2>
+            <p class="muted">
+                Οι υπενθυμίσεις μπορούν να έρχονται ως πραγματικά push notifications,
+                ακόμη κι όταν το Giorgos Health δεν είναι ανοικτό.
+            </p>
+            <div class="push-status-line">
+                <span class="push-status-dot" id="push-status-dot"></span>
+                <strong id="push-status-text">Έλεγχος συσκευής…</strong>
+                <small id="push-device-count">
+                    {% if push_device_count %}{{ push_device_count }} ενεργή/ές συσκευή/ές{% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="push-setup-actions">
+        <button type="button" class="btn primary" id="push-enable">🔔 Ενεργοποίηση</button>
+        <button type="button" class="btn secondary" id="push-test" hidden>🧪 Δοκιμή</button>
+        <button type="button" class="btn secondary" id="push-disable" hidden>Απενεργοποίηση</button>
+    </div>
+
+    <div class="push-ios-note" id="push-ios-note" hidden>
+        <strong>iPhone / iPad</strong>
+        <span>
+            Για push notifications, άνοιξε το Giorgos Health από το εικονίδιο που έχεις προσθέσει
+            στην Αρχική Οθόνη. Αν δεν το έχεις προσθέσει ακόμη: Safari → Share → Add to Home Screen.
+        </span>
+    </div>
+
+    <div class="push-sound-note">
+        🔊 Η ειδοποίηση ζητά τον κανονικό ήχο/δόνηση ειδοποιήσεων της συσκευής.
+        Το αν θα ακουστεί εξαρτάται από Silent/Focus/Notification settings του κινητού.
+    </div>
+
+    <div class="push-feedback" id="push-feedback" hidden></div>
 </section>
+{% endif %}
+
 <div class="reminder-page-list">
 {% for item in items %}
-<article class="reminder-card {% if item.completed %}reminder-completed{% elif item.due_at < now %}reminder-overdue{% endif %}" data-reminder-due="{{ item.due_at|date:'c' }}" data-reminder-title="{{ item.title }}">
-<div class="reminder-icon">{% if item.reminder_type == "meal" %}🍼{% elif item.reminder_type == "medication" %}💊{% elif item.reminder_type == "vaccine" %}💉{% elif item.reminder_type == "measurement" %}🩸{% elif item.reminder_type == "lab" %}🧪{% else %}🔔{% endif %}</div>
-<div class="reminder-body"><span>{{ item.get_reminder_type_display }}</span><h2>{{ item.title }}</h2><strong>{{ item.due_at|date:"d/m/Y H:i" }}</strong>{% if item.notes %}<p>{{ item.notes }}</p>{% endif %}</div>
-<div class="reminder-actions">
-{% if not item.completed %}<form method="post" action="{% url 'reminder_done' item.pk %}">{% csrf_token %}<button class="mini-action" type="submit">✓ Done</button></form>{% endif %}
-<a class="mini-action" href="{% url 'reminder_edit' item.pk %}">Edit</a>
-<a class="mini-action danger-link" href="{% url 'reminder_delete' item.pk %}">Delete</a>
-</div>
+<article class="reminder-card {% if item.completed %}reminder-completed{% elif item.due_at < now %}reminder-overdue{% endif %}">
+    <div class="reminder-icon">
+        {% if item.reminder_type == "meal" %}🍼
+        {% elif item.reminder_type == "medication" %}💊
+        {% elif item.reminder_type == "vaccine" %}💉
+        {% elif item.reminder_type == "measurement" %}🩸
+        {% elif item.reminder_type == "lab" %}🧪
+        {% else %}🔔{% endif %}
+    </div>
+
+    <div class="reminder-body">
+        <span>{{ item.get_reminder_type_display }}</span>
+        <h2>{{ item.title }}</h2>
+        <strong>{{ item.due_at|date:"d/m/Y H:i" }}</strong>
+
+        <div class="reminder-push-meta">
+            {% if item.notify_minutes_before %}
+                <small>🔔 {{ item.notify_minutes_before }}′ πριν</small>
+            {% else %}
+                <small>🔔 στην ακριβή ώρα</small>
+            {% endif %}
+
+            {% if item.repeat_if_incomplete_minutes %}
+                <small>↻ ξανά {{ item.repeat_if_incomplete_minutes }}′ μετά αν εκκρεμεί</small>
+            {% endif %}
+
+            {% if item.push_notified_at %}
+                <small>✓ push {{ item.push_notified_at|date:"d/m H:i" }}</small>
+            {% endif %}
+        </div>
+
+        {% if item.notes %}<p>{{ item.notes }}</p>{% endif %}
+    </div>
+
+    {% if not is_readonly_doctor %}
+    <div class="reminder-actions">
+        {% if not item.completed %}
+        <form method="post" action="{% url 'reminder_done' item.pk %}">
+            {% csrf_token %}
+            <button class="mini-action" type="submit">✓ Done</button>
+        </form>
+        {% endif %}
+        <a class="mini-action" href="{% url 'reminder_edit' item.pk %}">Edit</a>
+        <a class="mini-action danger-link" href="{% url 'reminder_delete' item.pk %}">Delete</a>
+    </div>
+    {% endif %}
 </article>
-{% empty %}<div class="panel empty-state"><div class="empty-icon">🔔</div><h2>Δεν υπάρχουν υπενθυμίσεις</h2></div>{% endfor %}
+{% empty %}
+<div class="panel empty-state">
+    <div class="empty-icon">🔔</div>
+    <h2>Δεν υπάρχουν υπενθυμίσεις</h2>
 </div>
+{% endfor %}
+</div>
+
+{% if not is_readonly_doctor %}
 <script>
-document.getElementById("enable-notifications").addEventListener("click", async function(){ if ("Notification" in window) await Notification.requestPermission(); });
-(function(){
- if (!("Notification" in window) || Notification.permission !== "granted") return;
- const seenKey = "giorgos-reminder-notified";
- let seen = {};
- try { seen = JSON.parse(localStorage.getItem(seenKey) || "{}"); } catch(e) {}
- const now = Date.now();
- document.querySelectorAll("[data-reminder-due]").forEach(function(el, idx){
-   const due = new Date(el.dataset.reminderDue).getTime();
-   const key = el.dataset.reminderDue + "|" + el.dataset.reminderTitle;
-   if (due <= now && !seen[key]) {
-      new Notification("Giorgos Health", {body: el.dataset.reminderTitle});
-      seen[key] = true;
-   }
- });
- try { localStorage.setItem(seenKey, JSON.stringify(seen)); } catch(e) {}
+(function () {
+    const enableButton = document.getElementById("push-enable");
+    const disableButton = document.getElementById("push-disable");
+    const testButton = document.getElementById("push-test");
+    const statusText = document.getElementById("push-status-text");
+    const statusDot = document.getElementById("push-status-dot");
+    const deviceCount = document.getElementById("push-device-count");
+    const feedback = document.getElementById("push-feedback");
+    const iosNote = document.getElementById("push-ios-note");
+
+    if (!enableButton) return;
+
+    function csrfToken() {
+        const name = "csrftoken=";
+        const parts = document.cookie.split(";");
+        for (const part of parts) {
+            const value = part.trim();
+            if (value.startsWith(name)) return decodeURIComponent(value.slice(name.length));
+        }
+        return "";
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = "=".repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+        const rawData = window.atob(base64);
+        return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+    }
+
+    function setFeedback(message, type) {
+        feedback.hidden = !message;
+        feedback.textContent = message || "";
+        feedback.className = "push-feedback " + (type || "");
+    }
+
+    function updateStatus(enabled, text, count) {
+        statusText.textContent = text;
+        statusDot.classList.toggle("active", enabled);
+        enableButton.hidden = enabled;
+        disableButton.hidden = !enabled;
+        testButton.hidden = !enabled;
+        if (typeof count === "number") {
+            deviceCount.textContent = count + " ενεργή/ές συσκευή/ές";
+        }
+    }
+
+    function isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent)
+            || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    }
+
+    function isStandalone() {
+        return window.matchMedia("(display-mode: standalone)").matches
+            || window.navigator.standalone === true;
+    }
+
+    async function getRegistration() {
+        return navigator.serviceWorker.register("{% url 'service_worker' %}", {scope: "/"})
+            .then(() => navigator.serviceWorker.ready);
+    }
+
+    async function postJson(url, payload) {
+        const response = await fetch(url, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken()
+            },
+            body: JSON.stringify(payload || {})
+        });
+
+        let data = {};
+        try { data = await response.json(); } catch (e) {}
+
+        if (!response.ok) {
+            throw new Error(data.message || data.error || "Η ενέργεια απέτυχε.");
+        }
+        return data;
+    }
+
+    async function refreshState() {
+        if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+            updateStatus(false, "Η συσκευή/browser δεν υποστηρίζει Web Push.");
+            enableButton.disabled = true;
+            return;
+        }
+
+        if (isIOS() && !isStandalone()) {
+            iosNote.hidden = false;
+            updateStatus(false, "Άνοιξε το Giorgos Health από την Αρχική Οθόνη.");
+            return;
+        }
+
+        try {
+            const registration = await getRegistration();
+            const subscription = await registration.pushManager.getSubscription();
+
+            if (subscription && Notification.permission === "granted") {
+                updateStatus(true, "Οι ειδοποιήσεις είναι ενεργές σε αυτή τη συσκευή.");
+            } else if (Notification.permission === "denied") {
+                updateStatus(false, "Οι ειδοποιήσεις έχουν αποκλειστεί από τις ρυθμίσεις του browser.");
+                enableButton.disabled = true;
+            } else {
+                updateStatus(false, "Οι ειδοποιήσεις δεν έχουν ενεργοποιηθεί σε αυτή τη συσκευή.");
+            }
+        } catch (error) {
+            updateStatus(false, "Δεν ήταν δυνατός ο έλεγχος των ειδοποιήσεων.");
+        }
+    }
+
+    enableButton.addEventListener("click", async function () {
+        setFeedback("", "");
+        enableButton.disabled = true;
+
+        try {
+            if (isIOS() && !isStandalone()) {
+                iosNote.hidden = false;
+                throw new Error("Σε iPhone/iPad πρόσθεσε πρώτα το Giorgos Health στην Αρχική Οθόνη και άνοιξέ το από εκεί.");
+            }
+
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                throw new Error("Δεν δόθηκε άδεια για ειδοποιήσεις.");
+            }
+
+            const configResponse = await fetch("{% url 'push_public_config' %}", {credentials: "same-origin"});
+            const config = await configResponse.json();
+
+            if (!config.enabled || !config.publicKey) {
+                throw new Error("Το push σύστημα δεν είναι διαθέσιμο.");
+            }
+
+            const registration = await getRegistration();
+            let subscription = await registration.pushManager.getSubscription();
+
+            if (!subscription) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(config.publicKey)
+                });
+            }
+
+            const saved = await postJson("{% url 'push_subscribe' %}", subscription.toJSON());
+            updateStatus(true, "Οι ειδοποιήσεις είναι ενεργές σε αυτή τη συσκευή.", saved.activeDevices);
+            setFeedback("✓ Η συσκευή συνδέθηκε. Πάτησε «Δοκιμή» για να ελέγξεις ήχο/ειδοποίηση.", "success");
+        } catch (error) {
+            setFeedback(error.message || "Δεν μπόρεσαν να ενεργοποιηθούν οι ειδοποιήσεις.", "error");
+        } finally {
+            enableButton.disabled = false;
+        }
+    });
+
+    disableButton.addEventListener("click", async function () {
+        setFeedback("", "");
+
+        try {
+            const registration = await getRegistration();
+            const subscription = await registration.pushManager.getSubscription();
+
+            if (subscription) {
+                const result = await postJson("{% url 'push_unsubscribe' %}", {
+                    endpoint: subscription.endpoint
+                });
+                await subscription.unsubscribe();
+                updateStatus(false, "Οι ειδοποιήσεις απενεργοποιήθηκαν σε αυτή τη συσκευή.", result.activeDevices);
+            } else {
+                updateStatus(false, "Δεν υπάρχει ενεργή συνδρομή σε αυτή τη συσκευή.");
+            }
+        } catch (error) {
+            setFeedback(error.message || "Η απενεργοποίηση απέτυχε.", "error");
+        }
+    });
+
+    testButton.addEventListener("click", async function () {
+        testButton.disabled = true;
+        setFeedback("Αποστολή δοκιμαστικής ειδοποίησης…", "");
+
+        try {
+            const result = await postJson("{% url 'push_test' %}", {});
+            setFeedback("✓ " + result.message, "success");
+        } catch (error) {
+            setFeedback(error.message || "Η δοκιμή απέτυχε.", "error");
+        } finally {
+            testButton.disabled = false;
+        }
+    });
+
+    refreshState();
 })();
 </script>
+{% endif %}
 {% endblock %}

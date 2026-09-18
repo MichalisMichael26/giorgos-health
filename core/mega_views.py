@@ -403,17 +403,48 @@ def lab_chart(request):
 def reminder_list(request):
     now = timezone.now()
     items = HealthReminder.objects.all()
-    return render(request, "reminders/list.html", {"items": items, "now": now})
+
+    push_device_count = 0
+    if not user_role(request.user) == "doctor_readonly":
+        from .models import PushSubscription
+        push_device_count = PushSubscription.objects.filter(
+            user=request.user,
+            active=True,
+        ).count()
+
+    return render(
+        request,
+        "reminders/list.html",
+        {
+            "items": items,
+            "now": now,
+            "push_device_count": push_device_count,
+        },
+    )
 
 
 def _save_reminder_form(form, request, instance=None):
+    previous = None
+    if instance and instance.pk:
+        previous = HealthReminder.objects.filter(pk=instance.pk).first()
+
     item = form.save(commit=False)
     due_date = form.cleaned_data["due_date"]
     due_time = form.cleaned_data["due_time"]
     naive = datetime.combine(due_date, due_time)
     item.due_at = timezone.make_aware(naive, timezone.get_current_timezone())
+
     if not instance:
         item.created_by = request.user
+
+    if previous and (
+        previous.due_at != item.due_at
+        or previous.notify_minutes_before != item.notify_minutes_before
+        or previous.repeat_if_incomplete_minutes != item.repeat_if_incomplete_minutes
+    ):
+        item.push_notified_at = None
+        item.push_repeat_notified_at = None
+
     item.save()
     return item
 
