@@ -292,3 +292,14 @@ Render environment variables:
 
 The password is deliberately not stored in GitHub/source code.
 The account is non-staff, non-superuser, and is assigned `doctor_readonly`.
+
+
+## Laboratory values imported from discharge summary
+Migration `0011_seed_discharge_lab_results.py` imports structured laboratory values from the discharge summary dated 16/09/2026:
+- admission laboratory table (12/09/2026)
+- blood gas values from 12/09/2026
+- blood gas values from 14/09/2026
+- repeat laboratory table from 16/09/2026
+- ammonia 69 μg/dL with a note that its exact collection date is not separately stated
+
+No reference ranges are invented. Units not printed in the discharge table are left blank.

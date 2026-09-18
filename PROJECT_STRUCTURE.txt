@@ -25,6 +25,7 @@ core/migrations/0007_structured_emergency_phones.py
 core/migrations/0008_lock_birth_date_and_appointment_order.py
 core/migrations/0009_daily_care_suite.py
 core/migrations/0010_seed_giorgos_vaccines.py
+core/migrations/0011_seed_discharge_lab_results.py
 core/migrations/__init__.py
 core/models.py
 core/signals.py
