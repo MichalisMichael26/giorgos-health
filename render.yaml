@@ -17,6 +17,12 @@ services:
         value: admin
       - key: DJANGO_SUPERUSER_PASSWORD
         sync: false
+      - key: DJANGO_DOCTOR_USERNAME
+        value: drsavvas
+      - key: DJANGO_DOCTOR_DISPLAY_NAME
+        value: "Δρ Σάββας Σάββα"
+      - key: DJANGO_DOCTOR_PASSWORD
+        sync: false
       - key: DATABASE_URL
         fromDatabase:
           name: giorgos-health-db

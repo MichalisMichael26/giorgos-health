@@ -273,3 +273,22 @@ This package adds:
 ### Camera/OCR notes
 
 The scanner page loads `html5-qrcode` and `Tesseract.js` from public CDNs in the browser. Camera access requires HTTPS and user permission. If a camera or online barcode lookup is unavailable, manual barcode and ingredient entry remain available.
+
+
+## Giorgos vaccination record seed
+Migration `0010_seed_giorgos_vaccines.py` inserts, without duplicating exact existing entries:
+- Hexyon — 1η δόση — 27/08/2026 — next date 27/10/2026
+- Prevenar 20 — 1η δόση — 27/08/2026 — next date 27/10/2026
+- Rotavirus — 1η δόση — 27/08/2026 — next date 27/10/2026
+
+Hexyon is stored as one combined vaccine entry with a note that it covers DTaP + IPV + Hib + Hep B.
+
+## Dr Savvas read-only account
+The build creates/updates a read-only doctor account only when `DJANGO_DOCTOR_PASSWORD` is present.
+Render environment variables:
+- `DJANGO_DOCTOR_USERNAME=drsavvas`
+- `DJANGO_DOCTOR_DISPLAY_NAME=Δρ Σάββας Σάββα`
+- `DJANGO_DOCTOR_PASSWORD=<secret set in Render>`
+
+The password is deliberately not stored in GitHub/source code.
+The account is non-staff, non-superuser, and is assigned `doctor_readonly`.

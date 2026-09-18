@@ -25,3 +25,36 @@ if password:
 else:
     print('DJANGO_SUPERUSER_PASSWORD is not set')
 "
+
+python manage.py shell -c "
+import os
+from django.contrib.auth import get_user_model
+from core.models import UserAccessProfile
+
+User = get_user_model()
+
+username = os.environ.get('DJANGO_DOCTOR_USERNAME', 'drsavvas')
+password = os.environ.get('DJANGO_DOCTOR_PASSWORD')
+display_name = os.environ.get('DJANGO_DOCTOR_DISPLAY_NAME', 'Δρ Σάββας Σάββα')
+
+if password:
+    doctor, created = User.objects.get_or_create(username=username)
+    doctor.is_staff = False
+    doctor.is_superuser = False
+    doctor.is_active = True
+    doctor.set_password(password)
+    doctor.save()
+
+    UserAccessProfile.objects.update_or_create(
+        user=doctor,
+        defaults={
+            'role': 'doctor_readonly',
+            'display_name': display_name,
+        },
+    )
+
+    print('Doctor read-only account configured successfully')
+else:
+    print('DJANGO_DOCTOR_PASSWORD is not set; doctor account was not created/updated')
+"
+
