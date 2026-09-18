@@ -6,7 +6,7 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from .audit import get_current_user
-from .models import AuditLog
+from .models import AuditLog, HealthReminder, MealEntry, MedicalAppointment
 
 
 def _tracked_sender(sender):
@@ -110,3 +110,39 @@ def audit_post_delete(sender, instance, **kwargs):
     before = snapshot(instance)
     changes = {key: {"old": value, "new": None} for key, value in before.items()}
     _write_log("delete", instance, changes)
+
+
+
+@receiver(post_save, sender=MealEntry)
+def sync_meal_automatic_reminders(sender, instance, **kwargs):
+    from .auto_reminders import (
+        sync_low_meal_reminder,
+        sync_meal_schedule_completion,
+    )
+
+    sync_meal_schedule_completion(instance)
+    sync_low_meal_reminder(instance)
+
+
+@receiver(post_delete, sender=MealEntry)
+def remove_meal_automatic_reminders(sender, instance, **kwargs):
+    HealthReminder.objects.filter(source_key=f"low-meal:{instance.pk}").delete()
+
+    if instance.scheduled_time:
+        schedule_key = (
+            f"meal-schedule:{instance.date.isoformat()}:"
+            f"{instance.scheduled_time.strftime('%H%M')}"
+        )
+        HealthReminder.objects.filter(source_key=schedule_key).update(completed=False)
+
+
+@receiver(post_save, sender=MedicalAppointment)
+def sync_appointment_automatic_reminder(sender, instance, **kwargs):
+    from .auto_reminders import sync_appointment_reminder
+
+    sync_appointment_reminder(instance)
+
+
+@receiver(post_delete, sender=MedicalAppointment)
+def remove_appointment_automatic_reminder(sender, instance, **kwargs):
+    HealthReminder.objects.filter(source_key=f"appointment:{instance.pk}").delete()

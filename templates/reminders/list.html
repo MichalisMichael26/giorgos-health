@@ -11,6 +11,44 @@
     {% endif %}
 </div>
 
+<section class="panel auto-reminder-rules">
+    <div class="auto-reminder-rules-head">
+        <div>
+            <h2>⚙️ Αυτόματες υπενθυμίσεις</h2>
+            <p class="muted">Οι παρακάτω κανόνες λειτουργούν χωρίς να δημιουργείς reminder με το χέρι.</p>
+        </div>
+        <span class="auto-rule-live">● Ενεργές</span>
+    </div>
+
+    <div class="auto-rule-grid">
+        <div class="auto-rule-card">
+            <span>🍼</span>
+            <div>
+                <strong>Γεύματα · 10′ πριν</strong>
+                <small>
+                    {% for t in fixed_meal_times %}{{ t }}{% if not forloop.last %} · {% endif %}{% endfor %}
+                </small>
+            </div>
+        </div>
+
+        <div class="auto-rule-card">
+            <span>📅</span>
+            <div>
+                <strong>Ραντεβού · 1 ημέρα πριν</strong>
+                <small>Στην ίδια ώρα με το προγραμματισμένο ραντεβού.</small>
+            </div>
+        </div>
+
+        <div class="auto-rule-card">
+            <span>🍼</span>
+            <div>
+                <strong>≤ 50 ml · επανέλεγχος σε 1 ώρα</strong>
+                <small>Δημιουργείται όταν καταχωρηθεί γεύμα 50 ml ή λιγότερο.</small>
+            </div>
+        </div>
+    </div>
+</section>
+
 {% if not is_readonly_doctor %}
 <section class="panel push-setup-panel" id="push-setup-panel">
     <div class="push-setup-main">
@@ -63,6 +101,7 @@
         {% elif item.reminder_type == "vaccine" %}💉
         {% elif item.reminder_type == "measurement" %}🩸
         {% elif item.reminder_type == "lab" %}🧪
+        {% elif item.reminder_type == "appointment" %}📅
         {% else %}🔔{% endif %}
     </div>
 
@@ -72,7 +111,9 @@
         <strong>{{ item.due_at|date:"d/m/Y H:i" }}</strong>
 
         <div class="reminder-push-meta">
-            {% if item.notify_minutes_before %}
+            {% if item.notify_minutes_before == 1440 %}
+                <small>🔔 1 ημέρα πριν</small>
+            {% elif item.notify_minutes_before %}
                 <small>🔔 {{ item.notify_minutes_before }}′ πριν</small>
             {% else %}
                 <small>🔔 στην ακριβή ώρα</small>
@@ -92,14 +133,24 @@
 
     {% if not is_readonly_doctor %}
     <div class="reminder-actions">
-        {% if not item.completed %}
-        <form method="post" action="{% url 'reminder_done' item.pk %}">
-            {% csrf_token %}
-            <button class="mini-action" type="submit">✓ Done</button>
-        </form>
+        {% if item.auto_generated %}
+            <span class="automatic-reminder-badge">⚙️ Αυτόματη</span>
+            {% if not item.completed %}
+            <form method="post" action="{% url 'reminder_done' item.pk %}">
+                {% csrf_token %}
+                <button class="mini-action" type="submit">✓ Done</button>
+            </form>
+            {% endif %}
+        {% else %}
+            {% if not item.completed %}
+            <form method="post" action="{% url 'reminder_done' item.pk %}">
+                {% csrf_token %}
+                <button class="mini-action" type="submit">✓ Done</button>
+            </form>
+            {% endif %}
+            <a class="mini-action" href="{% url 'reminder_edit' item.pk %}">Edit</a>
+            <a class="mini-action danger-link" href="{% url 'reminder_delete' item.pk %}">Delete</a>
         {% endif %}
-        <a class="mini-action" href="{% url 'reminder_edit' item.pk %}">Edit</a>
-        <a class="mini-action danger-link" href="{% url 'reminder_delete' item.pk %}">Delete</a>
     </div>
     {% endif %}
 </article>

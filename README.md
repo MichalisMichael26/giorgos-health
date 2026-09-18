@@ -402,3 +402,22 @@ The Test Push endpoint now distinguishes:
 - pre-network/key processing failures
 
 No push endpoint or subscription encryption key is returned to the browser.
+
+
+## Automatic reminder rules
+The app now creates/synchronizes these rules automatically:
+
+1. **Fixed feeding schedule** — push 10 minutes before:
+   `01:30, 04:30, 07:30, 10:30, 13:30, 16:30, 19:30, 22:30`.
+   The repetitive schedule rows are kept out of the main reminder-card list to avoid clutter.
+
+2. **Appointments** — push exactly 24 hours before the appointment, at the same clock time.
+   Existing and future scheduled appointments are synchronized automatically.
+
+3. **Low consumed meal rule** — this is a user-defined operational rule, not a medical threshold:
+   when a MealEntry is saved with `consumed_ml <= 50`, the app creates a one-time reminder
+   exactly 60 minutes after the actual meal time (falling back to scheduled time).
+   If that meal is later edited above 50 ml, the automatic follow-up reminder is removed.
+
+Automatic reminders have stable `source_key` identifiers so repeated syncs cannot create duplicates.
+The push dispatcher runs `sync_all_automatic_reminders()` before each dispatch.

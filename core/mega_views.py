@@ -402,7 +402,12 @@ def lab_chart(request):
 @login_required
 def reminder_list(request):
     now = timezone.now()
-    items = HealthReminder.objects.all()
+
+    # Fixed 8x/day feeding reminders run automatically in the background.
+    # Do not flood the page with 16 schedule rows (today + tomorrow).
+    items = HealthReminder.objects.exclude(
+        source_key__startswith="meal-schedule:"
+    )
 
     push_device_count = 0
     if not user_role(request.user) == "doctor_readonly":
@@ -419,6 +424,10 @@ def reminder_list(request):
             "items": items,
             "now": now,
             "push_device_count": push_device_count,
+            "fixed_meal_times": [
+                "01:30", "04:30", "07:30", "10:30",
+                "13:30", "16:30", "19:30", "22:30",
+            ],
         },
     )
 
@@ -465,6 +474,12 @@ def reminder_create(request):
 @login_required
 def reminder_edit(request, pk):
     item = get_object_or_404(HealthReminder, pk=pk)
+    if item.auto_generated:
+        messages.info(
+            request,
+            "Η υπενθύμιση δημιουργείται αυτόματα από το Giorgos Health και δεν χρειάζεται χειροκίνητη επεξεργασία.",
+        )
+        return redirect("reminder_list")
     form = HealthReminderForm(request.POST or None, instance=item)
     if form.is_valid():
         _save_reminder_form(form, request, item)
@@ -485,6 +500,12 @@ def reminder_done(request, pk):
 @login_required
 def reminder_delete(request, pk):
     item = get_object_or_404(HealthReminder, pk=pk)
+    if item.auto_generated:
+        messages.info(
+            request,
+            "Η υπενθύμιση είναι αυτόματη και διαχειρίζεται από το Giorgos Health.",
+        )
+        return redirect("reminder_list")
     if request.method == "POST":
         item.delete()
         messages.success(request, "Η υπενθύμιση διαγράφηκε.")

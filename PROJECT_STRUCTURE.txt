@@ -8,6 +8,7 @@ core/advanced_forms.py
 core/advanced_views.py
 core/apps.py
 core/audit.py
+core/auto_reminders.py
 core/backup_utils.py
 core/context_processors.py
 core/forms.py
@@ -15,6 +16,7 @@ core/management/__init__.py
 core/management/commands/__init__.py
 core/management/commands/cloud_backup.py
 core/management/commands/dispatch_push_reminders.py
+core/management/commands/sync_auto_reminders.py
 core/mega_forms.py
 core/mega_views.py
 core/migrations/0001_initial.py
@@ -29,6 +31,7 @@ core/migrations/0009_daily_care_suite.py
 core/migrations/0010_seed_giorgos_vaccines.py
 core/migrations/0011_seed_discharge_lab_results.py
 core/migrations/0012_mobile_push_notifications.py
+core/migrations/0013_automatic_health_reminders.py
 core/migrations/__init__.py
 core/models.py
 core/push_utils.py

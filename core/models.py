@@ -558,6 +558,7 @@ class HealthReminder(models.Model):
         ("vaccine", "Εμβόλιο"),
         ("measurement", "Μέτρηση"),
         ("lab", "Εξέταση"),
+        ("appointment", "Ραντεβού"),
         ("other", "Άλλο"),
     ]
 
@@ -565,6 +566,14 @@ class HealthReminder(models.Model):
     title = models.CharField("Τίτλος", max_length=180)
     due_at = models.DateTimeField("Ημερομηνία / ώρα")
     notes = models.TextField("Σημειώσεις", blank=True)
+    auto_generated = models.BooleanField("Αυτόματη υπενθύμιση", default=False)
+    source_key = models.CharField(
+        "Κλειδί αυτόματης υπενθύμισης",
+        max_length=140,
+        blank=True,
+        null=True,
+        unique=True,
+    )
     notify_minutes_before = models.PositiveSmallIntegerField(
         "Push ειδοποίηση (λεπτά πριν)",
         default=0,

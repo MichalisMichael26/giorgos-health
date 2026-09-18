@@ -126,13 +126,14 @@ class HealthReminderAdmin(admin.ModelAdmin):
         "due_at",
         "reminder_type",
         "title",
+        "auto_generated",
         "notify_minutes_before",
         "repeat_if_incomplete_minutes",
         "push_notified_at",
         "active",
         "completed",
     )
-    list_filter = ("reminder_type", "active", "completed")
+    list_filter = ("reminder_type", "auto_generated", "active", "completed")
 
 
 @admin.register(DoctorQuestion)

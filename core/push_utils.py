@@ -52,6 +52,7 @@ def reminder_icon(reminder_type):
         "vaccine": "💉",
         "measurement": "🩸",
         "lab": "🧪",
+        "appointment": "📅",
         "other": "🔔",
     }.get(reminder_type, "🔔")
 
@@ -65,7 +66,16 @@ def reminder_payload(reminder, delivery_kind="initial"):
         body = f"{reminder.title} · προγραμματισμένο {local_due:%H:%M}"
     elif reminder.notify_minutes_before:
         title = f"{icon} {reminder.title}"
-        body = f"Σε {reminder.notify_minutes_before} λεπτά · {local_due:%H:%M}"
+        minutes_before = reminder.notify_minutes_before
+        if minutes_before >= 1440 and minutes_before % 1440 == 0:
+            days = minutes_before // 1440
+            when_text = "Σε 1 ημέρα" if days == 1 else f"Σε {days} ημέρες"
+        elif minutes_before >= 60 and minutes_before % 60 == 0:
+            hours = minutes_before // 60
+            when_text = "Σε 1 ώρα" if hours == 1 else f"Σε {hours} ώρες"
+        else:
+            when_text = f"Σε {minutes_before} λεπτά"
+        body = f"{when_text} · {local_due:%H:%M}"
     else:
         title = f"{icon} {reminder.title}"
         body = f"Τώρα · {local_due:%H:%M}"
@@ -193,6 +203,12 @@ def send_reminder_push(reminder, delivery_kind="initial"):
 
 def dispatch_due_reminders(now=None):
     now = now or timezone.now()
+
+    # Keep system-generated meal/appointment reminders synchronized before
+    # deciding which push notifications are due.
+    from .auto_reminders import sync_all_automatic_reminders
+    sync_all_automatic_reminders(now=now)
+
     counters = {
         "initial_attempts": 0,
         "initial_successes": 0,
