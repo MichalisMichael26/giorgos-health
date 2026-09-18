@@ -4035,3 +4035,70 @@ html.night .lab-table-note {
         font-size: 14px;
     }
 }
+
+
+/* ===== Hard doctor read-only mode ===== */
+.doctor-readonly-banner {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border: 1px solid #b9d3f4;
+    border-radius: 15px;
+    background: #eef6ff;
+}
+
+.doctor-readonly-banner > span {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #dcecff;
+    font-size: 21px;
+}
+
+.doctor-readonly-banner > div {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.doctor-readonly-banner strong {
+    color: #315a86;
+}
+
+.doctor-readonly-banner small {
+    color: #66788e;
+    line-height: 1.35;
+}
+
+.doctor-readonly .readonly-disabled-link {
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+.doctor-readonly .readonly-disabled-link.mini-action,
+.doctor-readonly a.btn.primary.readonly-disabled-link {
+    display: none !important;
+}
+
+.doctor-readonly button[type="submit"]:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+html.night .doctor-readonly-banner {
+    background: #21354e;
+    border-color: #3d5b7d;
+}
+
+html.night .doctor-readonly-banner strong {
+    color: #c5def9;
+}
+
+html.night .doctor-readonly-banner small {
+    color: #b4c4d7;
+}

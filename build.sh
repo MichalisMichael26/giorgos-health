@@ -37,12 +37,19 @@ username = os.environ.get('DJANGO_DOCTOR_USERNAME', 'drsavvas')
 password = os.environ.get('DJANGO_DOCTOR_PASSWORD')
 display_name = os.environ.get('DJANGO_DOCTOR_DISPLAY_NAME', 'Δρ Σάββας Σάββα')
 
-if password:
-    doctor, created = User.objects.get_or_create(username=username)
+doctor = User.objects.filter(username=username).first()
+
+if doctor is None and password:
+    doctor = User.objects.create_user(username=username, password=password)
+
+if doctor:
     doctor.is_staff = False
     doctor.is_superuser = False
     doctor.is_active = True
-    doctor.set_password(password)
+
+    if password:
+        doctor.set_password(password)
+
     doctor.save()
 
     UserAccessProfile.objects.update_or_create(
@@ -53,8 +60,8 @@ if password:
         },
     )
 
-    print('Doctor read-only account configured successfully')
+    print('Doctor account enforced as read-only')
 else:
-    print('DJANGO_DOCTOR_PASSWORD is not set; doctor account was not created/updated')
+    print('Doctor account does not exist and DJANGO_DOCTOR_PASSWORD is not set')
 "
 

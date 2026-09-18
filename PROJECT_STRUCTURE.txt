@@ -9,6 +9,7 @@ core/advanced_views.py
 core/apps.py
 core/audit.py
 core/backup_utils.py
+core/context_processors.py
 core/forms.py
 core/management/__init__.py
 core/management/commands/__init__.py

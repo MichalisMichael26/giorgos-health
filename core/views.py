@@ -7,8 +7,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponse
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+
+from .access import user_role
 
 from .forms import (
     GlucoseReadingForm,
@@ -33,6 +36,11 @@ class PersistentLoginView(LoginView):
     template_name = "registration/login.html"
     authentication_form = PersistentAuthenticationForm
     redirect_authenticated_user = True
+
+    def get_success_url(self):
+        if user_role(self.request.user) == "doctor_readonly":
+            return reverse("doctor_view")
+        return super().get_success_url()
 
     def form_valid(self, form):
         response = super().form_valid(form)

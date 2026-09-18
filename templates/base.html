@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 
-<body class="kids-bg">
+<body class="kids-bg{% if is_readonly_doctor %} doctor-readonly{% endif %}">
 <div class="floating-shape shape-1"></div>
 <div class="floating-shape shape-2"></div>
 <div class="floating-shape shape-3"></div>
@@ -70,13 +70,22 @@
 </header>
 
 <main class="container">
+    {% if is_readonly_doctor %}
+    <div class="doctor-readonly-banner">
+        <span>👨‍⚕️</span>
+        <div>
+            <strong>Πρόσβαση ιατρού — μόνο προβολή</strong>
+            <small>Μπορείτε να δείτε τα δεδομένα του Γιώργου, αλλά δεν μπορείτε να προσθέσετε, αλλάξετε ή διαγράψετε καταχωρήσεις.</small>
+        </div>
+    </div>
+    {% endif %}
     {% for message in messages %}
         <div class="message">{{ message }}</div>
     {% endfor %}
     {% block content %}{% endblock %}
 </main>
 
-{% if user.is_authenticated %}
+{% if user.is_authenticated and not is_readonly_doctor %}
 <button type="button" class="mobile-quick-add" id="mobile-quick-add" aria-label="Γρήγορη καταχώρηση" aria-expanded="false">+</button>
 <div class="quick-add-backdrop" id="quick-add-modal" hidden>
     <div class="quick-add-sheet" role="dialog" aria-modal="true" aria-labelledby="quick-add-title">
@@ -173,6 +182,52 @@
     });
 })();
 </script>
+
+
+{% if is_readonly_doctor %}
+<script>
+(function () {
+    const unsafeFragments = [
+        "/new/",
+        "/edit/",
+        "/delete/",
+        "/done/",
+        "/share/settings/",
+        "/share/rotate/",
+        "/backup/cloud-now/"
+    ];
+
+    function isUnsafeHref(href) {
+        if (!href) return false;
+        try {
+            const url = new URL(href, window.location.origin);
+            return unsafeFragments.some(fragment => url.pathname.includes(fragment));
+        } catch (e) {
+            return false;
+        }
+    }
+
+    // Preserve displayed data (e.g. a lab value) but make mutation links inert.
+    document.querySelectorAll("a[href]").forEach(function (link) {
+        if (!isUnsafeHref(link.getAttribute("href"))) return;
+        link.removeAttribute("href");
+        link.setAttribute("aria-disabled", "true");
+        link.classList.add("readonly-disabled-link");
+        link.title = "Ο λογαριασμός ιατρού είναι μόνο για προβολή.";
+    });
+
+    // The scanner can be viewed, but a doctor cannot submit/save its form.
+    document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function (form) {
+        const action = form.getAttribute("action") || window.location.pathname;
+        if (action.endsWith("/logout/")) return;
+        form.querySelectorAll("button[type='submit'], input[type='submit']").forEach(function (button) {
+            button.disabled = true;
+            button.title = "Μόνο προβολή";
+        });
+    });
+})();
+</script>
+{% endif %}
 
 </body>
 </html>

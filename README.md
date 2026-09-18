@@ -326,3 +326,16 @@ The diaper form now includes a ready-made consistency selector:
 
 The stored value remains the formal description `Υδαρής / πολύ υδαρής`.
 Older free-text consistency values remain editable and are preserved.
+
+
+## Hard read-only doctor fix
+The configured doctor username (`DJANGO_DOCTOR_USERNAME`, default `drsavvas`) is now ALWAYS treated as `doctor_readonly`, even if the role profile is missing or was accidentally changed.
+
+Enforcement layers:
+1. Build deploy repairs/creates the `UserAccessProfile` role as doctor_readonly.
+2. Middleware rejects every non-safe modifying HTTP request for the doctor account, except logout.
+3. Middleware redirects doctor GET requests away from create/edit/delete/action pages.
+4. The UI displays a read-only banner, removes the mobile quick-add button, disables mutation links/forms, and preserves read-only data display.
+5. Doctor login redirects directly to Doctor View.
+
+This is server-side enforcement; hiding buttons is only an additional UX layer.
