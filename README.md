@@ -535,3 +535,14 @@ The dedicated Allergies page:
 - clearly separates allergies from active food/medicine restriction rules;
 - lets parent users jump to profile editing;
 - remains read-only for the configured Dr Savvas account through the existing server-side read-only protection.
+
+
+## Upcoming vaccine doses
+The Vaccines page now separates:
+- **administered vaccine history** at the top;
+- **confirmed upcoming doses** underneath.
+
+Upcoming doses are derived only from the existing `VaccineEntry.next_date` values.
+No future dates are invented. If a later administration of the same vaccine is recorded
+on or after the previous `next_date`, that older planned dose is automatically removed
+from the upcoming list.

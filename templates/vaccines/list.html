@@ -3,7 +3,7 @@
 {% block content %}
 <div class="page-head">
     <div><h1>💉 Εμβόλια</h1><p class="muted">Ιστορικό εμβολιασμών, επόμενες δόσεις και reminders.</p></div>
-    <a class="btn primary" href="{% url 'vaccine_create' %}">+ Νέο εμβόλιο</a>
+    {% if not is_readonly_doctor %}<a class="btn primary" href="{% url 'vaccine_create' %}">+ Νέο εμβόλιο</a>{% endif %}
 </div>
 <div class="panel table-wrap">
 <table class="responsive-table">
@@ -16,8 +16,39 @@
 <td data-label="Δόση">{{ item.dose_label|default:"—" }}</td>
 <td data-label="Επόμενη">{% if item.next_date %}{{ item.next_date|date:"d/m/Y" }}{% else %}—{% endif %}</td>
 <td data-label="Reminder">{% if item.next_date %}{{ item.reminder_days_before }} ημέρες πριν{% else %}—{% endif %}</td>
-<td data-label="Ενέργειες" class="row-actions"><a class="mini-action" href="{% url 'vaccine_edit' item.pk %}">Edit</a><a class="mini-action danger-link" href="{% url 'vaccine_delete' item.pk %}">Delete</a></td>
+<td data-label="Ενέργειες" class="row-actions">{% if not is_readonly_doctor %}<a class="mini-action" href="{% url 'vaccine_edit' item.pk %}">Edit</a><a class="mini-action danger-link" href="{% url 'vaccine_delete' item.pk %}">Delete</a>{% else %}<span class="muted">Read-only</span>{% endif %}</td>
 </tr>
 {% empty %}<tr><td colspan="6">Δεν υπάρχουν εμβόλια.</td></tr>{% endfor %}
 </tbody></table></div>
+
+{% if upcoming_vaccines %}
+<section class="panel vaccine-upcoming-panel">
+    <div class="panel-head">
+        <div>
+            <h2>📅 Επόμενες προγραμματισμένες δόσεις</h2>
+            <p class="muted">Εμφανίζονται μόνο ημερομηνίες που έχουν ήδη καταχωρηθεί ως «Επόμενη δόση».</p>
+        </div>
+    </div>
+
+    <div class="upcoming-vaccine-grid">
+        {% for item in upcoming_vaccines %}
+        <div class="upcoming-vaccine-card {{ item.timing_state }}">
+            <div class="upcoming-vaccine-date">
+                <span>{{ item.date|date:"d/m/Y" }}</span>
+                <small>{{ item.timing_label }}</small>
+            </div>
+            <div class="upcoming-vaccine-info">
+                <strong>💉 {{ item.source.name }}</strong>
+                <span>
+                    Επόμενη δόση
+                    {% if item.source.dose_label %} · μετά από «{{ item.source.dose_label }}»{% endif %}
+                </span>
+                <small>Υπενθύμιση {{ item.source.reminder_days_before }} ημέρες πριν</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
 {% endblock %}

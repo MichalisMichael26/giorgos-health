@@ -228,7 +228,51 @@ def document_delete(request, pk):
 @login_required
 def vaccine_list(request):
     today = timezone.localdate()
-    return render(request, "vaccines/list.html", {"vaccines": VaccineEntry.objects.all(), "today": today})
+    vaccines = list(VaccineEntry.objects.all())
+
+    upcoming_vaccines = []
+    for item in sorted(
+        (v for v in vaccines if v.next_date),
+        key=lambda v: (v.next_date, v.name.casefold()),
+    ):
+        # Once a later/same-date administration of the same vaccine has been
+        # recorded, the older "next dose" is no longer shown as upcoming.
+        already_administered = VaccineEntry.objects.filter(
+            name__iexact=item.name,
+            date__gte=item.next_date,
+        ).exclude(pk=item.pk).exists()
+        if already_administered:
+            continue
+
+        days_until = (item.next_date - today).days
+        if days_until > 0:
+            timing_label = f"Σε {days_until} ημέρες"
+            timing_state = "future"
+        elif days_until == 0:
+            timing_label = "Σήμερα"
+            timing_state = "today"
+        else:
+            timing_label = f"Εκκρεμεί από {abs(days_until)} ημέρες"
+            timing_state = "overdue"
+
+        upcoming_vaccines.append(
+            {
+                "source": item,
+                "date": item.next_date,
+                "timing_label": timing_label,
+                "timing_state": timing_state,
+            }
+        )
+
+    return render(
+        request,
+        "vaccines/list.html",
+        {
+            "vaccines": vaccines,
+            "upcoming_vaccines": upcoming_vaccines,
+            "today": today,
+        },
+    )
 
 
 @login_required

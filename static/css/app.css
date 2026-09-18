@@ -4905,3 +4905,79 @@ html.night .allergy-empty-box,
 html.night .allergy-rule-card {
     background: #223047;
 }
+
+
+/* ===== Upcoming vaccines ===== */
+.vaccine-upcoming-panel {
+    margin-top: 16px;
+}
+
+.upcoming-vaccine-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.upcoming-vaccine-card {
+    display: grid;
+    grid-template-columns: 135px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 13px 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #f8fbff;
+}
+
+.upcoming-vaccine-date {
+    display: grid;
+    gap: 3px;
+}
+
+.upcoming-vaccine-date span {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.upcoming-vaccine-date small {
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.upcoming-vaccine-info {
+    display: grid;
+    gap: 3px;
+}
+
+.upcoming-vaccine-info span,
+.upcoming-vaccine-info small {
+    color: var(--muted);
+}
+
+.upcoming-vaccine-card.today {
+    border-color: #d4bd76;
+    background: #fff9e9;
+}
+
+.upcoming-vaccine-card.overdue {
+    border-color: #e2b9b6;
+    background: #fff4f3;
+}
+
+html.night .upcoming-vaccine-card {
+    background: #223247;
+}
+
+html.night .upcoming-vaccine-card.today {
+    background: #3a3320;
+}
+
+html.night .upcoming-vaccine-card.overdue {
+    background: #3a292b;
+}
+
+@media (max-width: 640px) {
+    .upcoming-vaccine-card {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+}
