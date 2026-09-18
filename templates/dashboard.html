@@ -45,6 +45,90 @@
     </div>
 </section>
 
+<section class="panel milk-guide-panel">
+    <div class="panel-head">
+        <div>
+            <h2>🍼 Ημερήσιος οδηγός γάλακτος</h2>
+            <p class="muted">{{ profile.name }} · {{ milk_guide.age.display }}</p>
+        </div>
+        <a href="{% url 'child_profile_edit' %}">Ρυθμίσεις</a>
+    </div>
+
+    {% if milk_guide.has_clinician_target %}
+    <div class="clinician-target-card">
+        <div>
+            <span class="guide-kicker">⭐ Στόχος ιατρού</span>
+            <strong>
+                {% if milk_guide.clinician_min != None and milk_guide.clinician_max != None %}
+                    {{ milk_guide.clinician_min }}–{{ milk_guide.clinician_max }} ml / 24ωρο
+                {% elif milk_guide.clinician_min != None %}
+                    {{ milk_guide.clinician_min }} ml / 24ωρο
+                {% else %}
+                    {{ milk_guide.clinician_max }} ml / 24ωρο
+                {% endif %}
+            </strong>
+            {% if milk_guide.clinician_note %}<small>{{ milk_guide.clinician_note }}</small>{% endif %}
+        </div>
+        <span class="clinician-badge">Εξατομικευμένος</span>
+    </div>
+    {% endif %}
+
+    <div class="milk-guide-grid">
+        <div class="milk-guide-main">
+            <span class="guide-kicker">Σήμερα μέχρι τώρα</span>
+            <strong>{{ consumed_total }} ml</strong>
+            {% if milk_guide.target_max %}
+            <div class="milk-progress" aria-label="Πρόοδος ημερήσιας ποσότητας">
+                <div style="width: {{ milk_guide.progress }}%;"></div>
+            </div>
+            <small>
+                {% if milk_guide.active_source == "clinician" %}
+                    Σε σχέση με τον καταχωρημένο στόχο ιατρού
+                {% else %}
+                    Σε σχέση με τον γενικό ηλικιακό οδηγό
+                {% endif %}
+            </small>
+            {% endif %}
+        </div>
+
+        <div class="milk-guide-reference">
+            <span class="guide-kicker">Γενικός οδηγός ηλικίας</span>
+            <strong>
+                {% if milk_guide.age_guide.kind == "about" %}
+                    ≈ {{ milk_guide.age_guide.min }} ml / ημέρα
+                {% elif milk_guide.age_guide.min != None %}
+                    {{ milk_guide.age_guide.min }}–{{ milk_guide.age_guide.max }} ml / ημέρα
+                {% else %}
+                    —
+                {% endif %}
+            </strong>
+            <small>
+                {{ milk_guide.age_guide.label }}
+                {% if milk_guide.age_guide.milk_type %} · {{ milk_guide.age_guide.milk_type }}{% endif %}
+            </small>
+        </div>
+
+        {% if milk_guide.weight_guide %}
+        <div class="milk-guide-reference">
+            <span class="guide-kicker">Γενικός οδηγός βάσει βάρους</span>
+            <strong>{{ milk_guide.weight_guide.min }}–{{ milk_guide.weight_guide.max }} ml / 24ωρο</strong>
+            <small>
+                Με τελευταίο βάρος {{ milk_guide.weight_guide.weight|floatformat:"-3" }} kg
+                · περίπου 150–200 ml/kg/ημέρα
+            </small>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="milk-guide-footnote">
+        <span>ℹ️</span>
+        <p>
+            Πρόκειται για γενικούς οδηγούς και όχι για ιατρική συνταγή.
+            Αν υπάρχει εξατομικευμένο πλάνο από παιδίατρο ή διαιτολόγο, ακολουθείται εκείνο.
+        </p>
+    </div>
+</section>
+
 {% if reminder_appointments %}
 <section class="panel reminder-panel">
     <div class="panel-head">

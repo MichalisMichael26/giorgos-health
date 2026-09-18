@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Στοιχεία & στόχος{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>👶 Στοιχεία & ημερήσιος στόχος</h1>
+        <p class="muted">
+            Η ηλικία υπολογίζεται αυτόματα από την ημερομηνία γέννησης.
+            Ο στόχος ιατρού είναι προαιρετικός και, όταν συμπληρωθεί, εμφανίζεται πρώτος στο Dashboard.
+        </p>
+    </div>
+</div>
+
+<div class="profile-layout">
+    <section class="form-card panel">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+
+            {% if form.non_field_errors %}
+                <div class="field-error">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="form-actions">
+                <button class="btn primary" type="submit">Αποθήκευση</button>
+                <a class="btn secondary" href="{% url 'dashboard' %}">Ακύρωση</a>
+            </div>
+        </form>
+    </section>
+
+    <aside class="panel guide-explanation">
+        <h2>ℹ️ Πώς λειτουργεί</h2>
+        <p>
+            Το app εμφανίζει έναν <strong>γενικό οδηγό ηλικίας</strong>.
+            Για τους πρώτους μήνες, όταν υπάρχει καταχωρημένο βάρος,
+            εμφανίζει επιπλέον και έναν γενικό υπολογισμό βάσει βάρους.
+        </p>
+        <p>
+            Αν ο παιδίατρος ή ο διαιτολόγος έχει δώσει συγκεκριμένο ημερήσιο στόχο,
+            μπορείς να τον γράψεις εδώ. Αυτός θα εμφανίζεται ως
+            <strong>«Στόχος ιατρού»</strong>.
+        </p>
+        <div class="medical-note">
+            Οι γενικοί οδηγοί δεν αντικαθιστούν εξατομικευμένες ιατρικές οδηγίες.
+        </div>
+    </aside>
+</div>
+{% endblock %}

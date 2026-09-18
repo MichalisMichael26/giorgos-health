@@ -14,6 +14,7 @@ from .forms import (
     MealEntryForm,
     MedicationEntryForm,
     MedicalAppointmentForm,
+    ChildProfileForm,
 )
 from .models import (
     GlucoseReading,
@@ -21,6 +22,7 @@ from .models import (
     MealEntry,
     MedicationEntry,
     MedicalAppointment,
+    ChildProfile,
 )
 
 
@@ -34,6 +36,137 @@ SCHEDULED_TIMES = [
     time(19, 30),
     time(22, 30),
 ]
+
+
+def get_child_profile():
+    profile = ChildProfile.objects.first()
+    if profile:
+        return profile
+    return ChildProfile.objects.create(
+        name="Γιώργος",
+        birth_date=datetime(2026, 6, 27).date(),
+    )
+
+
+def child_age_details(birth_date, today):
+    if not birth_date or today < birth_date:
+        return {"days": 0, "weeks": 0, "months": 0, "display": "—"}
+
+    total_days = (today - birth_date).days
+    weeks = total_days // 7
+
+    months = (today.year - birth_date.year) * 12 + today.month - birth_date.month
+    if today.day < birth_date.day:
+        months -= 1
+    months = max(months, 0)
+
+    import calendar
+    anchor_year = birth_date.year + (birth_date.month - 1 + months) // 12
+    anchor_month = (birth_date.month - 1 + months) % 12 + 1
+    anchor_day = min(
+        birth_date.day,
+        calendar.monthrange(anchor_year, anchor_month)[1],
+    )
+    anchor_date = datetime(anchor_year, anchor_month, anchor_day).date()
+    remaining_days = max((today - anchor_date).days, 0)
+
+    if months < 1:
+        display = f"{weeks} εβδομάδων και {total_days % 7} ημερών"
+    elif months < 24:
+        display = f"{months} μηνών και {remaining_days} ημερών"
+    else:
+        years = months // 12
+        rem_months = months % 12
+        display = f"{years} ετών και {rem_months} μηνών"
+
+    return {
+        "days": total_days,
+        "weeks": weeks,
+        "months": months,
+        "display": display,
+    }
+
+
+def age_based_milk_guide(age_days):
+    # General age-based population guide. Not an individual prescription.
+    if age_days <= 14:
+        return {"min": 420, "max": 560, "label": "Έως 2 εβδομάδων", "kind": "range", "milk_type": "βρεφικό γάλα"}
+    if age_days <= 56:
+        return {"min": 450, "max": 735, "label": "2–8 εβδομάδων", "kind": "range", "milk_type": "βρεφικό γάλα"}
+    if age_days <= 98:
+        return {"min": 525, "max": 1080, "label": "2–3 μηνών", "kind": "range", "milk_type": "βρεφικό γάλα"}
+    if age_days <= 175:
+        return {"min": 900, "max": 1050, "label": "3–5 μηνών", "kind": "range", "milk_type": "βρεφικό γάλα"}
+    if age_days <= 212:
+        return {"min": 840, "max": 960, "label": "Περίπου 6 μηνών", "kind": "range", "milk_type": "βρεφικό γάλα"}
+    if age_days <= 304:
+        return {"min": 600, "max": 600, "label": "7–9 μηνών", "kind": "about", "milk_type": "βρεφικό γάλα"}
+    if age_days <= 365:
+        return {"min": 400, "max": 400, "label": "10–12 μηνών", "kind": "about", "milk_type": "βρεφικό γάλα"}
+    if age_days <= 730:
+        return {"min": 350, "max": 400, "label": "1–2 ετών", "kind": "range", "milk_type": "πλήρες αγελαδινό ή άλλο κατάλληλο γάλα"}
+
+    return {"min": None, "max": None, "label": "Άνω των 2 ετών", "kind": "none", "milk_type": ""}
+
+
+def weight_based_formula_guide(latest_growth, age_days):
+    # General guide after the first week until around 6 months: ~150–200 ml/kg/day.
+    if (
+        not latest_growth
+        or latest_growth.weight_kg is None
+        or age_days < 7
+        or age_days > 183
+    ):
+        return None
+
+    weight = float(latest_growth.weight_kg)
+    return {
+        "weight": weight,
+        "min": round(weight * 150),
+        "max": round(weight * 200),
+    }
+
+
+def daily_milk_guide(profile, latest_growth, today, consumed_today):
+    age = child_age_details(profile.birth_date, today)
+    age_guide = age_based_milk_guide(age["days"])
+    weight_guide = weight_based_formula_guide(latest_growth, age["days"])
+
+    clinician_min = profile.clinician_target_min_ml
+    clinician_max = profile.clinician_target_max_ml
+    has_clinician_target = clinician_min is not None or clinician_max is not None
+
+    if has_clinician_target:
+        target_min = clinician_min if clinician_min is not None else clinician_max
+        target_max = clinician_max if clinician_max is not None else clinician_min
+        active_source = "clinician"
+    elif age_guide["min"] is not None:
+        target_min = age_guide["min"]
+        target_max = age_guide["max"]
+        active_source = "general"
+    else:
+        target_min = None
+        target_max = None
+        active_source = "none"
+
+    progress = None
+    if target_max and target_max > 0:
+        progress = min(round((consumed_today / target_max) * 100), 100)
+
+    return {
+        "age": age,
+        "age_guide": age_guide,
+        "weight_guide": weight_guide,
+        "clinician_min": clinician_min,
+        "clinician_max": clinician_max,
+        "clinician_note": profile.clinician_target_note,
+        "has_clinician_target": has_clinician_target,
+        "active_source": active_source,
+        "target_min": target_min,
+        "target_max": target_max,
+        "consumed_today": consumed_today,
+        "progress": progress,
+    }
 
 
 def next_scheduled_time(now_local):
@@ -207,6 +340,9 @@ def dashboard(request):
     glucose_today = GlucoseReading.objects.filter(date=today).order_by("time")
     medications_today = MedicationEntry.objects.filter(date=today).order_by("time")
     latest_growth = GrowthMeasurement.objects.first()
+    profile = get_child_profile()
+    consumed_total = sum(item.consumed_ml or 0 for item in meals_today)
+    milk_guide = daily_milk_guide(profile, latest_growth, today, consumed_total)
 
     previous_days = build_history_days(today - timedelta(days=3), today - timedelta(days=1))
     reminder_appointments, upcoming_appointments = appointment_reminder_items(today)
@@ -220,7 +356,9 @@ def dashboard(request):
         "glucose_count": glucose_today.count(),
         "latest_glucose": GlucoseReading.objects.first(),
         "latest_growth": latest_growth,
-        "consumed_total": sum(item.consumed_ml or 0 for item in meals_today),
+        "profile": profile,
+        "milk_guide": milk_guide,
+        "consumed_total": consumed_total,
         "next_meal_time": next_scheduled_time(timezone.localtime()),
         "schedule": SCHEDULED_TIMES,
         "previous_days": previous_days[:3],
@@ -228,6 +366,21 @@ def dashboard(request):
         "upcoming_appointments": upcoming_appointments,
     }
     return render(request, "dashboard.html", context)
+
+
+@login_required
+def child_profile_edit(request):
+    profile = get_child_profile()
+    form = ChildProfileForm(request.POST or None, instance=profile)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Τα στοιχεία και ο ημερήσιος στόχος ενημερώθηκαν.")
+        return redirect("dashboard")
+    return render(
+        request,
+        "profile/edit.html",
+        {"form": form, "profile": profile},
+    )
 
 
 @login_required

@@ -5,6 +5,7 @@ from .models import (
     MealEntry,
     MedicationEntry,
     MedicalAppointment,
+    ChildProfile,
 )
 
 
@@ -38,3 +39,15 @@ class MedicalAppointmentAdmin(admin.ModelAdmin):
     list_display = ("date", "time", "purpose", "doctor", "clinic", "status")
     list_filter = ("status", "date")
     search_fields = ("purpose", "doctor", "clinic", "notes")
+
+
+
+@admin.register(ChildProfile)
+class ChildProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "birth_date",
+        "clinician_target_min_ml",
+        "clinician_target_max_ml",
+        "updated_at",
+    )

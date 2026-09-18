@@ -5,6 +5,7 @@ from .models import (
     MealEntry,
     MedicationEntry,
     MedicalAppointment,
+    ChildProfile,
 )
 
 
@@ -133,3 +134,32 @@ class MedicalAppointmentForm(forms.ModelForm):
             "reminder_days_before": forms.NumberInput(attrs={"min": "0", "max": "90", "step": "1"}),
             "notes": forms.Textarea(attrs={"rows": 3}),
         }
+
+
+
+class ChildProfileForm(forms.ModelForm):
+    class Meta:
+        model = ChildProfile
+        fields = [
+            "name",
+            "birth_date",
+            "clinician_target_min_ml",
+            "clinician_target_max_ml",
+            "clinician_target_note",
+        ]
+        widgets = {
+            "birth_date": DateInput(),
+            "clinician_target_min_ml": forms.NumberInput(attrs={"min": "0", "step": "1", "inputmode": "numeric"}),
+            "clinician_target_max_ml": forms.NumberInput(attrs={"min": "0", "step": "1", "inputmode": "numeric"}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        minimum = cleaned.get("clinician_target_min_ml")
+        maximum = cleaned.get("clinician_target_max_ml")
+        if minimum is not None and maximum is not None and minimum > maximum:
+            self.add_error(
+                "clinician_target_max_ml",
+                "Το μέγιστο πρέπει να είναι ίσο ή μεγαλύτερο από το ελάχιστο.",
+            )
+        return cleaned

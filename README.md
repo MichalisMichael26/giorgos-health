@@ -65,3 +65,23 @@ Reports no longer need to download immediately:
 - 24-hour report opens as an HTML preview in a new tab.
 - History-period report opens as an HTML preview in a new tab.
 - Each report preview includes Print and Download PDF actions.
+
+
+## Daily milk guide
+The dashboard now includes an age-aware daily milk guide.
+
+General age guide used:
+- up to 2 weeks: 420–560 ml/day
+- 2–8 weeks: 450–735 ml/day
+- 2–3 months: 525–1,080 ml/day
+- 3–5 months: 900–1,050 ml/day
+- about 6 months: 840–960 ml/day
+- 7–9 months: about 600 ml/day
+- 10–12 months: about 400 ml/day
+- 1–2 years: about 350–400 ml/day of whole cow's milk or another suitable milk drink
+
+For babies after the first week until around 6 months, when a current weight exists, the app also shows a general weight-based guide of about 150–200 ml/kg/day.
+
+A clinician-defined daily target can be saved in the child's profile. When present, it is displayed prominently and used as the main comparison target instead of the general guide.
+
+These values are informational population guides and do not replace individualized advice from a pediatrician or dietitian.

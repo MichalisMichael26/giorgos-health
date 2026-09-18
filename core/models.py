@@ -197,3 +197,29 @@ class MedicalAppointment(models.Model):
 
     def __str__(self):
         return f"{self.date} {self.time.strftime('%H:%M')} - {self.purpose}"
+
+
+
+class ChildProfile(models.Model):
+    name = models.CharField("Όνομα παιδιού", max_length=100, default="Γιώργος")
+    birth_date = models.DateField("Ημερομηνία γέννησης")
+    clinician_target_min_ml = models.PositiveIntegerField(
+        "Στόχος ιατρού — ελάχιστο ml/24ωρο", blank=True, null=True
+    )
+    clinician_target_max_ml = models.PositiveIntegerField(
+        "Στόχος ιατρού — μέγιστο ml/24ωρο", blank=True, null=True
+    )
+    clinician_target_note = models.CharField(
+        "Σημείωση στόχου",
+        max_length=220,
+        blank=True,
+        help_text="Π.χ. οδηγία παιδιάτρου / διαιτολόγου και ημερομηνία.",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Προφίλ παιδιού"
+        verbose_name_plural = "Προφίλ παιδιού"
+
+    def __str__(self):
+        return self.name

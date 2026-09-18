@@ -1488,3 +1488,217 @@ html.night .report-toolbar {
         padding: 0 !important;
     }
 }
+
+
+/* ===== Daily milk guide ===== */
+.milk-guide-panel {
+    overflow: hidden;
+}
+
+.milk-guide-panel .panel-head > div {
+    min-width: 0;
+}
+
+.milk-guide-panel .panel-head p {
+    margin: 4px 0 0;
+}
+
+.clinician-target-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 15px 17px;
+    margin-bottom: 14px;
+    border: 1px solid #bad9c7;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #f2fff7, #e9f9f0);
+}
+
+.clinician-target-card > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.clinician-target-card strong {
+    font-size: 22px;
+    color: #176b47;
+}
+
+.clinician-target-card small {
+    color: #4d765f;
+}
+
+.clinician-badge {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #d8f3e4;
+    color: #176b47;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.milk-guide-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    gap: 12px;
+}
+
+.milk-guide-main,
+.milk-guide-reference {
+    min-width: 0;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255,255,255,.68);
+}
+
+.guide-kicker {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.milk-guide-main > strong,
+.milk-guide-reference > strong {
+    font-size: 22px;
+}
+
+.milk-guide-main small,
+.milk-guide-reference small {
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.milk-progress {
+    width: 100%;
+    height: 10px;
+    margin-top: 5px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e7edf5;
+}
+
+.milk-progress > div {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #6f94ec, #79b8a0);
+}
+
+.milk-guide-footnote {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 13px;
+    padding: 10px 12px;
+    border-radius: 13px;
+    background: rgba(239,245,252,.8);
+}
+
+.milk-guide-footnote p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.profile-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.guide-explanation p {
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+.medical-note {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 13px;
+    background: #fff6e8;
+    color: #805a23;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+html.night .clinician-target-card {
+    background: #17362c;
+    border-color: #315c49;
+}
+
+html.night .clinician-target-card strong,
+html.night .clinician-badge {
+    color: #9ce2be;
+}
+
+html.night .clinician-target-card small {
+    color: #b5d8c5;
+}
+
+html.night .clinician-badge {
+    background: #234b3b;
+}
+
+html.night .milk-guide-main,
+html.night .milk-guide-reference {
+    background: rgba(29,41,61,.88);
+}
+
+html.night .milk-progress {
+    background: #2a3850;
+}
+
+html.night .milk-guide-footnote {
+    background: rgba(35,48,70,.8);
+}
+
+html.night .medical-note {
+    background: #42351f;
+    color: #f1d39c;
+}
+
+@media (max-width: 900px) {
+    .milk-guide-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .milk-guide-main {
+        grid-column: 1 / -1;
+    }
+
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .milk-guide-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .milk-guide-main {
+        grid-column: auto;
+    }
+
+    .clinician-target-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .clinician-target-card strong,
+    .milk-guide-main > strong,
+    .milk-guide-reference > strong {
+        font-size: 20px;
+    }
+}
