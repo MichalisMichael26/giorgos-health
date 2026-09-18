@@ -13,6 +13,7 @@ core/migrations/0002_medications_appointments.py
 core/migrations/0003_childprofile.py
 core/migrations/0004_advanced_health_features.py
 core/migrations/0005_safety_checker.py
+core/migrations/0006_default_lactose_sugar_rules.py
 core/migrations/__init__.py
 core/models.py
 core/signals.py

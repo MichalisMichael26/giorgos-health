@@ -197,3 +197,13 @@ The checker is deliberately conservative:
 - Previously clinician/pharmacist-reviewed products can be saved in a separate registry.
 - Medicine pages link to official Cyprus Pharmaceutical Services and EMA search sources.
 - Checker rules and saved product/medicine reviews are included in full ZIP/Excel/PDF exports and audit history.
+
+
+## Default checker restrictions
+Migration 0006 seeds these active "avoid" rules:
+- λακτόζη
+- lactose
+- ζάχαρη
+- sugar
+
+The rules apply to both foods and medicines/preparations and remain editable from the checker rules page.

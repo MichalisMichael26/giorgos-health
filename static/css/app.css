@@ -2692,3 +2692,68 @@ html.night .matched-rule {
         min-height: 78px;
     }
 }
+
+
+/* ===== Checker baseline restrictions ===== */
+.checker-baseline-rules {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 12px;
+    border-color: #efc7c7;
+    background: linear-gradient(180deg, #fffafa, #fff1f1);
+}
+
+.checker-baseline-rules > div {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.checker-baseline-rules > div > span {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #ffe3e3;
+    font-size: 20px;
+}
+
+.checker-baseline-rules strong {
+    color: #a23939;
+}
+
+.checker-baseline-rules p {
+    margin: 3px 0 0;
+    color: #765050;
+    font-size: 13px;
+}
+
+.checker-baseline-rules > a {
+    flex: 0 0 auto;
+    font-weight: 800;
+}
+
+html.night .checker-baseline-rules {
+    background: #3f292d;
+    border-color: #72444b;
+}
+
+html.night .checker-baseline-rules strong {
+    color: #ffc3c3;
+}
+
+html.night .checker-baseline-rules p {
+    color: #e2b8b8;
+}
+
+@media (max-width: 600px) {
+    .checker-baseline-rules {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
