@@ -3,7 +3,7 @@ from pathlib import Path
 from django import forms
 
 from .forms import DateInput, TimeInput
-from .models import ChildProfile, DiaperEntry, SymptomEntry, VaccineEntry, MedicalDocument
+from .models import ChildProfile, DiaperEntry, SymptomEntry, VaccineEntry, MedicalDocument, SafetyRule, ProductSafetyRecord
 
 
 ALLOWED_DOCUMENT_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png"}
@@ -93,3 +93,61 @@ class EmergencyProfileForm(forms.ModelForm):
             "emergency_contacts": forms.Textarea(attrs={"rows": 4}),
             "current_feeding_plan": forms.Textarea(attrs={"rows": 5}),
         }
+
+
+
+class ProductCheckerForm(forms.Form):
+    KIND_CHOICES = [
+        ("food", "Τρόφιμο / ρόφημα"),
+        ("medicine", "Φάρμακο / σκεύασμα"),
+    ]
+
+    kind = forms.ChoiceField(label="Τύπος", choices=KIND_CHOICES)
+    name = forms.CharField(
+        label="Ονομασία",
+        max_length=220,
+        widget=forms.TextInput(attrs={"placeholder": "Π.χ. όνομα προϊόντος ή φαρμάκου"}),
+    )
+    ingredients = forms.CharField(
+        label="Συστατικά / έκδοχα",
+        required=False,
+        widget=forms.Textarea(attrs={
+            "rows": 6,
+            "placeholder": "Αντέγραψε εδώ τα συστατικά από την ετικέτα ή τα έκδοχα από το φύλλο οδηγιών.",
+        }),
+        help_text="Ο αυτόματος έλεγχος γίνεται μόνο πάνω στους κανόνες που έχετε καταχωρήσει.",
+    )
+
+
+class SafetyRuleForm(forms.ModelForm):
+    class Meta:
+        model = SafetyRule
+        fields = ["term", "applies_to", "guidance", "note", "active"]
+
+
+class ProductSafetyRecordForm(forms.ModelForm):
+    class Meta:
+        model = ProductSafetyRecord
+        fields = [
+            "kind",
+            "name",
+            "decision",
+            "ingredients",
+            "confirmed_by",
+            "reviewed_on",
+            "notes",
+        ]
+        widgets = {
+            "reviewed_on": DateInput(),
+            "ingredients": forms.Textarea(attrs={"rows": 5}),
+            "notes": forms.Textarea(attrs={"rows": 4}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("decision") == "confirmed" and not (cleaned.get("confirmed_by") or "").strip():
+            self.add_error(
+                "confirmed_by",
+                "Για επιβεβαιωμένο προϊόν/φάρμακο γράψε ποιος το επιβεβαίωσε.",
+            )
+        return cleaned

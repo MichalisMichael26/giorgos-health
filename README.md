@@ -168,3 +168,32 @@ WHO source pages:
 ### Mobile quick add
 - Large + button on mobile.
 - Quick links for Meal, Glucose, Medication, Symptom and Diaper.
+
+
+## Functional Health Hub
+The previous "Περισσότερα" concept is now presented as a visible "Υγεία" hub.
+
+Mobile bottom navigation:
+- Αρχική
+- Γεύματα
+- Γλυκόζη
+- Υγεία
+- Doctor
+
+The floating "+" quick-add remains available for fast entry.
+
+The Health hub groups:
+- Emergency / Doctor View / Product & medicine checker
+- Growth / WHO / medications / vaccines / appointments / symptoms / diapers
+- Documents / history / 24h report / backup
+- Analytics / feeding performance / profile / audit / checker rules
+
+## Product / medicine checker
+The checker is deliberately conservative:
+- It does NOT label an unknown product or medicine as safe.
+- It compares entered product names, ingredients, and medicine excipients against locally configured rules.
+- Rules must be entered from clinician/pharmacist instructions.
+- A no-match result means only "no configured restriction was found".
+- Previously clinician/pharmacist-reviewed products can be saved in a separate registry.
+- Medicine pages link to official Cyprus Pharmaceutical Services and EMA search sources.
+- Checker rules and saved product/medicine reviews are included in full ZIP/Excel/PDF exports and audit history.

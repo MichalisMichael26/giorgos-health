@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Έλεγχος προϊόντος / φαρμάκου{% endblock %}
+{% block content %}
+<div class="page-head checker-page-head">
+    <div>
+        <h1>🔎 Έλεγχος προϊόντος / φαρμάκου</h1>
+        <p class="muted">
+            Έλεγξε μια ονομασία και, ιδανικά, τα συστατικά ή έκδοχα με βάση τους κανόνες που έχετε καταχωρήσει.
+        </p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn secondary" href="{% url 'safety_rule_list' %}">⚙️ Κανόνες ελέγχου</a>
+        <a class="btn primary" href="{% url 'product_record_create' %}">+ Αποθήκευση αξιολόγησης</a>
+    </div>
+</div>
+
+<section class="panel checker-warning">
+    <strong>Σημαντικό</strong>
+    <p>
+        Το εργαλείο δεν αποφασίζει μόνο του ότι κάτι είναι «ασφαλές».
+        Αν δεν βρεθεί περιορισμός, αυτό σημαίνει μόνο ότι δεν βρέθηκε αντιστοιχία στους δικούς σας καταχωρημένους κανόνες.
+        Για φάρμακα ελέγχεται πάντα και το φύλλο οδηγιών / τα έκδοχα και, όταν υπάρχει αμφιβολία, επιβεβαιώνεται από ιατρό ή φαρμακοποιό.
+    </p>
+</section>
+
+<div class="checker-layout">
+    <section class="panel checker-form-panel">
+        <div class="panel-head">
+            <div>
+                <h2>Έλεγχος τώρα</h2>
+                <p class="muted">{{ rules_count }} ενεργοί κανόνες</p>
+            </div>
+        </div>
+
+        <form method="post" class="checker-form">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+            <button class="btn primary checker-submit" type="submit">🔎 Έλεγχος</button>
+        </form>
+    </section>
+
+    <aside class="panel checker-official">
+        <h2>🏛️ Επίσημες πηγές για φάρμακα</h2>
+        <p class="muted">
+            Για φάρμακα στην Κύπρο, χρησιμοποίησε παράλληλα το επίσημο μητρώο Φαρμακευτικών Υπηρεσιών.
+            Για κεντρικά εγκεκριμένα φάρμακα στην ΕΕ μπορείς να ελέγξεις και την EMA.
+        </p>
+        <a class="btn secondary checker-source-link"
+           href="https://www.phs.moh.gov.cy/human-search/home.xhtml?lang=el"
+           target="_blank" rel="noopener">
+            Φαρμακευτικές Υπηρεσίες Κύπρου ↗
+        </a>
+        <a class="btn secondary checker-source-link"
+           href="https://www.ema.europa.eu/en/medicines"
+           target="_blank" rel="noopener">
+            EMA Medicines ↗
+        </a>
+        <small class="muted">
+            Η ύπαρξη ενός φαρμάκου σε επίσημο μητρώο δεν σημαίνει ότι είναι κατάλληλο για τον Γιώργο.
+            Ο έλεγχος αφορά και δραστική ουσία, μορφή και έκδοχα.
+        </small>
+    </aside>
+</div>
+
+{% if analysis %}
+<section class="checker-result checker-result-{{ analysis.level }}">
+    <div class="checker-result-icon">
+        {% if analysis.level == "avoid" %}⛔{% elif analysis.level == "caution" %}⚠️{% else %}ℹ️{% endif %}
+    </div>
+    <div class="checker-result-main">
+        <span class="checker-result-kicker">Αποτέλεσμα ελέγχου</span>
+        <h2>{{ analysis.title }}</h2>
+        <p>{{ analysis.text }}</p>
+
+        {% if analysis.matches %}
+        <div class="matched-rules">
+            {% for rule in analysis.matches %}
+            <div class="matched-rule matched-rule-{{ rule.guidance }}">
+                <div>
+                    <strong>{{ rule.term }}</strong>
+                    <span>{{ rule.get_guidance_display }}</span>
+                </div>
+                {% if rule.note %}<small>{{ rule.note }}</small>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if analysis.exact_records %}
+        <div class="known-exact">
+            <h3>Καταχωρημένη αξιολόγηση για αυτή την ονομασία</h3>
+            {% for item in analysis.exact_records %}
+            <div class="safety-record-card decision-{{ item.decision }}">
+                <div>
+                    <strong>{{ item.name }}</strong>
+                    <span>{{ item.get_decision_display }}</span>
+                </div>
+                {% if item.confirmed_by %}<small>Επιβεβαιώθηκε από: {{ item.confirmed_by }}</small>{% endif %}
+                {% if item.reviewed_on %}<small>Ημερομηνία: {{ item.reviewed_on|date:"d/m/Y" }}</small>{% endif %}
+                {% if item.notes %}<p>{{ item.notes }}</p>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="checker-result-actions">
+            <a class="btn secondary"
+               href="{% url 'product_record_create' %}?kind={{ analysis.kind|urlencode }}&name={{ analysis.name|urlencode }}">
+                Αποθήκευση επιβεβαιωμένης αξιολόγησης
+            </a>
+            <a class="btn secondary" href="{% url 'safety_rule_list' %}">Διαχείριση κανόνων</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="panel known-products-panel">
+    <div class="panel-head">
+        <div>
+            <h2>📚 Καταχωρημένες αξιολογήσεις</h2>
+            <p class="muted">Αναζήτησε προϊόν ή φάρμακο που έχει ήδη ελεγχθεί.</p>
+        </div>
+    </div>
+
+    <form method="get" class="checker-search-known">
+        <input type="search" name="q" value="{{ query }}" placeholder="Αναζήτηση ονομασίας..." aria-label="Αναζήτηση αξιολογήσεων">
+        <button class="btn secondary" type="submit">Αναζήτηση</button>
+        {% if query %}<a class="btn secondary" href="{% url 'safety_checker' %}">Καθαρισμός</a>{% endif %}
+    </form>
+
+    <div class="safety-record-grid">
+        {% for item in known_results %}
+        <article class="safety-record-card decision-{{ item.decision }}">
+            <div class="safety-record-head">
+                <span>{% if item.kind == "food" %}🥣{% else %}💊{% endif %}</span>
+                <div>
+                    <strong>{{ item.name }}</strong>
+                    <small>{{ item.get_kind_display }}</small>
+                </div>
+            </div>
+            <div class="decision-label">{{ item.get_decision_display }}</div>
+            {% if item.confirmed_by %}<p><strong>Επιβεβαίωση:</strong> {{ item.confirmed_by }}</p>{% endif %}
+            {% if item.reviewed_on %}<p><strong>Έλεγχος:</strong> {{ item.reviewed_on|date:"d/m/Y" }}</p>{% endif %}
+            {% if item.notes %}<p class="muted">{{ item.notes }}</p>{% endif %}
+            <div class="row-actions">
+                <a class="mini-action" href="{% url 'product_record_edit' item.pk %}">Edit</a>
+                <a class="mini-action danger-link" href="{% url 'product_record_delete' item.pk %}">Delete</a>
+            </div>
+        </article>
+        {% empty %}
+        <div class="empty-state checker-empty">
+            <div class="empty-icon">🔎</div>
+            <h3>Δεν υπάρχουν καταχωρημένες αξιολογήσεις</h3>
+            <p class="muted">Μπορείς να αποθηκεύσεις όσα έχουν επιβεβαιωθεί από ιατρό ή φαρμακοποιό.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

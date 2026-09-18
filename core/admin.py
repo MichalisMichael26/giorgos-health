@@ -12,6 +12,8 @@ from .models import (
     MedicationEntry,
     SymptomEntry,
     VaccineEntry,
+    SafetyRule,
+    ProductSafetyRecord,
 )
 
 
@@ -86,3 +88,18 @@ class AuditLogAdmin(admin.ModelAdmin):
     list_filter = ("action", "model_name")
     search_fields = ("object_repr", "object_id")
     readonly_fields = ("timestamp", "user", "action", "model_name", "object_id", "object_repr", "changes")
+
+
+
+@admin.register(SafetyRule)
+class SafetyRuleAdmin(admin.ModelAdmin):
+    list_display = ("term", "applies_to", "guidance", "active", "updated_at")
+    list_filter = ("applies_to", "guidance", "active")
+    search_fields = ("term", "note")
+
+
+@admin.register(ProductSafetyRecord)
+class ProductSafetyRecordAdmin(admin.ModelAdmin):
+    list_display = ("name", "kind", "decision", "confirmed_by", "reviewed_on")
+    list_filter = ("kind", "decision")
+    search_fields = ("name", "ingredients", "confirmed_by", "notes")

@@ -45,6 +45,36 @@
     </div>
 </section>
 
+<section class="panel home-health-shortcuts">
+    <div class="panel-head">
+        <div>
+            <h2>❤️ Άμεση πρόσβαση</h2>
+            <p class="muted">Τα πιο σημαντικά εργαλεία χωρίς να ψάχνεις στα μενού.</p>
+        </div>
+        <a href="{% url 'health_hub' %}">Όλη η Υγεία</a>
+    </div>
+    <div class="home-health-grid">
+        <a href="{% url 'safety_checker' %}" class="home-health-card home-checker">
+            <span>🔎</span><div><strong>Έλεγχος προϊόντος / φαρμάκου</strong><small>Συστατικά, έκδοχα και καταχωρημένες οδηγίες</small></div>
+        </a>
+        <a href="{% url 'doctor_view' %}" class="home-health-card">
+            <span>👨‍⚕️</span><div><strong>Doctor View</strong><small>Καθαρή ιατρική εικόνα</small></div>
+        </a>
+        <a href="{% url 'emergency_card' %}" class="home-health-card home-emergency">
+            <span>🆘</span><div><strong>Emergency Card</strong><small>Άμεσες βασικές πληροφορίες</small></div>
+        </a>
+        <a href="{% url 'document_list' %}" class="home-health-card">
+            <span>📁</span><div><strong>Έγγραφα</strong><small>Εξιτήρια και εξετάσεις</small></div>
+        </a>
+        <a href="{% url 'vaccine_list' %}" class="home-health-card">
+            <span>💉</span><div><strong>Εμβόλια</strong><small>Ιστορικό και επόμενη δόση</small></div>
+        </a>
+        <a href="{% url 'appointment_list' %}" class="home-health-card">
+            <span>🩺</span><div><strong>Ραντεβού</strong><small>Επανέλεγχοι και reminders</small></div>
+        </a>
+    </div>
+</section>
+
 <section class="panel comparison-panel">
     <div class="panel-head">
         <div>
@@ -293,16 +323,16 @@
 </section>
 
 <section class="panel quick-actions-panel">
-    <div class="panel-head"><h2>⚡ Γρήγορες ενέργειες</h2></div>
+    <div class="panel-head">
+        <div><h2>⚡ Καταχώρηση / εργαλεία</h2><p class="muted">Οι συχνότερες ενέργειες.</p></div>
+    </div>
     <div class="quick-actions-grid">
-        <a href="{% url 'analytics' %}"><span>📊</span><strong>Γραφήματα</strong></a>
         <a href="{% url 'medication_create' %}"><span>💊</span><strong>Φάρμακο</strong></a>
-        <a href="{% url 'appointment_create' %}"><span>🩺</span><strong>Ραντεβού</strong></a>
+        <a href="{% url 'symptom_create' %}"><span>🌡️</span><strong>Σύμπτωμα</strong></a>
+        <a href="{% url 'diaper_create' %}"><span>👶</span><strong>Πάνα</strong></a>
         <a href="{% url 'growth_create' %}"><span>📏</span><strong>Ανάπτυξη</strong></a>
-        <a href="{% url 'history' %}"><span>📅</span><strong>Ιστορικό</strong></a>
+        <a href="{% url 'analytics' %}"><span>📊</span><strong>Γραφήματα</strong></a>
         <a href="{% url 'report_24h_preview' %}"><span>📄</span><strong>24ωρο report</strong></a>
-        <a href="{% url 'doctor_view' %}"><span>👨‍⚕️</span><strong>Doctor view</strong></a>
-        <a href="{% url 'emergency_card' %}"><span>🆘</span><strong>Emergency</strong></a>
     </div>
 </section>
 

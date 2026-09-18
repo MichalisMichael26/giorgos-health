@@ -5,6 +5,7 @@ import zipfile
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import quote
+import unicodedata
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -20,6 +21,9 @@ from .advanced_forms import (
     MedicalDocumentMetadataForm,
     SymptomEntryForm,
     VaccineEntryForm,
+    ProductCheckerForm,
+    SafetyRuleForm,
+    ProductSafetyRecordForm,
 )
 from .models import (
     AuditLog,
@@ -33,6 +37,8 @@ from .models import (
     MedicationEntry,
     SymptomEntry,
     VaccineEntry,
+    SafetyRule,
+    ProductSafetyRecord,
 )
 from .who_growth import (
     HEAD_BOYS,
@@ -483,6 +489,190 @@ def audit_log(request):
     return render(request, "audit/list.html", {"logs": logs[:500], "models": models, "model_filter": model_filter})
 
 
+
+def _normalize_checker_text(value):
+    value = unicodedata.normalize("NFKD", value or "")
+    value = "".join(ch for ch in value if not unicodedata.combining(ch))
+    return " ".join(value.casefold().split())
+
+
+def _matching_safety_rules(kind, text):
+    normalized = _normalize_checker_text(text)
+    if not normalized:
+        return []
+
+    rules = SafetyRule.objects.filter(active=True).order_by("guidance", "term")
+    matches = []
+
+    for rule in rules:
+        if rule.applies_to not in {"both", kind}:
+            continue
+        term = _normalize_checker_text(rule.term)
+        if term and term in normalized:
+            matches.append(rule)
+
+    return matches
+
+
+@login_required
+def safety_checker(request):
+    query = (request.GET.get("q") or "").strip()
+    known_results = ProductSafetyRecord.objects.none()
+
+    if query:
+        known_results = ProductSafetyRecord.objects.filter(name__icontains=query)[:20]
+    else:
+        known_results = ProductSafetyRecord.objects.all()[:12]
+
+    initial = {}
+    if query:
+        initial["name"] = query
+
+    form = ProductCheckerForm(request.POST or None, initial=initial)
+    analysis = None
+
+    if request.method == "POST" and form.is_valid():
+        kind = form.cleaned_data["kind"]
+        name = form.cleaned_data["name"].strip()
+        ingredients = form.cleaned_data["ingredients"].strip()
+        combined = f"{name}\n{ingredients}"
+        matches = _matching_safety_rules(kind, combined)
+
+        avoid = [rule for rule in matches if rule.guidance == "avoid"]
+        caution = [rule for rule in matches if rule.guidance == "caution"]
+
+        exact_records = ProductSafetyRecord.objects.filter(
+            kind=kind,
+            name__iexact=name,
+        ).order_by("-reviewed_on", "-updated_at")
+
+        if avoid:
+            result_level = "avoid"
+            result_title = "Εντοπίστηκε καταχωρημένος περιορισμός"
+            result_text = "Βρέθηκε ένας ή περισσότεροι όροι που έχουν καταχωρηθεί ως «Να αποφεύγεται»."
+        elif caution:
+            result_level = "caution"
+            result_title = "Χρειάζεται επιβεβαίωση"
+            result_text = "Βρέθηκε ένας ή περισσότεροι όροι που έχουν καταχωρηθεί ως «Χρειάζεται έλεγχος»."
+        else:
+            result_level = "unknown"
+            result_title = "Δεν βρέθηκε καταχωρημένος περιορισμός"
+            result_text = (
+                "Αυτό δεν σημαίνει ότι το προϊόν ή το φάρμακο είναι ασφαλές ή κατάλληλο. "
+                "Σημαίνει μόνο ότι δεν βρέθηκε αντιστοιχία με τους κανόνες που έχετε καταχωρήσει."
+            )
+
+        analysis = {
+            "kind": kind,
+            "name": name,
+            "ingredients": ingredients,
+            "matches": matches,
+            "avoid": avoid,
+            "caution": caution,
+            "level": result_level,
+            "title": result_title,
+            "text": result_text,
+            "exact_records": exact_records,
+        }
+
+    return render(
+        request,
+        "checker/index.html",
+        {
+            "form": form,
+            "analysis": analysis,
+            "query": query,
+            "known_results": known_results,
+            "rules_count": SafetyRule.objects.filter(active=True).count(),
+        },
+    )
+
+
+@login_required
+def safety_rule_list(request):
+    return render(
+        request,
+        "checker/rules.html",
+        {"rules": SafetyRule.objects.all()},
+    )
+
+
+@login_required
+def safety_rule_create(request):
+    form = SafetyRuleForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Ο κανόνας αποθηκεύτηκε.")
+        return redirect("safety_rule_list")
+    return render(request, "form.html", {"form": form, "title": "Νέος κανόνας ελέγχου"})
+
+
+@login_required
+def safety_rule_edit(request, pk):
+    item = get_object_or_404(SafetyRule, pk=pk)
+    form = SafetyRuleForm(request.POST or None, instance=item)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Ο κανόνας ενημερώθηκε.")
+        return redirect("safety_rule_list")
+    return render(request, "form.html", {"form": form, "title": "Επεξεργασία κανόνα"})
+
+
+@login_required
+def safety_rule_delete(request, pk):
+    item = get_object_or_404(SafetyRule, pk=pk)
+    if request.method == "POST":
+        item.delete()
+        messages.success(request, "Ο κανόνας διαγράφηκε.")
+        return redirect("safety_rule_list")
+    return render(request, "confirm_delete.html", {"title": "Διαγραφή κανόνα"})
+
+
+@login_required
+def product_record_create(request):
+    initial = {
+        "kind": request.GET.get("kind", "food"),
+        "name": request.GET.get("name", ""),
+        "reviewed_on": timezone.localdate(),
+    }
+    form = ProductSafetyRecordForm(request.POST or None, initial=initial)
+    if form.is_valid():
+        item = form.save(commit=False)
+        item.created_by = request.user
+        item.save()
+        messages.success(request, "Η αξιολόγηση προϊόντος/φαρμάκου αποθηκεύτηκε.")
+        return redirect("safety_checker")
+    return render(
+        request,
+        "form.html",
+        {
+            "form": form,
+            "title": "Νέα επιβεβαιωμένη αξιολόγηση",
+        },
+    )
+
+
+@login_required
+def product_record_edit(request, pk):
+    item = get_object_or_404(ProductSafetyRecord, pk=pk)
+    form = ProductSafetyRecordForm(request.POST or None, instance=item)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Η αξιολόγηση ενημερώθηκε.")
+        return redirect("safety_checker")
+    return render(request, "form.html", {"form": form, "title": "Επεξεργασία αξιολόγησης"})
+
+
+@login_required
+def product_record_delete(request, pk):
+    item = get_object_or_404(ProductSafetyRecord, pk=pk)
+    if request.method == "POST":
+        item.delete()
+        messages.success(request, "Η αξιολόγηση διαγράφηκε.")
+        return redirect("safety_checker")
+    return render(request, "confirm_delete.html", {"title": "Διαγραφή αξιολόγησης"})
+
+
 def _records_for_export():
     return [
         ("Profile", ChildProfile.objects.all()),
@@ -495,6 +685,8 @@ def _records_for_export():
         ("Symptoms", SymptomEntry.objects.all()),
         ("Diapers", DiaperEntry.objects.all()),
         ("Documents", MedicalDocument.objects.all()),
+        ("SafetyRules", SafetyRule.objects.all()),
+        ("ProductChecks", ProductSafetyRecord.objects.all()),
         ("Audit", AuditLog.objects.all()),
     ]
 
@@ -552,6 +744,8 @@ def export_center(request):
                 "glucose": GlucoseReading.objects.count(),
                 "growth": GrowthMeasurement.objects.count(),
                 "documents": MedicalDocument.objects.count(),
+                "safety_rules": SafetyRule.objects.count(),
+                "product_checks": ProductSafetyRecord.objects.count(),
                 "audit": AuditLog.objects.count(),
             }
         },
@@ -636,6 +830,8 @@ def export_pdf(request):
         ("Συμπτώματα", [[s.date.strftime('%d/%m/%Y'), s.time.strftime('%H:%M'), s.symptom, s.get_severity_display()] for s in SymptomEntry.objects.order_by('-date','-time')], ["Ημ/νία","Ώρα","Σύμπτωμα","Ένταση"]),
         ("Πάνες", [[d.date.strftime('%d/%m/%Y'), d.time.strftime('%H:%M'), d.get_kind_display(), d.stool_color] for d in DiaperEntry.objects.order_by('-date','-time')], ["Ημ/νία","Ώρα","Τύπος","Χρώμα"]),
         ("Έγγραφα", [[d.date.strftime('%d/%m/%Y'), d.get_category_display(), d.title, d.original_filename] for d in MedicalDocument.objects.order_by('-date')], ["Ημ/νία","Κατηγορία","Τίτλος","Αρχείο"]),
+        ("Κανόνες ελέγχου", [[r.term, r.get_applies_to_display(), r.get_guidance_display(), r.note] for r in SafetyRule.objects.order_by('term')], ["Όρος","Ισχύει για","Οδηγία","Σημείωση"]),
+        ("Αξιολογήσεις προϊόντων", [[p.get_kind_display(), p.name, p.get_decision_display(), p.confirmed_by] for p in ProductSafetyRecord.objects.order_by('kind','name')], ["Τύπος","Ονομασία","Αξιολόγηση","Επιβεβαιώθηκε από"]),
         ("Audit log", [[a.timestamp.strftime('%d/%m/%Y %H:%M'), a.get_action_display(), a.model_name, a.object_repr] for a in AuditLog.objects.order_by('-timestamp')[:500]], ["Ημ/νία","Ενέργεια","Τύπος","Αντικείμενο"]),
     ]
     for title, rows, headers in sections:

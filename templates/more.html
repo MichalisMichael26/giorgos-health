@@ -1,30 +1,75 @@
 {% extends "base.html" %}
-{% block title %}Περισσότερα{% endblock %}
+{% block title %}Υγεία{% endblock %}
 {% block content %}
-<div class="page-head">
+<div class="page-head health-hub-head">
     <div>
-        <h1>☰ Περισσότερα</h1>
-        <p class="muted">Όλες οι επιπλέον λειτουργίες του Giorgos Health.</p>
+        <h1>❤️ Υγεία</h1>
+        <p class="muted">Όλες οι σημαντικές λειτουργίες οργανωμένες σε κατηγορίες — χωρίς να είναι κρυμμένες.</p>
     </div>
+    <a class="btn primary" href="{% url 'safety_checker' %}">🔎 Έλεγχος προϊόντος / φαρμάκου</a>
 </div>
 
-<div class="more-grid">
-    <a href="{% url 'child_profile_edit' %}" class="more-card"><span>👶</span><div><strong>Στοιχεία & στόχος</strong><small>Ηλικία και ημερήσιος στόχος γάλακτος</small></div></a>
-    <a href="{% url 'document_list' %}" class="more-card"><span>📁</span><div><strong>Έγγραφα</strong><small>Εξιτήρια, εξετάσεις, γνωματεύσεις</small></div></a>
-    <a href="{% url 'vaccine_list' %}" class="more-card"><span>💉</span><div><strong>Εμβόλια</strong><small>Ιστορικό, επόμενη δόση και reminders</small></div></a>
-    <a href="{% url 'growth_percentiles' %}" class="more-card"><span>📈</span><div><strong>WHO Percentiles</strong><small>Βάρος, μήκος και κεφάλι</small></div></a>
-    <a href="{% url 'feeding_performance' %}" class="more-card"><span>🍼</span><div><strong>Feeding performance</strong><small>Μ.ό., ποσοστό κατανάλωσης, πλήρη/μερικά</small></div></a>
-    <a href="{% url 'doctor_view' %}" class="more-card"><span>👨‍⚕️</span><div><strong>Doctor view</strong><small>Καθαρή read-only εικόνα για τον γιατρό</small></div></a>
-    <a href="{% url 'emergency_card' %}" class="more-card emergency-more-card"><span>🆘</span><div><strong>Επείγουσα κάρτα</strong><small>Οδηγίες, ιατροί, τηλέφωνα, feeding plan</small></div></a>
-    <a href="{% url 'audit_log' %}" class="more-card"><span>🧾</span><div><strong>Audit log</strong><small>Ποιος άλλαξε τι και πότε</small></div></a>
-    <a href="{% url 'export_center' %}" class="more-card"><span>💾</span><div><strong>Backup / Export</strong><small>ZIP, Excel και PDF</small></div></a>
-    <a href="{% url 'symptom_list' %}" class="more-card"><span>🌡️</span><div><strong>Συμπτώματα</strong><small>Επεισόδια, ένταση και σχέση με γεύμα</small></div></a>
-    <a href="{% url 'diaper_list' %}" class="more-card"><span>👶</span><div><strong>Πάνες / κενώσεις</strong><small>Ούρα και κενώσεις</small></div></a>
-    <a href="{% url 'growth_list' %}" class="more-card"><span>📏</span><div><strong>Ανάπτυξη</strong><small>Βάρος, μήκος, κεφάλι</small></div></a>
-    <a href="{% url 'medication_list' %}" class="more-card"><span>💊</span><div><strong>Φάρμακα</strong><small>Ποσότητα, ώρα και ιστορικό</small></div></a>
-    <a href="{% url 'appointment_list' %}" class="more-card"><span>🩺</span><div><strong>Ραντεβού</strong><small>Επανέλεγχοι και reminders</small></div></a>
-    <a href="{% url 'history' %}" class="more-card"><span>📅</span><div><strong>Ιστορικό</strong><small>Προηγούμενες ημέρες</small></div></a>
-    <a href="{% url 'analytics' %}" class="more-card"><span>📊</span><div><strong>Γραφήματα</strong><small>7 / 30 / 90 ημέρες / πάντα</small></div></a>
-    <a href="{% url 'report_24h_preview' %}" class="more-card"><span>📄</span><div><strong>24ωρη αναφορά</strong><small>Προβολή και προαιρετική λήψη PDF</small></div></a>
-</div>
+<section class="health-critical-grid">
+    <a href="{% url 'emergency_card' %}" class="health-critical-card critical-emergency">
+        <span>🆘</span>
+        <div><strong>Επείγουσα κάρτα</strong><small>Οδηγίες, ιατροί, τηλέφωνα, feeding plan</small></div>
+    </a>
+    <a href="{% url 'doctor_view' %}" class="health-critical-card">
+        <span>👨‍⚕️</span>
+        <div><strong>Doctor View</strong><small>Καθαρή εικόνα για γιατρό / νοσοκομείο</small></div>
+    </a>
+    <a href="{% url 'safety_checker' %}" class="health-critical-card critical-checker">
+        <span>🔎</span>
+        <div><strong>Έλεγχος τροφίμου / φαρμάκου</strong><small>Κανόνες συστατικών και καταχωρημένες αξιολογήσεις</small></div>
+    </a>
+</section>
+
+<section class="health-section">
+    <div class="health-section-head">
+        <div>
+            <span>🩺</span>
+            <div><h2>Φροντίδα & παρακολούθηση</h2><p>Καθημερινή και ιατρική παρακολούθηση.</p></div>
+        </div>
+    </div>
+    <div class="health-card-grid">
+        <a href="{% url 'growth_list' %}" class="health-menu-card"><span>📏</span><div><strong>Ανάπτυξη</strong><small>Βάρος, μήκος, κεφάλι</small></div></a>
+        <a href="{% url 'growth_percentiles' %}" class="health-menu-card"><span>📈</span><div><strong>WHO Percentiles</strong><small>Επίσημες καμπύλες ανάπτυξης</small></div></a>
+        <a href="{% url 'medication_list' %}" class="health-menu-card"><span>💊</span><div><strong>Φάρμακα</strong><small>Δόσεις και ιστορικό</small></div></a>
+        <a href="{% url 'vaccine_list' %}" class="health-menu-card"><span>💉</span><div><strong>Εμβόλια</strong><small>Δόσεις και reminders</small></div></a>
+        <a href="{% url 'appointment_list' %}" class="health-menu-card"><span>🩺</span><div><strong>Ραντεβού</strong><small>Ιατροί και επανέλεγχοι</small></div></a>
+        <a href="{% url 'symptom_list' %}" class="health-menu-card"><span>🌡️</span><div><strong>Συμπτώματα</strong><small>Επεισόδια και ένταση</small></div></a>
+        <a href="{% url 'diaper_list' %}" class="health-menu-card"><span>👶</span><div><strong>Πάνες / κενώσεις</strong><small>Ούρα και κενώσεις</small></div></a>
+    </div>
+</section>
+
+<section class="health-section">
+    <div class="health-section-head">
+        <div>
+            <span>📁</span>
+            <div><h2>Αρχεία & αναφορές</h2><p>Ό,τι χρειάζεται να βρεις γρήγορα για γιατρό ή νοσοκομείο.</p></div>
+        </div>
+    </div>
+    <div class="health-card-grid">
+        <a href="{% url 'document_list' %}" class="health-menu-card"><span>📁</span><div><strong>Έγγραφα</strong><small>Εξιτήρια, εξετάσεις, γνωματεύσεις</small></div></a>
+        <a href="{% url 'history' %}" class="health-menu-card"><span>📅</span><div><strong>Ιστορικό</strong><small>Όλες οι προηγούμενες ημέρες</small></div></a>
+        <a href="{% url 'report_24h_preview' %}" class="health-menu-card"><span>📄</span><div><strong>24ωρη αναφορά</strong><small>Προβολή και PDF</small></div></a>
+        <a href="{% url 'export_center' %}" class="health-menu-card"><span>💾</span><div><strong>Backup / Export</strong><small>ZIP, Excel και PDF</small></div></a>
+    </div>
+</section>
+
+<section class="health-section">
+    <div class="health-section-head">
+        <div>
+            <span>📊</span>
+            <div><h2>Ανάλυση & ρυθμίσεις</h2><p>Τάσεις, feeding performance και διαχείριση του app.</p></div>
+        </div>
+    </div>
+    <div class="health-card-grid">
+        <a href="{% url 'analytics' %}" class="health-menu-card"><span>📊</span><div><strong>Γραφήματα</strong><small>7 / 30 / 90 ημέρες / πάντα</small></div></a>
+        <a href="{% url 'feeding_performance' %}" class="health-menu-card"><span>🍼</span><div><strong>Feeding Performance</strong><small>Μ.ό., ποσοστό κατανάλωσης και γεύματα</small></div></a>
+        <a href="{% url 'child_profile_edit' %}" class="health-menu-card"><span>👶</span><div><strong>Στοιχεία & στόχος</strong><small>Προφίλ και ημερήσιος στόχος γάλακτος</small></div></a>
+        <a href="{% url 'safety_rule_list' %}" class="health-menu-card"><span>⚙️</span><div><strong>Κανόνες ελέγχου</strong><small>Περιορισμοί για τρόφιμα / φάρμακα</small></div></a>
+        <a href="{% url 'audit_log' %}" class="health-menu-card"><span>🧾</span><div><strong>Audit Log</strong><small>Ποιος άλλαξε τι και πότε</small></div></a>
+    </div>
+</section>
 {% endblock %}

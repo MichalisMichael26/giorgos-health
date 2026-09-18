@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Κανόνες ελέγχου{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>⚙️ Κανόνες ελέγχου</h1>
+        <p class="muted">
+            Καταχώρησε μόνο περιορισμούς ή προειδοποιήσεις που σας έχουν δοθεί από την ιατρική ομάδα / φαρμακοποιό.
+        </p>
+    </div>
+    <div class="page-head-actions">
+        <a class="btn secondary" href="{% url 'safety_checker' %}">← Έλεγχος προϊόντος</a>
+        <a class="btn primary" href="{% url 'safety_rule_create' %}">+ Νέος κανόνας</a>
+    </div>
+</div>
+
+<section class="panel checker-warning">
+    <strong>Δεν υπάρχουν προκαθορισμένοι ιατρικοί περιορισμοί.</strong>
+    <p>
+        Το app δεν συμπληρώνει μόνο του απαγορευμένα συστατικά.
+        Οι κανόνες εδώ πρέπει να προέρχονται από συγκεκριμένη οδηγία που θέλετε να εφαρμόζει ο checker.
+    </p>
+</section>
+
+<div class="rules-grid">
+    {% for item in rules %}
+    <article class="rule-card rule-{{ item.guidance }} {% if not item.active %}rule-inactive{% endif %}">
+        <div class="rule-card-head">
+            <div>
+                <strong>{{ item.term }}</strong>
+                <small>{{ item.get_applies_to_display }}</small>
+            </div>
+            <span class="rule-status">{{ item.get_guidance_display }}</span>
+        </div>
+        {% if item.note %}<p>{{ item.note }}</p>{% endif %}
+        {% if not item.active %}<span class="inactive-pill">Ανενεργό</span>{% endif %}
+        <div class="row-actions">
+            <a class="mini-action" href="{% url 'safety_rule_edit' item.pk %}">Edit</a>
+            <a class="mini-action danger-link" href="{% url 'safety_rule_delete' item.pk %}">Delete</a>
+        </div>
+    </article>
+    {% empty %}
+    <section class="panel empty-state checker-empty">
+        <div class="empty-icon">⚙️</div>
+        <h2>Δεν υπάρχουν κανόνες ακόμη</h2>
+        <p class="muted">Πρόσθεσε μόνο όσα σας έχει πει να ελέγχετε η ιατρική ομάδα.</p>
+    </section>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -4,6 +4,7 @@ from . import views, advanced_views
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("more/", views.more, name="more"),
+    path("health/", views.more, name="health_hub"),
     path("profile/", views.child_profile_edit, name="child_profile_edit"),
     path("analytics/", views.analytics, name="analytics"),
 
@@ -66,6 +67,15 @@ urlpatterns = [
     path("emergency-card/", advanced_views.emergency_card, name="emergency_card"),
     path("emergency-card/edit/", advanced_views.emergency_edit, name="emergency_edit"),
     path("audit-log/", advanced_views.audit_log, name="audit_log"),
+
+    path("checker/", advanced_views.safety_checker, name="safety_checker"),
+    path("checker/rules/", advanced_views.safety_rule_list, name="safety_rule_list"),
+    path("checker/rules/new/", advanced_views.safety_rule_create, name="safety_rule_create"),
+    path("checker/rules/<int:pk>/edit/", advanced_views.safety_rule_edit, name="safety_rule_edit"),
+    path("checker/rules/<int:pk>/delete/", advanced_views.safety_rule_delete, name="safety_rule_delete"),
+    path("checker/records/new/", advanced_views.product_record_create, name="product_record_create"),
+    path("checker/records/<int:pk>/edit/", advanced_views.product_record_edit, name="product_record_edit"),
+    path("checker/records/<int:pk>/delete/", advanced_views.product_record_delete, name="product_record_delete"),
 
     path("exports/", advanced_views.export_center, name="export_center"),
     path("exports/excel/", advanced_views.export_excel, name="export_excel"),

@@ -398,3 +398,89 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.get_action_display()} - {self.model_name} - {self.timestamp}"
+
+
+
+class SafetyRule(models.Model):
+    APPLIES_TO_CHOICES = [
+        ("food", "Τρόφιμα"),
+        ("medicine", "Φάρμακα"),
+        ("both", "Τρόφιμα και φάρμακα"),
+    ]
+    GUIDANCE_CHOICES = [
+        ("avoid", "Να αποφεύγεται"),
+        ("caution", "Χρειάζεται έλεγχος"),
+    ]
+
+    term = models.CharField("Συστατικό / όρος", max_length=160)
+    applies_to = models.CharField(
+        "Ισχύει για",
+        max_length=20,
+        choices=APPLIES_TO_CHOICES,
+        default="both",
+    )
+    guidance = models.CharField(
+        "Οδηγία",
+        max_length=20,
+        choices=GUIDANCE_CHOICES,
+        default="caution",
+    )
+    note = models.CharField(
+        "Σημείωση / πηγή οδηγίας",
+        max_length=255,
+        blank=True,
+        help_text="Π.χ. οδηγία παιδιάτρου, μεταβολικής ομάδας ή φαρμακοποιού.",
+    )
+    active = models.BooleanField("Ενεργό", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["term"]
+
+    def __str__(self):
+        return f"{self.term} - {self.get_guidance_display()}"
+
+
+class ProductSafetyRecord(models.Model):
+    KIND_CHOICES = [
+        ("food", "Τρόφιμο / ρόφημα"),
+        ("medicine", "Φάρμακο / σκεύασμα"),
+    ]
+    DECISION_CHOICES = [
+        ("confirmed", "Επιβεβαιωμένο από ιατρό / φαρμακοποιό"),
+        ("avoid", "Να αποφεύγεται"),
+        ("caution", "Χρειάζεται έλεγχος"),
+    ]
+
+    kind = models.CharField("Τύπος", max_length=20, choices=KIND_CHOICES)
+    name = models.CharField("Ονομασία προϊόντος / φαρμάκου", max_length=220)
+    decision = models.CharField("Καταχωρημένη αξιολόγηση", max_length=20, choices=DECISION_CHOICES)
+    ingredients = models.TextField(
+        "Συστατικά / έκδοχα",
+        blank=True,
+        help_text="Προαιρετικά: αντιγραφή από ετικέτα ή φύλλο οδηγιών.",
+    )
+    confirmed_by = models.CharField(
+        "Επιβεβαιώθηκε από",
+        max_length=180,
+        blank=True,
+        help_text="Για επιβεβαιωμένο προϊόν γράψε ιατρό ή φαρμακοποιό.",
+    )
+    reviewed_on = models.DateField("Ημερομηνία ελέγχου", blank=True, null=True)
+    notes = models.TextField("Σημειώσεις", blank=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="product_safety_records",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["kind", "name"]
+
+    def __str__(self):
+        return f"{self.name} - {self.get_decision_display()}"

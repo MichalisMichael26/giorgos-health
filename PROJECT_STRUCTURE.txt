@@ -12,6 +12,7 @@ core/migrations/0001_initial.py
 core/migrations/0002_medications_appointments.py
 core/migrations/0003_childprofile.py
 core/migrations/0004_advanced_health_features.py
+core/migrations/0005_safety_checker.py
 core/migrations/__init__.py
 core/models.py
 core/signals.py
@@ -37,6 +38,8 @@ templates/analytics.html
 templates/appointments/list.html
 templates/audit/list.html
 templates/base.html
+templates/checker/index.html
+templates/checker/rules.html
 templates/confirm_delete.html
 templates/dashboard.html
 templates/diapers/list.html
