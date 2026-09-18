@@ -15,6 +15,47 @@
 </div>
 <div class="two-panel-grid">
 <section class="panel"><h2>💊 Σήμερα</h2>{% for m in medications %}<div class="compact-row"><strong>{{ m.time|time:"H:i" }}</strong><span>{{ m.name }}</span><small>{{ m.dose }} {{ m.get_unit_display }}</small></div>{% empty %}<p class="muted">—</p>{% endfor %}</section>
-<section class="panel"><h2>🧪 Τελευταίες εξετάσεις</h2>{% for l in labs %}<div class="compact-row"><strong>{{ l.test_name }}</strong><span>{{ l.value }} {{ l.unit }}</span><small>{{ l.date|date:"d/m/Y" }}</small></div>{% empty %}<p class="muted">—</p>{% endfor %}</section>
+<section class="panel hospital-labs-panel">
+    <div class="hospital-labs-head">
+        <div>
+            <h2>🧪 Τελευταίες εξετάσεις</h2>
+            {% if latest_lab_date %}
+            <p>Πιο πρόσφατο σετ: <strong>{{ latest_lab_date|date:"d/m/Y" }}</strong></p>
+            {% endif %}
+        </div>
+        <a href="{% url 'lab_list' %}">Όλες ›</a>
+    </div>
+
+    {% if labs %}
+    <div class="hospital-labs-table-wrap">
+        <table class="hospital-labs-table">
+            <thead>
+                <tr>
+                    <th>Εξέταση</th>
+                    <th>Αποτέλεσμα</th>
+                    <th>Μονάδα</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in labs %}
+                <tr>
+                    <td>
+                        <a href="{% url 'lab_chart' %}?name={{ l.test_name|urlencode }}">
+                            {{ l.test_name }}
+                        </a>
+                    </td>
+                    <td class="hospital-lab-result">
+                        <strong>{{ l.value|floatformat:"-4" }}</strong>
+                    </td>
+                    <td class="hospital-lab-unit">{{ l.unit|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="muted">Δεν υπάρχουν καταχωρημένες εργαστηριακές τιμές.</p>
+    {% endif %}
+</section>
 </div>
 {% endblock %}

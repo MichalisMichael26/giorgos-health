@@ -4102,3 +4102,126 @@ html.night .doctor-readonly-banner strong {
 html.night .doctor-readonly-banner small {
     color: #b4c4d7;
 }
+
+
+/* ===== Hospital lab table ===== */
+.hospital-labs-panel {
+    min-width: 0;
+}
+
+.hospital-labs-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.hospital-labs-head h2 {
+    margin: 0;
+}
+
+.hospital-labs-head p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.hospital-labs-head > a {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.hospital-labs-table-wrap {
+    max-height: 430px;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.hospital-labs-table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.hospital-labs-table th,
+.hospital-labs-table td {
+    padding: 10px 9px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.hospital-labs-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f4f7fb;
+    color: var(--muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.hospital-labs-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.hospital-labs-table td:first-child {
+    width: 48%;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.hospital-labs-table td:first-child a {
+    color: var(--text);
+}
+
+.hospital-lab-result {
+    width: 28%;
+    white-space: nowrap;
+}
+
+.hospital-lab-result strong {
+    font-size: 16px;
+    color: var(--text);
+}
+
+.hospital-lab-unit {
+    width: 24%;
+    color: var(--muted);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+html.night .hospital-labs-table thead th {
+    background: #263850;
+}
+
+@media (max-width: 720px) {
+    .hospital-labs-table-wrap {
+        max-height: 390px;
+    }
+
+    .hospital-labs-table th,
+    .hospital-labs-table td {
+        padding: 9px 7px;
+    }
+
+    .hospital-labs-table td:first-child {
+        width: 46%;
+        font-size: 11px;
+    }
+
+    .hospital-lab-result strong {
+        font-size: 15px;
+    }
+
+    .hospital-lab-unit {
+        font-size: 10px;
+    }
+}

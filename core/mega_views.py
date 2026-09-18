@@ -531,6 +531,15 @@ def doctor_visit(request):
 def hospital_mode(request):
     today = timezone.localdate()
     last_meal = MealEntry.objects.order_by("-date", "-actual_time", "-scheduled_time").first()
+
+    latest_lab = LabResult.objects.order_by("-date", "-time").first()
+    latest_lab_date = latest_lab.date if latest_lab else None
+    latest_labs = (
+        LabResult.objects.filter(date=latest_lab_date).order_by("test_name", "time")
+        if latest_lab_date
+        else LabResult.objects.none()
+    )
+
     return render(
         request,
         "hospital/mode.html",
@@ -538,7 +547,8 @@ def hospital_mode(request):
             "latest_glucose": GlucoseReading.objects.first(),
             "last_meal": last_meal,
             "medications": MedicationEntry.objects.filter(date=today).order_by("-time"),
-            "labs": LabResult.objects.order_by("-date", "-time")[:8],
+            "latest_lab_date": latest_lab_date,
+            "labs": latest_labs,
             "profile": get_profile(),
         },
     )

@@ -339,3 +339,11 @@ Enforcement layers:
 5. Doctor login redirects directly to Doctor View.
 
 This is server-side enforcement; hiding buttons is only an additional UX layer.
+
+
+## Hospital Mode — latest labs readability fix
+Hospital Mode now shows the complete most-recent laboratory date as a compact table:
+`Test | Result | Unit`.
+
+The latest collection date is displayed once in the panel header. The table has an internal scroll area,
+a sticky header, links each test to its trend chart, and avoids automatic clinical colour-coding.
