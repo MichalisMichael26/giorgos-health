@@ -227,3 +227,11 @@ Phone numbers are deliberately left blank until entered by the user. On mobile, 
 - Migration 0008 also corrects any existing ChildProfile row to 27/06/2026.
 - Medical appointments are displayed newest date/time first on the appointments page.
 - Dashboard upcoming appointment reminders remain chronological so the next appointment is still shown first.
+
+
+## Checker wording simplified
+The product/medicine checker now communicates the configured-rule behavior directly:
+- If an active restriction is found in entered ingredients/excipients, it reports the matched restriction.
+- If no restriction matches, it displays "Δεν εντοπίστηκε λακτόζη ή ζάχαρη".
+- The previous long generic "Σημαντικό" warning was removed.
+- A short scope note remains: the result is based on entered ingredients and active app rules.

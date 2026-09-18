@@ -2834,3 +2834,51 @@ html.night .emergency-phone-link {
         display: none;
     }
 }
+
+
+/* ===== Simplified checker result ===== */
+.checker-how-it-works {
+    margin-bottom: 16px;
+    border-color: #cbdcf0;
+    background: linear-gradient(180deg, #fbfdff, #f3f8fe);
+}
+
+.checker-how-it-works strong {
+    color: #315a86;
+}
+
+.checker-how-it-works p {
+    margin: 5px 0 0;
+    color: #5d6b7a;
+    line-height: 1.5;
+}
+
+.checker-result-clear {
+    border-color: #b8ddc7;
+    background: linear-gradient(180deg, #fbfffc, #edf9f1);
+}
+
+.checker-scope-note {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+html.night .checker-how-it-works {
+    background: #22344a;
+    border-color: #3a5676;
+}
+
+html.night .checker-how-it-works strong {
+    color: #bcd8f6;
+}
+
+html.night .checker-how-it-works p {
+    color: #c1ccda;
+}
+
+html.night .checker-result-clear {
+    background: #21372b;
+    border-color: #3d674c;
+}

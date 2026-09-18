@@ -25,12 +25,12 @@
     <a href="{% url 'safety_rule_list' %}">Προβολή κανόνων</a>
 </section>
 
-<section class="panel checker-warning">
-    <strong>Σημαντικό</strong>
+<section class="panel checker-how-it-works">
+    <strong>Πώς γίνεται ο έλεγχος</strong>
     <p>
-        Το εργαλείο δεν αποφασίζει μόνο του ότι κάτι είναι «ασφαλές».
-        Αν δεν βρεθεί περιορισμός, αυτό σημαίνει μόνο ότι δεν βρέθηκε αντιστοιχία στους δικούς σας καταχωρημένους κανόνες.
-        Για φάρμακα ελέγχεται πάντα και το φύλλο οδηγιών / τα έκδοχα και, όταν υπάρχει αμφιβολία, επιβεβαιώνεται από ιατρό ή φαρμακοποιό.
+        Το app διαβάζει την ονομασία και τα συστατικά / έκδοχα που καταχωρείς
+        και τα συγκρίνει με τους ενεργούς περιορισμούς.
+        Αν εντοπιστεί λακτόζη / lactose ή ζάχαρη / sugar, εμφανίζεται άμεσα σχετική προειδοποίηση.
     </p>
 </section>
 
@@ -83,12 +83,17 @@
 {% if analysis %}
 <section class="checker-result checker-result-{{ analysis.level }}">
     <div class="checker-result-icon">
-        {% if analysis.level == "avoid" %}⛔{% elif analysis.level == "caution" %}⚠️{% else %}ℹ️{% endif %}
+        {% if analysis.level == "avoid" %}⛔{% elif analysis.level == "caution" %}⚠️{% else %}✅{% endif %}
     </div>
     <div class="checker-result-main">
         <span class="checker-result-kicker">Αποτέλεσμα ελέγχου</span>
         <h2>{{ analysis.title }}</h2>
         <p>{{ analysis.text }}</p>
+        {% if analysis.level == "clear" %}
+        <small class="checker-scope-note">
+            Ο έλεγχος βασίζεται στα συστατικά που καταχωρήθηκαν και στους ενεργούς κανόνες του app.
+        </small>
+        {% endif %}
 
         {% if analysis.matches %}
         <div class="matched-rules">
