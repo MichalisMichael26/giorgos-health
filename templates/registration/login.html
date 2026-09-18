@@ -4,17 +4,49 @@
 <div class="hero-banner">
     <div>
         <h1>Καλωσήρθατε στο Giorgos Health</h1>
-        <p class="muted large-text">Ένα γλυκό και οργανωμένο ημερολόγιο για γεύματα, γλυκόζη και ανάπτυξη.</p>
+        <p class="muted large-text">Ιδιωτική πρόσβαση στα δεδομένα του Giorgos Health.</p>
     </div>
 </div>
 
 <div class="form-card narrow login-card">
     <h2>Σύνδεση</h2>
-    <p class="muted">Ιδιωτική πρόσβαση στο Giorgos Health.</p>
+    <p class="muted">
+        Σε προσωπικό κινητό ή υπολογιστή άφησε ενεργό το
+        <strong>«Να παραμείνω συνδεδεμένος»</strong>.
+    </p>
+
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button class="btn primary" type="submit">Σύνδεση</button>
+
+        {% if form.non_field_errors %}
+            <div class="field-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-field">
+            <label for="{{ form.username.id_for_label }}">Όνομα χρήστη</label>
+            {{ form.username }}
+            {% for error in form.username.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.password.id_for_label }}">Κωδικός</label>
+            {{ form.password }}
+            {% for error in form.password.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <label class="remember-login">
+            {{ form.remember_me }}
+            <span>
+                <strong>{{ form.remember_me.label }}</strong>
+                <small>{{ form.remember_me.help_text }}</small>
+            </span>
+        </label>
+
+        {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
+
+        <button class="btn primary login-submit" type="submit">Σύνδεση</button>
     </form>
 </div>
 {% endblock %}

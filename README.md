@@ -102,3 +102,12 @@ No database migration is required for this change because the existing doctor an
 - Report previews use a normal Return link instead of window.close().
 - Both HTML report previews show the Giorgos Health logo and the full name Giorgos Panayiotis Michael.
 - Both generated PDF report types also show the Giorgos Health logo and the full name.
+
+
+## Persistent login
+- "Να παραμείνω συνδεδεμένος" is enabled by default.
+- Remembered sessions last up to 90 days.
+- The 90-day expiry refreshes whenever the app is used.
+- Closing the browser does not end a remembered session.
+- If the checkbox is disabled, the session ends with the browser session.
+- Authentication remains enabled; private data is not made public.

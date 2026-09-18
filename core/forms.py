@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.forms import AuthenticationForm
 from .models import (
     GlucoseReading,
     GrowthMeasurement,
@@ -7,6 +8,15 @@ from .models import (
     MedicalAppointment,
     ChildProfile,
 )
+
+
+class PersistentAuthenticationForm(AuthenticationForm):
+    remember_me = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Να παραμείνω συνδεδεμένος",
+        help_text="Σε προσωπική συσκευή, η σύνδεση μπορεί να παραμείνει ενεργή έως 90 ημέρες.",
+    )
 
 
 class DateInput(forms.DateInput):

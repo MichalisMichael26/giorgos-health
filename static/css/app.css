@@ -1744,3 +1744,46 @@ html.night .medical-note {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ===== Persistent login ===== */
+.remember-login {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin: 14px 0 18px;
+    padding: 13px 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(245,249,255,.82);
+    cursor: pointer;
+}
+
+.remember-login input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    flex: 0 0 auto;
+}
+
+.remember-login span {
+    display: grid;
+    gap: 3px;
+}
+
+.remember-login strong {
+    color: var(--text);
+}
+
+.remember-login small {
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.login-submit {
+    width: 100%;
+}
+
+html.night .remember-login {
+    background: rgba(29,41,61,.88);
+}
