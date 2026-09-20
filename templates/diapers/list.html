@@ -2,7 +2,7 @@
 {% block title %}Πάνες{% endblock %}
 {% block content %}
 <div class="page-head"><div><h1>👶 Πάνες / κενώσεις</h1><p class="muted">Γρήγορη καταγραφή ούρων και κενώσεων.</p></div>{% if not is_readonly_doctor %}<a class="btn primary" href="{% url 'diaper_create' %}">+ Νέα πάνα</a>{% endif %}</div>
-<div class="panel table-wrap"><table class="responsive-table"><thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Τύπος</th><th>Χρώμα</th><th>Σύσταση</th><th>Φωτο</th><th></th></tr></thead><tbody>
+<div class="panel table-wrap"><table class="responsive-table"><thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Τύπος</th><th>Χρώμα</th><th>Σύσταση</th><th>Πιθανή διάρροια</th><th>Φωτο</th><th></th></tr></thead><tbody>
 {% for item in items %}
 <tr>
 <td data-label="Ημ/νία">{{ item.date|date:"d/m/Y" }}</td>
@@ -10,12 +10,13 @@
 <td data-label="Τύπος">{{ item.get_kind_display }}</td>
 <td data-label="Χρώμα">{{ item.stool_color|default:"—" }}</td>
 <td data-label="Σύσταση">{{ item.stool_consistency|default:"—" }}</td>
+<td data-label="Πιθανή διάρροια">{% if item.possible_diarrhea %}<strong>⚠️ Ναι</strong>{% else %}—{% endif %}</td>
 <td data-label="Φωτο">{% if item.photo_data %}<a class="mini-action diaper-view-photo" href="{% url 'diaper_detail' item.pk %}">👁 View</a>{% else %}—{% endif %}</td>
 <td data-label="Ενέργειες" class="row-actions">
 <a class="mini-action" href="{% url 'diaper_detail' item.pk %}">View</a>
 {% if not is_readonly_doctor %}<a class="mini-action" href="{% url 'diaper_edit' item.pk %}">Edit</a><a class="mini-action danger-link" href="{% url 'diaper_delete' item.pk %}">Delete</a>{% endif %}
 </td>
 </tr>
-{% empty %}<tr><td colspan="7">Δεν υπάρχουν καταχωρήσεις.</td></tr>{% endfor %}
+{% empty %}<tr><td colspan="8">Δεν υπάρχουν καταχωρήσεις.</td></tr>{% endfor %}
 </tbody></table></div>
 {% endblock %}

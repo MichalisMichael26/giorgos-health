@@ -61,6 +61,8 @@ core/migrations/0012_mobile_push_notifications.py
 core/migrations/0013_automatic_health_reminders.py
 core/migrations/0014_dual_feeding_targets.py
 core/migrations/0015_childprofile_known_allergies.py
+core/migrations/0016_mealentry_remaining_ml.py
+core/migrations/0017_diaperentry_possible_diarrhea.py
 core/migrations/__init__.py
 core/migrations/__pycache__/0001_initial.cpython-313.pyc
 core/migrations/__pycache__/0002_medications_appointments.cpython-313.pyc

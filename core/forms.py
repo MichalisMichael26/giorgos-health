@@ -22,9 +22,19 @@ class PersistentAuthenticationForm(AuthenticationForm):
 class DateInput(forms.DateInput):
     input_type = "date"
 
+    def __init__(self, attrs=None, format=None):
+        # HTML date inputs require YYYY-MM-DD. Without an explicit format,
+        # localized Greek rendering can appear blank when editing an existing
+        # record, forcing the user to enter the date again.
+        super().__init__(attrs=attrs, format=format or "%Y-%m-%d")
+
 
 class TimeInput(forms.TimeInput):
     input_type = "time"
+
+    def __init__(self, attrs=None, format=None):
+        # Keep existing times visible on every edit form.
+        super().__init__(attrs=attrs, format=format or "%H:%M")
 
 
 class MealEntryForm(forms.ModelForm):
@@ -41,6 +51,7 @@ class MealEntryForm(forms.ModelForm):
             "scheduled_time",
             "actual_time",
             "offered_ml",
+            "remaining_ml",
             "consumed_ml",
             "formula",
             "supplement",
@@ -57,6 +68,7 @@ class MealEntryForm(forms.ModelForm):
             "actual_time": TimeInput(format="%H:%M"),
             "notes": forms.Textarea(attrs={"rows": 3}),
             "offered_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
+            "remaining_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "consumed_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "formula": forms.TextInput(attrs={"inputmode": "decimal"}),
             "supplement": forms.TextInput(attrs={"inputmode": "decimal"}),
@@ -70,12 +82,22 @@ class MealEntryForm(forms.ModelForm):
             "same_as_scheduled",
             "actual_time",
             "offered_ml",
+            "remaining_ml",
             "consumed_ml",
             "formula",
             "supplement",
             "status",
             "notes",
         ])
+
+        self.fields["remaining_ml"].help_text = (
+            "Προαιρετικό. Αν το συμπληρώσεις, το «Ήπιε» υπολογίζεται αυτόματα: "
+            "Προσφέρθηκαν − Έμεινε."
+        )
+        self.fields["consumed_ml"].help_text = (
+            "Υπολογίζεται αυτόματα όταν συμπληρώνεται το «Έμεινε». "
+            "Μπορείς επίσης να το γράψεις κανονικά όπως πριν."
+        )
 
         if self.instance and self.instance.pk:
             self.fields["same_as_scheduled"].initial = bool(
@@ -89,6 +111,33 @@ class MealEntryForm(forms.ModelForm):
         scheduled_time = cleaned.get("scheduled_time")
         if cleaned.get("same_as_scheduled") and scheduled_time:
             cleaned["actual_time"] = scheduled_time
+
+        offered = cleaned.get("offered_ml")
+        remaining = cleaned.get("remaining_ml")
+        consumed = cleaned.get("consumed_ml")
+
+        if remaining is not None:
+            if offered is None:
+                self.add_error(
+                    "remaining_ml",
+                    "Για να υπολογιστεί πόσο ήπιε, συμπλήρωσε πρώτα πόσα ml προσφέρθηκαν.",
+                )
+            elif remaining > offered:
+                self.add_error(
+                    "remaining_ml",
+                    "Το υπόλοιπο δεν μπορεί να είναι μεγαλύτερο από όσα ml προσφέρθηκαν.",
+                )
+            else:
+                cleaned["consumed_ml"] = offered - remaining
+        elif offered is not None and consumed is not None:
+            if consumed > offered:
+                self.add_error(
+                    "consumed_ml",
+                    "Η ποσότητα που ήπιε δεν μπορεί να είναι μεγαλύτερη από όσα ml προσφέρθηκαν.",
+                )
+            else:
+                cleaned["remaining_ml"] = offered - consumed
+
         return cleaned
 
 

@@ -25,6 +25,7 @@ class MealEntry(models.Model):
     actual_time = models.TimeField("Πραγματική ώρα", blank=True, null=True)
     offered_ml = models.PositiveIntegerField("Προσφέρθηκαν (ml)", blank=True, null=True)
     consumed_ml = models.PositiveIntegerField("Ήπιε (ml)", blank=True, null=True)
+    remaining_ml = models.PositiveIntegerField("Έμεινε (ml)", blank=True, null=True)
     formula = models.CharField("Formula", max_length=120, blank=True)
     supplement = models.CharField("Maxijul (scoops)", max_length=120, blank=True)
     status = models.CharField(
@@ -449,6 +450,7 @@ class DiaperEntry(models.Model):
     kind = models.CharField("Τύπος", max_length=20, choices=KIND_CHOICES, default="wet")
     stool_color = models.CharField("Χρώμα κένωσης", max_length=100, blank=True)
     stool_consistency = models.CharField("Σύσταση", max_length=120, blank=True)
+    possible_diarrhea = models.BooleanField("Πιθανή διάρροια", default=False)
     notes = models.TextField("Σημειώσεις", blank=True)
     photo_name = models.CharField("Όνομα φωτογραφίας", max_length=255, blank=True)
     photo_mime = models.CharField("Τύπος φωτογραφίας", max_length=120, blank=True)

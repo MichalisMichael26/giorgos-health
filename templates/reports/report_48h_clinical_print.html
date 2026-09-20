@@ -398,7 +398,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Ημ/νία</th><th>Ώρα</th><th>Προσφέρθηκαν</th><th>Ήπιε</th>
+                        <th>Ημ/νία</th><th>Ώρα</th><th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th>
                         <th>Formula</th><th>Maxijul</th><th>Κατάσταση</th><th>Σημειώσεις</th>
                     </tr>
                 </thead>
@@ -408,6 +408,7 @@
                         <td>{{ item.date|date:"d/m/Y" }}</td>
                         <td>{% if item.actual_time %}{{ item.actual_time|time:"H:i" }}{% else %}{{ item.scheduled_time|time:"H:i" }}{% endif %}</td>
                         <td>{% if item.offered_ml != None %}{{ item.offered_ml }} ml{% else %}—{% endif %}</td>
+                        <td>{% if item.remaining_ml != None %}{{ item.remaining_ml }} ml{% else %}—{% endif %}</td>
                         <td>{% if item.consumed_ml != None %}<strong>{{ item.consumed_ml }} ml</strong>{% else %}—{% endif %}</td>
                         <td>{{ item.formula|default:"—" }}</td>
                         <td>{% if item.supplement %}{{ item.supplement }} scoop{% else %}—{% endif %}</td>
@@ -501,7 +502,7 @@
         {% if diapers %}
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Τύπος</th><th>Χρώμα</th><th>Σύσταση</th><th>Σημειώσεις</th></tr></thead>
+                <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Τύπος</th><th>Χρώμα</th><th>Σύσταση</th><th>Πιθανή διάρροια</th><th>Σημειώσεις</th></tr></thead>
                 <tbody>
                 {% for item in diapers %}
                     <tr>
@@ -510,6 +511,7 @@
                         <td>{{ item.get_kind_display }}</td>
                         <td>{{ item.stool_color|default:"—" }}</td>
                         <td>{{ item.stool_consistency|default:"—" }}</td>
+                        <td>{% if item.possible_diarrhea %}<strong>Ναι</strong>{% else %}—{% endif %}</td>
                         <td>{{ item.notes|default:"—" }}</td>
                     </tr>
                 {% endfor %}

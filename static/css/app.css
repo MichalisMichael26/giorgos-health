@@ -524,7 +524,7 @@ textarea { min-height: 100px; resize: vertical; }
     .mobile-bottom-nav {
         position: fixed;
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(6, 1fr);
         align-items: end;
         left: 0;
         right: 0;
@@ -5086,4 +5086,73 @@ html.night .upcoming-vaccine-card.overdue {
     .diaper-detail-grid {
         grid-template-columns: 1fr;
     }
+}
+
+
+/* ===== Meal remaining calculator ===== */
+.input-auto-calculated {
+    background: #f0f7ff !important;
+    border-color: #a9c7ec !important;
+    font-weight: 800;
+}
+
+.meal-calculation-note {
+    display: block;
+    margin-top: 2px;
+    color: #46698f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+html.night .input-auto-calculated {
+    background: #233b56 !important;
+    border-color: #4d7096 !important;
+}
+
+html.night .meal-calculation-note {
+    color: #abc6e6;
+}
+
+@media (max-width: 720px) {
+    .mobile-bottom-nav {
+        grid-template-columns: repeat(6, 1fr);
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    .mobile-bottom-nav a {
+        min-width: 0;
+    }
+
+    .mobile-bottom-nav a span {
+        font-size: 19px;
+    }
+
+    .mobile-bottom-nav a small {
+        font-size: 9px;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+
+/* ===== Possible diarrhea flag ===== */
+.diaper-diarrhea-flag {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid #edcf9b;
+    border-radius: 12px;
+    background: #fff8e8;
+}
+
+.diaper-diarrhea-flag span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+html.night .diaper-diarrhea-flag {
+    background: #3c3422;
+    border-color: #6d5d39;
 }

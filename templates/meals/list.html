@@ -14,7 +14,7 @@
 <thead>
 <tr>
     <th>Ημερομηνία</th><th>Πρόγραμμα</th><th>Πραγματική ώρα</th>
-    <th>Προσφέρθηκαν</th><th>Ήπιε</th><th>Formula</th><th></th>
+    <th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th><th>Formula</th><th></th>
 </tr>
 </thead>
 <tbody>
@@ -24,6 +24,7 @@
     <td data-label="Πρόγραμμα">{{ meal.scheduled_time|time:"H:i" }}</td>
     <td data-label="Πραγματική ώρα">{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
     <td data-label="Προσφέρθηκαν">{% if meal.offered_ml != None %}{{ meal.offered_ml }} ml{% else %}—{% endif %}</td>
+    <td data-label="Έμεινε">{% if meal.remaining_ml != None %}{{ meal.remaining_ml }} ml{% else %}—{% endif %}</td>
     <td data-label="Ήπιε">{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
     <td data-label="Formula">{{ meal.formula|default:"—" }}</td>
     <td data-label="Ενέργειες" class="row-actions">
@@ -32,7 +33,7 @@
     </td>
 </tr>
 {% empty %}
-<tr><td colspan="7">Δεν υπάρχουν καταχωρήσεις.</td></tr>
+<tr><td colspan="8">Δεν υπάρχουν καταχωρήσεις.</td></tr>
 {% endfor %}
 </tbody>
 </table>

@@ -74,6 +74,90 @@
         updateWeekday();
     }
 
+
+    // Meal entry helper:
+    // when "Έμεινε (ml)" is filled, calculate "Ήπιε" = Προσφέρθηκαν - Έμεινε.
+    const offeredMl = document.getElementById("id_offered_ml");
+    const remainingMl = document.getElementById("id_remaining_ml");
+    const consumedMl = document.getElementById("id_consumed_ml");
+
+    if (offeredMl && remainingMl && consumedMl) {
+        const consumedRow = consumedMl.closest("p");
+        let calculationNote = document.getElementById("meal-remaining-calculation");
+
+        if (!calculationNote && consumedRow) {
+            calculationNote = document.createElement("small");
+            calculationNote.id = "meal-remaining-calculation";
+            calculationNote.className = "meal-calculation-note";
+            consumedRow.appendChild(calculationNote);
+        }
+
+        function numberValue(input) {
+            if (!input || input.value === "") return null;
+            const value = Number(input.value);
+            return Number.isFinite(value) ? value : null;
+        }
+
+        function calculateConsumedFromRemaining() {
+            const offered = numberValue(offeredMl);
+            const remaining = numberValue(remainingMl);
+
+            if (offered === null || remaining === null) {
+                if (calculationNote) calculationNote.textContent = "";
+                consumedMl.classList.remove("input-auto-calculated");
+                return;
+            }
+
+            if (remaining > offered) {
+                if (calculationNote) {
+                    calculationNote.textContent = "⚠️ Το υπόλοιπο δεν μπορεί να είναι μεγαλύτερο από όσα προσφέρθηκαν.";
+                }
+                consumedMl.classList.remove("input-auto-calculated");
+                return;
+            }
+
+            const consumed = Math.max(offered - remaining, 0);
+            consumedMl.value = String(consumed);
+            consumedMl.classList.add("input-auto-calculated");
+
+            if (calculationNote) {
+                calculationNote.textContent =
+                    offered + " ml − " + remaining + " ml = " + consumed + " ml ήπιε";
+            }
+        }
+
+        function calculateRemainingFromConsumed() {
+            // Preserve the old workflow too: if the user clears "Έμεινε" and
+            // enters "Ήπιε" manually, the server will calculate the remainder.
+            if (remainingMl.value !== "") return;
+
+            const offered = numberValue(offeredMl);
+            const consumed = numberValue(consumedMl);
+            if (offered === null || consumed === null || consumed > offered) {
+                if (calculationNote) calculationNote.textContent = "";
+                return;
+            }
+
+            if (calculationNote) {
+                calculationNote.textContent =
+                    "Έμεινε " + (offered - consumed) + " ml";
+            }
+        }
+
+        offeredMl.addEventListener("input", function () {
+            if (remainingMl.value !== "") {
+                calculateConsumedFromRemaining();
+            } else {
+                calculateRemainingFromConsumed();
+            }
+        });
+        remainingMl.addEventListener("input", calculateConsumedFromRemaining);
+        remainingMl.addEventListener("change", calculateConsumedFromRemaining);
+        consumedMl.addEventListener("input", calculateRemainingFromConsumed);
+
+        calculateConsumedFromRemaining();
+    }
+
     const doctorChoice = document.getElementById("id_doctor_choice");
     const otherDoctor = document.getElementById("id_other_doctor");
     const otherClinic = document.getElementById("id_other_clinic");

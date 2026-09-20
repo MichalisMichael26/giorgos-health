@@ -466,6 +466,7 @@ def build_history_days(start_date, end_date):
                 "text": (
                     f"{item.consumed_ml if item.consumed_ml is not None else '—'} ml"
                     + (f" από {item.offered_ml} ml" if item.offered_ml is not None else "")
+                    + (f" · έμεινε {item.remaining_ml} ml" if item.remaining_ml is not None else "")
                 ),
                 "extra": " · ".join(
                     part
@@ -1282,18 +1283,19 @@ def report_24h_pdf(request):
 
     if meals:
         story.append(Paragraph("Γεύματα", styles["heading"]))
-        rows = [["Ημ/νία", "Ώρα", "Προσφ.", "Ήπιε", "Formula", "Maxijul"]]
+        rows = [["Ημ/νία", "Ώρα", "Προσφ.", "Έμεινε", "Ήπιε", "Formula", "Maxijul"]]
         for item in meals:
             event_time = item.actual_time or item.scheduled_time
             rows.append([
                 item.date.strftime("%d/%m"),
                 event_time.strftime("%H:%M"),
                 f"{item.offered_ml} ml" if item.offered_ml is not None else "—",
+                f"{item.remaining_ml} ml" if item.remaining_ml is not None else "—",
                 f"{item.consumed_ml} ml" if item.consumed_ml is not None else "—",
                 item.formula or "—",
                 f"{_numeric_scoops(item.supplement):g} scoop" if _numeric_scoops(item.supplement) else "—",
             ])
-        table = Table(rows, colWidths=[22*mm, 20*mm, 26*mm, 26*mm, 55*mm, 26*mm], repeatRows=1)
+        table = Table(rows, colWidths=[18*mm, 17*mm, 23*mm, 23*mm, 23*mm, 47*mm, 23*mm], repeatRows=1)
         table.setStyle(TableStyle([
             ("FONTNAME", (0,0), (-1,-1), font_name),
             ("FONTSIZE", (0,0), (-1,-1), 7.5),
@@ -1369,6 +1371,7 @@ def meal_create(request):
             "actual_time": suggested_time,
             "same_as_scheduled": True,
             "offered_ml": 175,
+            "remaining_ml": 0,
             "consumed_ml": 175,
             "formula": "5",
             "supplement": "1",

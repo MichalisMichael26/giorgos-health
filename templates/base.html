@@ -49,6 +49,7 @@
         <a href="{% url 'dashboard' %}">Αρχική</a>
         <a href="{% url 'meal_list' %}">Γεύματα</a>
         <a href="{% url 'glucose_list' %}">Γλυκόζη</a>
+        <a href="{% url 'diaper_list' %}">Πάνες</a>
         <a href="{% url 'health_hub' %}">Υγεία</a>
         <a href="{% url 'doctor_view' %}">Doctor View</a>
         <a href="{% url 'product_scanner' %}" class="nav-checker">📷 Scan</a>
@@ -124,6 +125,9 @@
     </a>
     <a href="{% url 'glucose_list' %}">
         <span>🩸</span><small>Γλυκόζη</small>
+    </a>
+    <a href="{% url 'diaper_list' %}">
+        <span>👶</span><small>Πάνες</small>
     </a>
     <a href="{% url 'health_hub' %}">
         <span>❤️</span><small>Υγεία</small>

@@ -67,7 +67,7 @@ class SymptomEntryForm(forms.ModelForm):
 class DiaperEntryForm(forms.ModelForm):
     class Meta:
         model = DiaperEntry
-        fields = ["date", "time", "kind", "stool_color", "stool_consistency", "notes"]
+        fields = ["date", "time", "kind", "stool_color", "stool_consistency", "possible_diarrhea", "notes"]
         widgets = {
             "date": DateInput(),
             "time": TimeInput(format="%H:%M"),

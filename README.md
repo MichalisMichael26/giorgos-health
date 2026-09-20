@@ -560,3 +560,38 @@ from the upcoming list.
 - Reminders wrongly marked by older code are repaired when no successful delivery log exists.
 - Existing browser subscriptions are re-synced to the server when the Reminders page is opened.
 - Dr Savvas remains excluded from push delivery.
+
+
+## Meal remaining calculator and main diaper navigation
+Meal entry now supports **Remaining ml**:
+- enter `Offered ml` and `Remaining ml`;
+- `Consumed ml` is calculated automatically as `Offered - Remaining`;
+- server-side validation rejects a remainder greater than the offered amount;
+- the old workflow is still supported: if `Remaining ml` is left blank and `Consumed ml` is entered, the remainder is calculated on save;
+- migration `0016` backfills existing meals with `remaining_ml = offered_ml - consumed_ml` when possible.
+
+Remaining ml is also shown in the meal list, History timeline, 24-hour report and 48-hour clinical report.
+
+**Diapers** have been moved out of the Health hub and into the main navigation immediately after **Glucose**, on desktop and mobile.
+
+
+## Preserve date/time on edit
+All shared HTML date/time widgets now use browser-compatible formats:
+- Date: `YYYY-MM-DD`
+- Time: `HH:MM`
+
+This keeps the existing date/time visibly prefilled when editing meals, glucose readings,
+growth measurements, medications, appointments, vaccines, symptoms, diapers, labs,
+documents, reminders and other forms that use the shared DateInput/TimeInput widgets.
+The fields remain editable if a genuine correction is needed.
+
+
+## Possible diarrhea on diaper entries
+Diaper entries now include a separate **Possible diarrhea** checkbox.
+It is stored as a parent observation only and is not treated as a medical diagnosis.
+
+The flag appears in:
+- diaper create/edit form;
+- diaper list;
+- diaper View page;
+- 48-hour clinical print report.

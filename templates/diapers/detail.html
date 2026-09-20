@@ -17,8 +17,16 @@
         <div><span>Τύπος</span><strong>{{ item.get_kind_display }}</strong></div>
         <div><span>Χρώμα</span><strong>{{ item.stool_color|default:"—" }}</strong></div>
         <div><span>Σύσταση</span><strong>{{ item.stool_consistency|default:"—" }}</strong></div>
+        <div><span>Πιθανή διάρροια</span><strong>{% if item.possible_diarrhea %}⚠️ Ναι{% else %}Όχι{% endif %}</strong></div>
         <div><span>Ημερομηνία / ώρα</span><strong>{{ item.date|date:"d/m/Y" }} · {{ item.time|time:"H:i" }}</strong></div>
     </div>
+
+    {% if item.possible_diarrhea %}
+    <div class="diaper-diarrhea-flag">
+        <strong>⚠️ Έχει σημειωθεί ως πιθανή διάρροια</strong>
+        <span>Η ένδειξη είναι παρατήρηση της καταγραφής και όχι ιατρική διάγνωση.</span>
+    </div>
+    {% endif %}
 
     {% if item.notes %}
     <div class="diaper-detail-notes">

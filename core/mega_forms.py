@@ -84,7 +84,7 @@ class DiaperWithPhotoForm(forms.ModelForm):
 
     class Meta:
         model = DiaperEntry
-        fields = ["date", "time", "kind", "stool_color", "stool_consistency", "notes"]
+        fields = ["date", "time", "kind", "stool_color", "stool_consistency", "possible_diarrhea", "notes"]
         widgets = {
             "date": DateInput(),
             "time": TimeInput(format="%H:%M"),
@@ -93,6 +93,10 @@ class DiaperWithPhotoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["possible_diarrhea"].help_text = (
+            "Τσέκαρέ το αν η κένωση σου φαίνεται πιθανή διάρροια. "
+            "Είναι παρατήρηση καταγραφής και όχι ιατρική διάγνωση."
+        )
         # Preserve any older free-text value if one already exists.
         if self.instance and self.instance.pk and self.instance.stool_consistency:
             current = self.instance.stool_consistency
