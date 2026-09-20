@@ -4981,3 +4981,109 @@ html.night .upcoming-vaccine-card.overdue {
         gap: 7px;
     }
 }
+
+
+/* ===== Meal-by-meal comparison / diaper view ===== */
+.meal-slot-comparison-panel {
+    margin-top: 16px;
+}
+
+.meal-slot-comparison-wrap {
+    overflow-x: auto;
+}
+
+.meal-slot-comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 560px;
+}
+
+.meal-slot-comparison-table th,
+.meal-slot-comparison-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.meal-slot-comparison-table th {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.meal-slot-comparison-table td small {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.diaper-detail-panel {
+    display: grid;
+    gap: 18px;
+}
+
+.diaper-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.diaper-detail-grid > div {
+    display: grid;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255,255,255,.65);
+}
+
+.diaper-detail-grid span,
+.diaper-detail-notes span {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.diaper-detail-notes {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.diaper-detail-notes p {
+    margin: 5px 0 0;
+    white-space: pre-line;
+}
+
+.diaper-photo-view {
+    display: grid;
+    gap: 10px;
+}
+
+.diaper-photo-view img {
+    display: block;
+    width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: #f6f8fb;
+}
+
+.diaper-view-photo {
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .diaper-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .diaper-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}

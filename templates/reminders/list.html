@@ -25,7 +25,7 @@
         <div class="auto-rule-card">
             <span>🍼</span>
             <div>
-                <strong>Γεύματα · 10′ πριν</strong>
+                <strong>Γεύματα · 11′ πριν</strong>
                 <small>
                     {% for t in fixed_meal_times %}{{ t }}{% if not forloop.last %} · {% endif %}{% endfor %}
                 </small>
@@ -132,6 +132,7 @@
     <div class="push-sound-note">
         🔊 Η ειδοποίηση ζητά τον κανονικό ήχο/δόνηση ειδοποιήσεων της συσκευής.
         Το αν θα ακουστεί εξαρτάται από Silent/Focus/Notification settings του κινητού.
+        Ο server ελέγχει αυτόματα τις εκκρεμείς ειδοποιήσεις περίπου κάθε 30 δευτερόλεπτα.
     </div>
 
     <div class="push-feedback" id="push-feedback" hidden></div>
@@ -314,7 +315,17 @@
             const subscription = await registration.pushManager.getSubscription();
 
             if (subscription && Notification.permission === "granted") {
-                updateStatus(true, "Οι ειδοποιήσεις είναι ενεργές σε αυτή τη συσκευή.");
+                try {
+                    const saved = await postJson("{% url 'push_subscribe' %}", subscription.toJSON());
+                    updateStatus(
+                        true,
+                        "Οι ειδοποιήσεις είναι ενεργές σε αυτή τη συσκευή.",
+                        saved.activeDevices
+                    );
+                } catch (syncError) {
+                    updateStatus(true, "Η άδεια ειδοποιήσεων είναι ενεργή, αλλά χρειάζεται επανασύνδεση με τον server.");
+                    setFeedback("Πάτησε «Απενεργοποίηση» και μετά «Ενεργοποίηση» αν η δοκιμή δεν φτάσει.", "error");
+                }
             } else if (Notification.permission === "denied") {
                 updateStatus(false, "Οι ειδοποιήσεις έχουν αποκλειστεί από τις ρυθμίσεις του browser.");
                 enableButton.disabled = true;

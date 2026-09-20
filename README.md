@@ -546,3 +546,17 @@ Upcoming doses are derived only from the existing `VaccineEntry.next_date` value
 No future dates are invented. If a later administration of the same vaccine is recorded
 on or after the previous `next_date`, that older planned dose is automatically removed
 from the upcoming list.
+
+
+## Dashboard / diapers / push reliability update
+- Dashboard now shows **meal-by-meal yesterday vs today** for every fixed feeding slot.
+- Dashboard hero now has **+ Πάνα** beside **+ Γλυκόζη**.
+- Diaper list no longer loads every photo inline; this reduces mobile layout flicker.
+- Each diaper has a dedicated **View** page with full details and a large photo when available.
+- Automatic meal reminder UI now correctly says **11 minutes before**.
+- Production WSGI starts a lightweight push dispatcher approximately every 30 seconds.
+- PostgreSQL advisory locking prevents concurrent scheduler processes from double-sending.
+- Failed push attempts are no longer marked as successfully notified.
+- Reminders wrongly marked by older code are repaired when no successful delivery log exists.
+- Existing browser subscriptions are re-synced to the server when the Reminders page is opened.
+- Dr Savvas remains excluded from push delivery.

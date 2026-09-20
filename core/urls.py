@@ -60,6 +60,7 @@ urlpatterns = [
     path("symptoms/<int:pk>/delete/", advanced_views.symptom_delete, name="symptom_delete"),
 
     path("diapers/", advanced_views.diaper_list, name="diaper_list"),
+    path("diapers/<int:pk>/view/", advanced_views.diaper_detail, name="diaper_detail"),
     path("diapers/new/", advanced_views.diaper_create, name="diaper_create"),
     path("diapers/<int:pk>/edit/", advanced_views.diaper_edit, name="diaper_edit"),
     path("diapers/<int:pk>/delete/", advanced_views.diaper_delete, name="diaper_delete"),

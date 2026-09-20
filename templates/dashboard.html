@@ -9,6 +9,7 @@
     <div class="hero-actions">
         <a class="btn primary" href="{% url 'meal_create' %}">+ Γεύμα</a>
         <a class="btn secondary" href="{% url 'glucose_create' %}">+ Γλυκόζη</a>
+        <a class="btn secondary diaper-quick-btn" href="{% url 'diaper_create' %}">+ Πάνα</a>
         <a class="btn pdf-btn" href="{% url 'report_24h_preview' %}">📄 24ωρη αναφορά</a>
         <a class="btn print-clinical-btn" href="{% url 'report_48h_print' %}">🖨️ 48ωρος φάκελος</a>
     </div>
@@ -119,6 +120,61 @@
             <strong>{{ day_comparison.seven_day_avg_ml }} ml/ημέρα</strong>
             <small>{% if day_comparison.seven_day_glucose_avg != None %}Μ.ό. γλυκόζης {{ day_comparison.seven_day_glucose_avg }} mg/dL{% else %}Χωρίς μετρήσεις γλυκόζης{% endif %}</small>
         </div>
+    </div>
+</section>
+
+<section class="panel meal-slot-comparison-panel">
+    <div class="panel-head">
+        <div>
+            <h2>🍼 Γεύμα με γεύμα · σήμερα vs χθες</h2>
+            <p class="muted">Σύγκριση της ποσότητας που ήπιε στην ίδια προγραμματισμένη ώρα.</p>
+        </div>
+        <a href="{% url 'feeding_performance' %}">Feeding performance</a>
+    </div>
+
+    <div class="meal-slot-comparison-wrap">
+        <table class="meal-slot-comparison-table">
+            <thead>
+                <tr>
+                    <th>Ώρα</th>
+                    <th>Χθες<br><small>{{ yesterday|date:"d/m" }}</small></th>
+                    <th>Σήμερα<br><small>{{ today|date:"d/m" }}</small></th>
+                    <th>Διαφορά</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in meal_comparison_rows %}
+                <tr>
+                    <td><strong>{{ row.time|time:"H:i" }}</strong></td>
+                    <td>
+                        {% if row.yesterday_ml != None %}
+                            {{ row.yesterday_ml }} ml
+                            {% if row.yesterday.supplement %}<small>Maxijul {{ row.yesterday.supplement }}</small>{% endif %}
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.today_ml != None %}
+                            {{ row.today_ml }} ml
+                            {% if row.today.supplement %}<small>Maxijul {{ row.today.supplement }}</small>{% endif %}
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.delta_ml != None %}
+                            <strong class="{% if row.delta_ml > 0 %}delta-up{% elif row.delta_ml < 0 %}delta-down{% endif %}">
+                                {% if row.delta_ml > 0 %}+{% endif %}{{ row.delta_ml }} ml
+                            </strong>
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 </section>
 

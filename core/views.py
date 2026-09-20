@@ -556,6 +556,44 @@ def dashboard(request):
     consumed_total = sum(item.consumed_ml or 0 for item in meals_today)
     milk_guide = daily_milk_guide(profile, latest_growth, today, meals_today)
 
+    yesterday = today - timedelta(days=1)
+    yesterday_meals_qs = MealEntry.objects.filter(date=yesterday).order_by("scheduled_time", "-updated_at")
+    today_meals_latest = {}
+    yesterday_meals_latest = {}
+
+    for item in MealEntry.objects.filter(date=today).order_by("scheduled_time", "-updated_at"):
+        today_meals_latest.setdefault(item.scheduled_time, item)
+
+    for item in yesterday_meals_qs:
+        yesterday_meals_latest.setdefault(item.scheduled_time, item)
+
+    meal_comparison_rows = []
+    for scheduled_time in SCHEDULED_TIMES:
+        today_meal = today_meals_latest.get(scheduled_time)
+        yesterday_meal = yesterday_meals_latest.get(scheduled_time)
+
+        today_ml = today_meal.consumed_ml if today_meal and today_meal.consumed_ml is not None else None
+        yesterday_ml = (
+            yesterday_meal.consumed_ml
+            if yesterday_meal and yesterday_meal.consumed_ml is not None
+            else None
+        )
+
+        delta_ml = None
+        if today_ml is not None and yesterday_ml is not None:
+            delta_ml = today_ml - yesterday_ml
+
+        meal_comparison_rows.append(
+            {
+                "time": scheduled_time,
+                "today": today_meal,
+                "yesterday": yesterday_meal,
+                "today_ml": today_ml,
+                "yesterday_ml": yesterday_ml,
+                "delta_ml": delta_ml,
+            }
+        )
+
     previous_days = build_history_days(today - timedelta(days=3), today - timedelta(days=1))
     reminder_appointments, upcoming_appointments = appointment_reminder_items(today)
     meal_timing = meal_timing_context(timezone.localtime())
@@ -575,6 +613,8 @@ def dashboard(request):
         "profile": profile,
         "milk_guide": milk_guide,
         "consumed_total": consumed_total,
+        "meal_comparison_rows": meal_comparison_rows,
+        "yesterday": yesterday,
         "next_meal_time": next_scheduled_time(timezone.localtime()),
         "schedule": SCHEDULED_TIMES,
         "previous_days": previous_days[:3],

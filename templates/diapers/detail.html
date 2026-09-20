@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Πάνα · {{ item.date|date:"d/m/Y" }}{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>👶 Προβολή πάνας</h1>
+        <p class="muted">{{ item.date|date:"d/m/Y" }} · {{ item.time|time:"H:i" }}</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn secondary" href="{% url 'diaper_list' %}">← Πίσω</a>
+        {% if not is_readonly_doctor %}<a class="btn primary" href="{% url 'diaper_edit' item.pk %}">Edit</a>{% endif %}
+    </div>
+</div>
+
+<section class="panel diaper-detail-panel">
+    <div class="diaper-detail-grid">
+        <div><span>Τύπος</span><strong>{{ item.get_kind_display }}</strong></div>
+        <div><span>Χρώμα</span><strong>{{ item.stool_color|default:"—" }}</strong></div>
+        <div><span>Σύσταση</span><strong>{{ item.stool_consistency|default:"—" }}</strong></div>
+        <div><span>Ημερομηνία / ώρα</span><strong>{{ item.date|date:"d/m/Y" }} · {{ item.time|time:"H:i" }}</strong></div>
+    </div>
+
+    {% if item.notes %}
+    <div class="diaper-detail-notes">
+        <span>Σημειώσεις</span>
+        <p>{{ item.notes }}</p>
+    </div>
+    {% endif %}
+
+    {% if item.photo_data %}
+    <div class="diaper-photo-view">
+        <div class="panel-head">
+            <h2>📷 Φωτογραφία</h2>
+            <a href="{% url 'diaper_photo' item.pk %}" target="_blank" rel="noopener">Άνοιγμα αρχείου</a>
+        </div>
+        <img src="{% url 'diaper_photo' item.pk %}" alt="Φωτογραφία πάνας {{ item.date|date:'d/m/Y' }}">
+    </div>
+    {% else %}
+    <div class="empty-state compact-empty">
+        <p class="muted">Δεν υπάρχει φωτογραφία σε αυτή την καταχώρηση.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

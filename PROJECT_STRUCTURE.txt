@@ -106,6 +106,7 @@ static/icons/icon-192.png
 static/icons/icon-512.png
 static/images/logo.png
 static/site.webmanifest
+templates/allergies.html
 templates/analytics.html
 templates/appointments/list.html
 templates/audit/list.html
@@ -115,6 +116,7 @@ templates/checker/index.html
 templates/checker/rules.html
 templates/confirm_delete.html
 templates/dashboard.html
+templates/diapers/detail.html
 templates/diapers/list.html
 templates/doctor/view.html
 templates/doctor/visit.html

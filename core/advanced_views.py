@@ -358,7 +358,15 @@ def symptom_delete(request, pk):
 
 @login_required
 def diaper_list(request):
+    # Do not stream photo binaries inside the list page. Loading multiple large
+    # images caused visible layout shifts/flicker on some mobile browsers.
     return render(request, "diapers/list.html", {"items": DiaperEntry.objects.all()})
+
+
+@login_required
+def diaper_detail(request, pk):
+    item = get_object_or_404(DiaperEntry, pk=pk)
+    return render(request, "diapers/detail.html", {"item": item})
 
 
 @login_required
