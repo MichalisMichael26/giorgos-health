@@ -748,3 +748,17 @@ all follow the fixed clock schedule.
 
 Migration `0020_fixed_three_hour_schedule.py` clears the superseded automatic
 meal reminders so the scheduler can rebuild them with the new times.
+
+
+## Meal comparison restored
+The fixed pediatrician-directed feeding schedule remains:
+`00:00 · 03:00 · 06:00 · 09:00 · 12:00 · 15:00 · 18:00 · 21:00`
+with automatic notifications 12 minutes before.
+
+Only the dashboard comparison was restored to the previous behaviour:
+- Meal #1 today vs Meal #1 yesterday
+- Meal #2 today vs Meal #2 yesterday
+- etc.
+- actual start/finish times, consumed ml, delta and comments remain visible.
+
+The comparison is independent from the fixed reminder schedule.

@@ -127,7 +127,7 @@
     <div class="panel-head">
         <div>
             <h2>🍼 Γεύμα με γεύμα · σήμερα vs χθες</h2>
-            <p class="muted">Σύγκριση της ίδιας προγραμματισμένης ώρας στο σταθερό 3ωρο.</p>
+            <p class="muted">Σύγκριση ανά σειρά γεύματος: #1 με #1, #2 με #2 κ.ο.κ., με τις πραγματικές ώρες και ποσότητες.</p>
         </div>
         <a href="{% url 'feeding_performance' %}">Feeding performance</a>
     </div>
@@ -136,7 +136,7 @@
         <table class="meal-slot-comparison-table">
             <thead>
                 <tr>
-                    <th>Ώρα</th>
+                    <th>Γεύμα</th>
                     <th>Χθες<br><small>{{ yesterday|date:"d/m" }}</small></th>
                     <th>Σήμερα<br><small>{{ today|date:"d/m" }}</small></th>
                     <th>Διαφορά</th>
@@ -145,7 +145,7 @@
             <tbody>
             {% for row in meal_comparison_rows %}
                 <tr>
-                    <td><strong>{{ row.slot_label }}</strong></td>
+                    <td><strong>#{{ row.number }}</strong></td>
                     <td>
                         {% if row.yesterday_ml != None %}
                             <strong>{{ row.yesterday_ml }} ml</strong>

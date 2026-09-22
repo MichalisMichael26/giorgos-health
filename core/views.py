@@ -541,28 +541,27 @@ def dashboard(request):
 
     yesterday = today - timedelta(days=1)
 
-    today_rows = list(
-        MealEntry.objects.filter(date=today).exclude(status="missed").order_by("scheduled_time", "pk")
-    )
-    yesterday_rows = list(
-        MealEntry.objects.filter(date=yesterday).exclude(status="missed").order_by("scheduled_time", "pk")
-    )
+    def _ordered_day_meals(day):
+        rows = list(MealEntry.objects.filter(date=day).exclude(status="missed"))
+        rows.sort(
+            key=lambda meal: (
+                meal_start_datetime(meal) or timezone.make_aware(
+                    datetime.combine(meal.date, meal.scheduled_time),
+                    timezone.get_current_timezone(),
+                ),
+                meal.pk,
+            )
+        )
+        return rows
 
-    today_by_slot = {meal.scheduled_time: meal for meal in today_rows}
-    yesterday_by_slot = {meal.scheduled_time: meal for meal in yesterday_rows}
-
-    def _time_label(meal):
-        if not meal:
-            return ""
-        start_time = meal.actual_time or meal.scheduled_time
-        if meal.finished_time:
-            return f"{start_time.strftime('%H:%M')}–{meal.finished_time.strftime('%H:%M')}"
-        return start_time.strftime("%H:%M")
+    today_meal_rows = _ordered_day_meals(today)
+    yesterday_meal_rows = _ordered_day_meals(yesterday)
+    comparison_count = max(len(today_meal_rows), len(yesterday_meal_rows))
 
     meal_comparison_rows = []
-    for slot in FIXED_FEED_TIMES:
-        today_meal = today_by_slot.get(slot)
-        yesterday_meal = yesterday_by_slot.get(slot)
+    for index in range(comparison_count):
+        today_meal = today_meal_rows[index] if index < len(today_meal_rows) else None
+        yesterday_meal = yesterday_meal_rows[index] if index < len(yesterday_meal_rows) else None
 
         today_ml = (
             today_meal.consumed_ml
@@ -580,10 +579,17 @@ def dashboard(request):
             else None
         )
 
+        def _time_label(meal):
+            if not meal:
+                return ""
+            start_time = meal.actual_time or meal.scheduled_time
+            if meal.finished_time:
+                return f"{start_time.strftime('%H:%M')}–{meal.finished_time.strftime('%H:%M')}"
+            return start_time.strftime("%H:%M")
+
         meal_comparison_rows.append(
             {
-                "slot": slot,
-                "slot_label": slot.strftime("%H:%M"),
+                "number": index + 1,
                 "today": today_meal,
                 "yesterday": yesterday_meal,
                 "today_ml": today_ml,
