@@ -5948,3 +5948,280 @@ html.night .since-last-meal {
         transform: none !important;
     }
 }
+
+
+/* =========================================================
+   COLOR BOOST
+   Adds a bit more cheerful color while keeping readability.
+   ========================================================= */
+
+:root {
+    --bg1: #eef5ff;
+    --bg2: #fff7ef;
+    --primary: #5a78f2;
+    --primary-dark: #4666de;
+    --accent-pink: #ff8fb1;
+    --accent-mint: #72d6b0;
+    --accent-sun: #ffca62;
+    --accent-lilac: #b292ff;
+    --accent-sky: #84c7ff;
+}
+
+body.kids-bg {
+    background:
+        radial-gradient(circle at 5% 4%, rgba(133,195,255,.26) 0%, transparent 24%),
+        radial-gradient(circle at 96% 2%, rgba(255,160,188,.23) 0%, transparent 26%),
+        radial-gradient(circle at 83% 88%, rgba(124,223,193,.18) 0%, transparent 24%),
+        radial-gradient(circle at 16% 80%, rgba(255,205,110,.16) 0%, transparent 20%),
+        linear-gradient(180deg, #f5f9ff 0%, #fffaf6 100%);
+}
+
+.topbar {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,.96), rgba(249,251,255,.93));
+}
+
+.brand-logo {
+    box-shadow:
+        0 8px 22px rgba(76,105,173,.16),
+        0 0 0 4px rgba(255,255,255,.46);
+}
+
+.desktop-nav {
+    background: linear-gradient(180deg, rgba(246,249,255,.94), rgba(242,247,255,.92));
+}
+
+.desktop-nav a:hover {
+    color: #4365da;
+    background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(241,246,255,.96));
+}
+
+.desktop-nav a.is-active {
+    background: linear-gradient(135deg, #6f8cf5 0%, #8a79f0 55%, #64aef7 100%);
+}
+
+.hero-banner {
+    background:
+        radial-gradient(circle at 85% 25%, rgba(131,188,255,.20), transparent 25%),
+        radial-gradient(circle at 17% 90%, rgba(255,181,201,.17), transparent 24%),
+        linear-gradient(118deg, rgba(255,255,255,.99) 0%, rgba(239,246,255,.98) 55%, rgba(248,241,255,.96) 100%);
+}
+
+.hero-banner::before {
+    content: "";
+    position: absolute;
+    inset: auto auto 18px 18px;
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255,196,102,.26), rgba(255,143,177,.18));
+    transform: rotate(18deg);
+    pointer-events: none;
+    opacity: .85;
+}
+
+.btn.primary {
+    background: linear-gradient(135deg, #6e8cf6 0%, #7e79ef 50%, #59a8f0 100%);
+    border-color: #6c87f4;
+}
+
+.btn.primary:hover {
+    background: linear-gradient(135deg, #6383f3 0%, #736deb 50%, #519ee8 100%);
+}
+
+.theme-toggle:hover,
+.logout-button:hover,
+.btn.secondary:hover {
+    border-color: #c9d7f4;
+    background: linear-gradient(135deg, #ffffff, #f3f7ff);
+}
+
+.overview-card {
+    border: 1px solid rgba(214,225,244,.95);
+}
+
+.overview-card.soft-blue {
+    background: linear-gradient(145deg, #fdfefe, #e4f2ff);
+}
+
+.overview-card.soft-green {
+    background: linear-gradient(145deg, #fdfffe, #e7faef);
+}
+
+.overview-card.soft-peach {
+    background: linear-gradient(145deg, #fffdfb, #ffeddc);
+}
+
+.overview-card.soft-purple {
+    background: linear-gradient(145deg, #fffdff, #eee5ff);
+}
+
+.overview-card.soft-blue .overview-icon {
+    background: linear-gradient(145deg, rgba(137,198,255,.24), rgba(255,255,255,.75));
+}
+
+.overview-card.soft-green .overview-icon {
+    background: linear-gradient(145deg, rgba(114,214,176,.22), rgba(255,255,255,.74));
+}
+
+.overview-card.soft-peach .overview-icon {
+    background: linear-gradient(145deg, rgba(255,191,104,.24), rgba(255,255,255,.75));
+}
+
+.overview-card.soft-purple .overview-icon {
+    background: linear-gradient(145deg, rgba(178,146,255,.22), rgba(255,255,255,.75));
+}
+
+.panel,
+.form-card,
+.history-day {
+    position: relative;
+    overflow: hidden;
+}
+
+.panel::before,
+.form-card::before,
+.history-day::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #79b7ff 0%, #8e83ff 36%, #ff97b7 68%, #ffcf74 100%);
+    opacity: .92;
+}
+
+.home-health-card,
+.focus-strip-card,
+.comparison-card,
+.metric-card,
+.history-preview-card {
+    background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(247,250,255,.96));
+}
+
+.home-health-card > span,
+.focus-strip-card > span {
+    background: linear-gradient(145deg, #edf4ff, #e7f5ff);
+}
+
+.home-health-grid .home-health-card:nth-child(4n+1) > span,
+.quick-actions-grid a:nth-child(4n+1) span:first-child {
+    background: linear-gradient(145deg, #e5f2ff, #dff1ff);
+}
+
+.home-health-grid .home-health-card:nth-child(4n+2) > span,
+.quick-actions-grid a:nth-child(4n+2) span:first-child {
+    background: linear-gradient(145deg, #f8ecff, #efe2ff);
+}
+
+.home-health-grid .home-health-card:nth-child(4n+3) > span,
+.quick-actions-grid a:nth-child(4n+3) span:first-child {
+    background: linear-gradient(145deg, #fff0e3, #ffe7d2);
+}
+
+.home-health-grid .home-health-card:nth-child(4n+4) > span,
+.quick-actions-grid a:nth-child(4n+4) span:first-child {
+    background: linear-gradient(145deg, #e7fbf4, #def8ef);
+}
+
+.quick-actions-grid a {
+    border: 1px solid #dde6f3;
+    background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(247,250,255,.96));
+}
+
+.quick-actions-grid a:hover {
+    border-color: #c7d8f5;
+    background: linear-gradient(145deg, #ffffff, #eef5ff);
+}
+
+.quick-actions-grid a strong {
+    color: #30435f;
+}
+
+.countdown-panel {
+    background:
+        radial-gradient(circle at 88% 18%, rgba(132,199,255,.22), transparent 26%),
+        linear-gradient(118deg, #fbfdff, #edf5ff);
+}
+
+.countdown-panel .label {
+    color: #6e7d96;
+}
+
+.countdown-panel .next-meal-time {
+    color: #4062d9;
+    text-shadow: 0 2px 0 rgba(255,255,255,.4);
+}
+
+.feeding-rule-card {
+    background: linear-gradient(145deg, #f8fbff, #edf4ff);
+    border-color: #d4e1f6;
+}
+
+.table-wrap {
+    border: 1px solid #e3eaf4;
+    box-shadow: 0 10px 24px rgba(53,78,126,.05);
+}
+
+th {
+    background: linear-gradient(180deg, rgba(247,249,253,.98), rgba(242,246,252,.96));
+}
+
+tbody tr:hover td {
+    background: linear-gradient(180deg, rgba(247,251,255,.96), rgba(243,248,255,.92));
+}
+
+.message.success {
+    background: linear-gradient(145deg, #edfdf5, #e4fbef);
+}
+
+.message.warning {
+    background: linear-gradient(145deg, #fff9ea, #fff3d6);
+}
+
+.message.error {
+    background: linear-gradient(145deg, #fff0f0, #ffe7e7);
+}
+
+.mobile-bottom-nav {
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,255,.98));
+}
+
+.mobile-bottom-nav a.is-active {
+    background: linear-gradient(135deg, #eef3ff, #f4edff);
+    color: #4b66de;
+}
+
+html.night .desktop-nav a.is-active,
+html.night .btn.primary {
+    background: linear-gradient(135deg, #5e7ce0 0%, #736dd6 55%, #4d93cf 100%);
+}
+
+html.night .panel::before,
+html.night .form-card::before,
+html.night .history-day::before {
+    opacity: .72;
+}
+
+html.night .hero-banner,
+html.night .countdown-panel {
+    background:
+        radial-gradient(circle at 86% 16%, rgba(81,124,208,.16), transparent 24%),
+        linear-gradient(135deg, rgba(34,46,67,.98), rgba(29,40,59,.98));
+}
+
+html.night .overview-card.soft-blue {
+    background: linear-gradient(145deg, #293a53, #22364d);
+}
+
+html.night .overview-card.soft-green {
+    background: linear-gradient(145deg, #273d38, #21352f);
+}
+
+html.night .overview-card.soft-peach {
+    background: linear-gradient(145deg, #443427, #372b20);
+}
+
+html.night .overview-card.soft-purple {
+    background: linear-gradient(145deg, #352b48, #2c243e);
+}

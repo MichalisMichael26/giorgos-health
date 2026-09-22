@@ -649,3 +649,16 @@ A light visual refresh was applied without changing application behaviour:
 - reduced-motion accessibility support.
 
 No database migration is required for this visual update.
+
+
+## Color boost
+A second visual pass adds a bit more colour while keeping the interface clean:
+- richer pastel gradients in the background;
+- more colourful active navigation state;
+- livelier hero banner and primary buttons;
+- more colourful KPI cards and shortcut icons;
+- subtle rainbow accent line on panels/cards/forms;
+- slightly warmer tables, messages and mobile nav;
+- dark mode stays balanced and readable.
+
+No migrations are required for this visual update.
