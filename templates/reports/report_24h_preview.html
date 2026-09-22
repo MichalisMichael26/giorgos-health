@@ -54,13 +54,14 @@
             <div class="report-table-wrap">
                 <table class="report-table">
                     <thead>
-                        <tr><th>Ημ/νία</th><th>Ώρα</th><th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th><th>Formula</th><th>Maxijul</th></tr>
+                        <tr><th>Ημ/νία</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th><th>Formula</th><th>Maxijul</th></tr>
                     </thead>
                     <tbody>
                     {% for item in meals %}
                         <tr>
                             <td>{{ item.date|date:"d/m" }}</td>
                             <td>{% if item.actual_time %}{{ item.actual_time|time:"H:i" }}{% else %}{{ item.scheduled_time|time:"H:i" }}{% endif %}</td>
+                            <td>{% if item.finished_time %}<strong>{{ item.finished_time|time:"H:i" }}</strong>{% else %}—{% endif %}</td>
                             <td>{% if item.offered_ml != None %}{{ item.offered_ml }} ml{% else %}—{% endif %}</td>
                             <td>{% if item.remaining_ml != None %}{{ item.remaining_ml }} ml{% else %}—{% endif %}</td>
                             <td>{% if item.consumed_ml != None %}{{ item.consumed_ml }} ml{% else %}—{% endif %}</td>
@@ -68,7 +69,7 @@
                             <td>{% if item.supplement %}{{ item.supplement }} scoop{% else %}—{% endif %}</td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="7">Δεν υπάρχουν γεύματα στο τελευταίο 24ωρο.</td></tr>
+                        <tr><td colspan="8">Δεν υπάρχουν γεύματα στο τελευταίο 24ωρο.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

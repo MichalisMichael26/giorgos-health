@@ -27,7 +27,7 @@
             <div>
                 <strong>Γεύματα · 11′ πριν</strong>
                 <small>
-                    {% for t in fixed_meal_times %}{{ t }}{% if not forloop.last %} · {% endif %}{% endfor %}
+                    Επόμενο γεύμα = {{ feeding_interval_label }} μετά την ώρα ολοκλήρωσης του προηγούμενου.
                 </small>
             </div>
         </div>
@@ -44,7 +44,7 @@
             <span>🍼</span>
             <div>
                 <strong>≤ 50 ml · επανέλεγχος σε 1 ώρα</strong>
-                <small>Δημιουργείται όταν καταχωρηθεί γεύμα 50 ml ή λιγότερο.</small>
+                <small>Δημιουργείται όταν καταχωρηθεί γεύμα 50 ml ή λιγότερο και μετρά 1 ώρα από την ολοκλήρωση.</small>
             </div>
         </div>
     </div>

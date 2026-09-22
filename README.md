@@ -595,3 +595,23 @@ The flag appears in:
 - diaper list;
 - diaper View page;
 - 48-hour clinical print report.
+
+
+## Feeding interval starts from meal finish
+The feeding schedule is now dynamic instead of being driven by the old fixed clock slots.
+
+Current logic:
+- each meal can store **start time** and **finish time**;
+- the default feeding interval is **180 minutes (3 hours)**;
+- the next meal is calculated as `previous meal finish + feeding interval`;
+- the automatic meal push is scheduled **11 minutes before** that calculated next meal;
+- if a feed starts but has no finish time yet, the app does not invent the next exact feed time;
+- old fixed `meal-schedule:*` reminders are removed by migration `0018`;
+- the ≤50 ml follow-up rule now counts its one hour from meal completion when a finish time is available;
+- dashboard comparison is by meal sequence (#1, #2, #3...) rather than fixed clock slot;
+- reports, meal history, Hospital Mode, Doctor View and exports include finish time;
+- existing historical meals are NOT assigned an invented finish time.
+
+The old 01:30 / 04:30 / ... times remain only as bootstrap/reference times when no completed meal with a finish time is available yet.
+
+The interval can be changed in Child Profile through `feeding_interval_minutes`; it defaults to 180.

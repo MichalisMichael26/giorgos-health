@@ -41,7 +41,7 @@ class MealEntryForm(forms.ModelForm):
     same_as_scheduled = forms.BooleanField(
         required=False,
         initial=True,
-        label="Πραγματική ώρα ίδια με την προγραμματισμένη",
+        label="Ώρα έναρξης ίδια με την ώρα αναφοράς",
     )
 
     class Meta:
@@ -50,6 +50,7 @@ class MealEntryForm(forms.ModelForm):
             "date",
             "scheduled_time",
             "actual_time",
+            "finished_time",
             "offered_ml",
             "remaining_ml",
             "consumed_ml",
@@ -59,6 +60,9 @@ class MealEntryForm(forms.ModelForm):
             "notes",
         ]
         labels = {
+            "scheduled_time": "Ώρα αναφοράς / προγραμματισμένη",
+            "actual_time": "Ώρα έναρξης γεύματος",
+            "finished_time": "Ώρα ολοκλήρωσης γεύματος",
             "formula": "Formula (κουταλάκια)",
             "supplement": "Maxijul (scoops)",
         }
@@ -66,6 +70,7 @@ class MealEntryForm(forms.ModelForm):
             "date": DateInput(),
             "scheduled_time": TimeInput(format="%H:%M"),
             "actual_time": TimeInput(format="%H:%M"),
+            "finished_time": TimeInput(format="%H:%M"),
             "notes": forms.Textarea(attrs={"rows": 3}),
             "offered_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "remaining_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
@@ -81,6 +86,7 @@ class MealEntryForm(forms.ModelForm):
             "scheduled_time",
             "same_as_scheduled",
             "actual_time",
+            "finished_time",
             "offered_ml",
             "remaining_ml",
             "consumed_ml",
@@ -90,6 +96,9 @@ class MealEntryForm(forms.ModelForm):
             "notes",
         ])
 
+        self.fields["finished_time"].help_text = (
+            "Από αυτή την ώρα αρχίζει να μετρά το διάστημα μέχρι το επόμενο γεύμα."
+        )
         self.fields["remaining_ml"].help_text = (
             "Προαιρετικό. Αν το συμπληρώσεις, το «Ήπιε» υπολογίζεται αυτόματα: "
             "Προσφέρθηκαν − Έμεινε."
@@ -292,6 +301,9 @@ class ChildProfileForm(forms.ModelForm):
         self.fields["target_without_maxijul_min_ml"].help_text = (
             "Συμπληρώνεται μόνο αν έχει δοθεί συγκεκριμένος στόχος χωρίς Maxijul."
         )
+        self.fields["feeding_interval_minutes"].help_text = (
+            "Τώρα: 180 λεπτά = 3 ώρες. Το διάστημα μετρά από το ΤΕΛΟΣ του προηγούμενου γεύματος."
+        )
 
     class Meta:
         model = ChildProfile
@@ -306,6 +318,7 @@ class ChildProfileForm(forms.ModelForm):
             "target_without_maxijul_min_ml",
             "target_without_maxijul_max_ml",
             "feeding_target_note",
+            "feeding_interval_minutes",
             "known_allergies",
             "maxijul_scoop_grams",
             "maxijul_kcal_per_100g",
@@ -315,6 +328,9 @@ class ChildProfileForm(forms.ModelForm):
             "birth_date": DateInput(),
             "planned_maxijul_scoops_per_feed": forms.NumberInput(
                 attrs={"min": "0", "step": "0.25", "inputmode": "decimal"}
+            ),
+            "feeding_interval_minutes": forms.NumberInput(
+                attrs={"min": "1", "max": "720", "step": "1", "inputmode": "numeric"}
             ),
             "target_with_maxijul_min_ml": forms.NumberInput(
                 attrs={"min": "0", "step": "1", "inputmode": "numeric"}

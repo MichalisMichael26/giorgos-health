@@ -37,7 +37,7 @@
 {% endif %}
 
 {% if results.meals %}
-<section class="panel"><h2>🍼 Γεύματα</h2>{% for item in results.meals %}<a class="search-result-row" href="{% url 'meal_edit' item.pk %}"><strong>{{ item.date|date:"d/m/Y" }} · {{ item.consumed_ml|default:"—" }} ml</strong><small>{{ item.scheduled_time|time:"H:i" }}</small></a>{% endfor %}</section>
+<section class="panel"><h2>🍼 Γεύματα</h2>{% for item in results.meals %}<a class="search-result-row" href="{% url 'meal_edit' item.pk %}"><strong>{{ item.date|date:"d/m/Y" }} · {{ item.consumed_ml|default:"—" }} ml</strong><small>{% if item.actual_time %}{{ item.actual_time|time:"H:i" }}{% else %}{{ item.scheduled_time|time:"H:i" }}{% endif %}{% if item.finished_time %}–{{ item.finished_time|time:"H:i" }}{% endif %}</small></a>{% endfor %}</section>
 {% endif %}
 
 {% if results.glucose %}

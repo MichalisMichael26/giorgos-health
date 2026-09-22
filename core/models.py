@@ -22,7 +22,8 @@ class MealEntry(models.Model):
 
     date = models.DateField("Ημερομηνία")
     scheduled_time = models.TimeField("Προγραμματισμένη ώρα")
-    actual_time = models.TimeField("Πραγματική ώρα", blank=True, null=True)
+    actual_time = models.TimeField("Ώρα έναρξης", blank=True, null=True)
+    finished_time = models.TimeField("Ώρα ολοκλήρωσης", blank=True, null=True)
     offered_ml = models.PositiveIntegerField("Προσφέρθηκαν (ml)", blank=True, null=True)
     consumed_ml = models.PositiveIntegerField("Ήπιε (ml)", blank=True, null=True)
     remaining_ml = models.PositiveIntegerField("Έμεινε (ml)", blank=True, null=True)
@@ -248,6 +249,11 @@ class ChildProfile(models.Model):
         max_length=300,
         blank=True,
         help_text="Πηγή/ημερομηνία οδηγίας μεταβολικής ομάδας ή παιδιάτρου.",
+    )
+    feeding_interval_minutes = models.PositiveSmallIntegerField(
+        "Διάστημα επόμενου γεύματος από το τέλος (λεπτά)",
+        default=180,
+        help_text="Το επόμενο γεύμα υπολογίζεται από την ώρα ολοκλήρωσης του προηγούμενου.",
     )
     maxijul_plan_active = models.BooleanField(
         "Τρέχον πλάνο με Maxijul",

@@ -24,7 +24,7 @@
     <td data-label="Σχέση">{{ item.get_context_display }}</td>
     <td data-label="Γεύμα">
         {% if item.related_meal %}
-            {{ item.related_meal.date|date:"d/m" }} · {{ item.related_meal.scheduled_time|time:"H:i" }}
+            {{ item.related_meal.date|date:"d/m" }} · {% if item.related_meal.actual_time %}{{ item.related_meal.actual_time|time:"H:i" }}{% else %}{{ item.related_meal.scheduled_time|time:"H:i" }}{% endif %}{% if item.related_meal.finished_time %}–{{ item.related_meal.finished_time|time:"H:i" }}{% endif %}
         {% else %}—{% endif %}
     </td>
     <td data-label="Ενέργειες" class="row-actions">

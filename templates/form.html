@@ -158,6 +158,32 @@
         calculateConsumedFromRemaining();
     }
 
+
+    const finishedTime = document.getElementById("id_finished_time");
+    if (finishedTime) {
+        const finishRow = finishedTime.closest("p");
+        if (finishRow && !document.getElementById("set-finish-now")) {
+            const nowButton = document.createElement("button");
+            nowButton.type = "button";
+            nowButton.id = "set-finish-now";
+            nowButton.className = "mini-action finish-now-button";
+            nowButton.textContent = "Τέλος τώρα";
+            nowButton.addEventListener("click", function () {
+                const now = new Date();
+                finishedTime.value =
+                    String(now.getHours()).padStart(2, "0") + ":" +
+                    String(now.getMinutes()).padStart(2, "0");
+                finishedTime.dispatchEvent(new Event("change", {bubbles: true}));
+            });
+            finishRow.appendChild(nowButton);
+
+            const note = document.createElement("small");
+            note.className = "finish-time-note";
+            note.textContent = "Από αυτή την ώρα θα υπολογιστεί το επόμενο γεύμα.";
+            finishRow.appendChild(note);
+        }
+    }
+
     const doctorChoice = document.getElementById("id_doctor_choice");
     const otherDoctor = document.getElementById("id_other_doctor");
     const otherClinic = document.getElementById("id_other_clinic");

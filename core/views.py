@@ -14,6 +14,17 @@ from django.utils import timezone
 
 from .access import user_role
 
+from .feeding_timing import (
+    REFERENCE_FEED_TIMES,
+    feeding_interval_minutes,
+    format_interval,
+    latest_finished_meal,
+    meal_finished_datetime,
+    meal_start_datetime,
+    next_meal_due,
+    next_reference_due,
+)
+
 from .forms import (
     GlucoseReadingForm,
     GrowthMeasurementForm,
@@ -57,16 +68,7 @@ class PersistentLoginView(LoginView):
         return response
 
 
-SCHEDULED_TIMES = [
-    time(1, 30),
-    time(4, 30),
-    time(7, 30),
-    time(10, 30),
-    time(13, 30),
-    time(16, 30),
-    time(19, 30),
-    time(22, 30),
-]
+SCHEDULED_TIMES = REFERENCE_FEED_TIMES  # reference/bootstrap times only
 
 
 def get_child_profile():
@@ -336,50 +338,44 @@ def daily_milk_guide(profile, latest_growth, today, meals_today):
 
 
 def meal_timing_context(now_local):
-    today = now_local.date()
-    current_time = now_local.time().replace(tzinfo=None)
+    profile = get_child_profile()
+    now = timezone.now()
 
-    next_date = today
-    next_time = None
-    for scheduled in SCHEDULED_TIMES:
-        if scheduled > current_time:
-            next_time = scheduled
-            break
-    if next_time is None:
-        next_date = today + timedelta(days=1)
-        next_time = SCHEDULED_TIMES[0]
+    next_due, last_meal, last_finished_at = next_meal_due(
+        profile=profile,
+        now=now,
+    )
 
-    next_naive = datetime.combine(next_date, next_time)
-    next_dt = timezone.make_aware(next_naive, timezone.get_current_timezone())
+    waiting_for_finish = bool(last_meal and last_finished_at is None)
+    uses_reference_time = False
 
-    recent_meals = list(MealEntry.objects.order_by("-date", "-scheduled_time")[:30])
-    last_meal = None
-    last_naive = None
-    for candidate in recent_meals:
-        candidate_time = candidate.actual_time or candidate.scheduled_time
-        candidate_dt = datetime.combine(candidate.date, candidate_time)
-        if last_naive is None or candidate_dt > last_naive:
-            last_meal = candidate
-            last_naive = candidate_dt
+    if next_due is None and not waiting_for_finish:
+        next_due = next_reference_due(now_local)
+        uses_reference_time = True
 
-    last_dt = None
-    if last_naive is not None:
-        last_dt = timezone.make_aware(last_naive, timezone.get_current_timezone())
+    interval = feeding_interval_minutes(profile)
 
     return {
-        "next_meal_dt": next_dt,
-        "next_meal_iso": next_dt.isoformat(),
+        "next_meal_dt": next_due,
+        "next_meal_iso": next_due.isoformat() if next_due else "",
+        "next_meal_uses_reference": uses_reference_time,
+        "next_meal_waiting_for_finish": waiting_for_finish,
         "last_meal": last_meal,
-        "last_meal_dt": last_dt,
-        "last_meal_iso": last_dt.isoformat() if last_dt else "",
+        "last_meal_dt": last_finished_at,
+        "last_meal_iso": last_finished_at.isoformat() if last_finished_at else "",
+        "feeding_interval_minutes": interval,
+        "feeding_interval_label": format_interval(interval),
     }
 
-def next_scheduled_time(now_local):
-    current = now_local.time().replace(second=0, microsecond=0)
-    for scheduled in SCHEDULED_TIMES:
-        if scheduled >= current:
-            return scheduled
-    return SCHEDULED_TIMES[0]
+
+
+
+def next_scheduled_datetime(now_local):
+    profile = get_child_profile()
+    due_at, _, _ = next_meal_due(profile=profile, now=timezone.now())
+    return due_at or next_reference_due(now_local)
+
+
 
 
 def parse_date(value, fallback):
@@ -473,6 +469,7 @@ def build_history_days(start_date, end_date):
                     for part in [
                         f"Formula: {item.formula}" if item.formula else "",
                         f"Maxijul: {item.supplement} scoop" if item.supplement else "",
+                        f"Τέλος: {item.finished_time.strftime('%H:%M')}" if item.finished_time else "",
                     ]
                     if part
                 ),
@@ -558,20 +555,28 @@ def dashboard(request):
     milk_guide = daily_milk_guide(profile, latest_growth, today, meals_today)
 
     yesterday = today - timedelta(days=1)
-    yesterday_meals_qs = MealEntry.objects.filter(date=yesterday).order_by("scheduled_time", "-updated_at")
-    today_meals_latest = {}
-    yesterday_meals_latest = {}
 
-    for item in MealEntry.objects.filter(date=today).order_by("scheduled_time", "-updated_at"):
-        today_meals_latest.setdefault(item.scheduled_time, item)
+    def _ordered_day_meals(day):
+        rows = list(MealEntry.objects.filter(date=day).exclude(status="missed"))
+        rows.sort(
+            key=lambda meal: (
+                meal_start_datetime(meal) or timezone.make_aware(
+                    datetime.combine(meal.date, meal.scheduled_time),
+                    timezone.get_current_timezone(),
+                ),
+                meal.pk,
+            )
+        )
+        return rows
 
-    for item in yesterday_meals_qs:
-        yesterday_meals_latest.setdefault(item.scheduled_time, item)
+    today_meal_rows = _ordered_day_meals(today)
+    yesterday_meal_rows = _ordered_day_meals(yesterday)
+    comparison_count = max(len(today_meal_rows), len(yesterday_meal_rows))
 
     meal_comparison_rows = []
-    for scheduled_time in SCHEDULED_TIMES:
-        today_meal = today_meals_latest.get(scheduled_time)
-        yesterday_meal = yesterday_meals_latest.get(scheduled_time)
+    for index in range(comparison_count):
+        today_meal = today_meal_rows[index] if index < len(today_meal_rows) else None
+        yesterday_meal = yesterday_meal_rows[index] if index < len(yesterday_meal_rows) else None
 
         today_ml = today_meal.consumed_ml if today_meal and today_meal.consumed_ml is not None else None
         yesterday_ml = (
@@ -579,18 +584,29 @@ def dashboard(request):
             if yesterday_meal and yesterday_meal.consumed_ml is not None
             else None
         )
+        delta_ml = (
+            today_ml - yesterday_ml
+            if today_ml is not None and yesterday_ml is not None
+            else None
+        )
 
-        delta_ml = None
-        if today_ml is not None and yesterday_ml is not None:
-            delta_ml = today_ml - yesterday_ml
+        def _time_label(meal):
+            if not meal:
+                return ""
+            start_time = meal.actual_time or meal.scheduled_time
+            if meal.finished_time:
+                return f"{start_time.strftime('%H:%M')}–{meal.finished_time.strftime('%H:%M')}"
+            return start_time.strftime("%H:%M")
 
         meal_comparison_rows.append(
             {
-                "time": scheduled_time,
+                "number": index + 1,
                 "today": today_meal,
                 "yesterday": yesterday_meal,
                 "today_ml": today_ml,
                 "yesterday_ml": yesterday_ml,
+                "today_time_label": _time_label(today_meal),
+                "yesterday_time_label": _time_label(yesterday_meal),
                 "delta_ml": delta_ml,
             }
         )
@@ -616,8 +632,7 @@ def dashboard(request):
         "consumed_total": consumed_total,
         "meal_comparison_rows": meal_comparison_rows,
         "yesterday": yesterday,
-        "next_meal_time": next_scheduled_time(timezone.localtime()),
-        "schedule": SCHEDULED_TIMES,
+        "reference_schedule": REFERENCE_FEED_TIMES,
         "previous_days": previous_days[:3],
         "reminder_appointments": reminder_appointments,
         "upcoming_appointments": upcoming_appointments,
@@ -902,16 +917,17 @@ def history_pdf(request):
         story.append(Spacer(1, 3 * mm))
 
         if day["meals"]:
-            rows = [["Πρόγρ.", "Πραγμ.", "Προσφ.", "Ήπιε", "Formula"]]
+            rows = [["Αναφ.", "Έναρξη", "Τέλος", "Προσφ.", "Ήπιε", "Formula"]]
             for item in day["meals"]:
                 rows.append([
                     item.scheduled_time.strftime("%H:%M"),
                     item.actual_time.strftime("%H:%M") if item.actual_time else "—",
+                    item.finished_time.strftime("%H:%M") if item.finished_time else "—",
                     f"{item.offered_ml} ml" if item.offered_ml is not None else "—",
                     f"{item.consumed_ml} ml" if item.consumed_ml is not None else "—",
                     item.formula or "—",
                 ])
-            table = Table(rows, colWidths=[22*mm, 22*mm, 25*mm, 24*mm, 77*mm], repeatRows=1)
+            table = Table(rows, colWidths=[18*mm, 20*mm, 20*mm, 23*mm, 23*mm, 66*mm], repeatRows=1)
             table.setStyle(TableStyle([
                 ("FONTNAME", (0,0), (-1,-1), font_name),
                 ("FONTSIZE", (0,0), (-1,-1), 7.5),
@@ -1283,19 +1299,20 @@ def report_24h_pdf(request):
 
     if meals:
         story.append(Paragraph("Γεύματα", styles["heading"]))
-        rows = [["Ημ/νία", "Ώρα", "Προσφ.", "Έμεινε", "Ήπιε", "Formula", "Maxijul"]]
+        rows = [["Ημ/νία", "Έναρξη", "Τέλος", "Προσφ.", "Έμεινε", "Ήπιε", "Formula", "Maxijul"]]
         for item in meals:
             event_time = item.actual_time or item.scheduled_time
             rows.append([
                 item.date.strftime("%d/%m"),
                 event_time.strftime("%H:%M"),
+                item.finished_time.strftime("%H:%M") if item.finished_time else "—",
                 f"{item.offered_ml} ml" if item.offered_ml is not None else "—",
                 f"{item.remaining_ml} ml" if item.remaining_ml is not None else "—",
                 f"{item.consumed_ml} ml" if item.consumed_ml is not None else "—",
                 item.formula or "—",
                 f"{_numeric_scoops(item.supplement):g} scoop" if _numeric_scoops(item.supplement) else "—",
             ])
-        table = Table(rows, colWidths=[18*mm, 17*mm, 23*mm, 23*mm, 23*mm, 47*mm, 23*mm], repeatRows=1)
+        table = Table(rows, colWidths=[16*mm, 17*mm, 17*mm, 21*mm, 21*mm, 21*mm, 38*mm, 23*mm], repeatRows=1)
         table.setStyle(TableStyle([
             ("FONTNAME", (0,0), (-1,-1), font_name),
             ("FONTSIZE", (0,0), (-1,-1), 7.5),
@@ -1362,11 +1379,14 @@ def meal_list(request):
 
 @login_required
 def meal_create(request):
-    suggested_time = next_scheduled_time(timezone.localtime())
+    suggested_dt = next_scheduled_datetime(timezone.localtime())
+    suggested_local = timezone.localtime(suggested_dt)
+    suggested_time = suggested_local.time().replace(second=0, microsecond=0)
+
     form = MealEntryForm(
         request.POST or None,
         initial={
-            "date": timezone.localdate(),
+            "date": suggested_local.date(),
             "scheduled_time": suggested_time,
             "actual_time": suggested_time,
             "same_as_scheduled": True,
@@ -1381,9 +1401,22 @@ def meal_create(request):
         item = form.save(commit=False)
         item.created_by = request.user
         item.save()
-        messages.success(request, "Το γεύμα αποθηκεύτηκε.")
+        if item.finished_time:
+            messages.success(
+                request,
+                "Το γεύμα αποθηκεύτηκε και το επόμενο γεύμα υπολογίστηκε "
+                "από την ώρα ολοκλήρωσης.",
+            )
+        else:
+            messages.warning(
+                request,
+                "Το γεύμα αποθηκεύτηκε χωρίς ώρα ολοκλήρωσης. "
+                "Το επόμενο διάστημα δεν μπορεί να επανυπολογιστεί μέχρι να προστεθεί ώρα τέλους.",
+            )
         return redirect("meal_list")
     return render(request, "form.html", {"form": form, "title": "Νέο γεύμα"})
+
+
 
 
 @login_required
@@ -1391,8 +1424,18 @@ def meal_edit(request, pk):
     item = get_object_or_404(MealEntry, pk=pk)
     form = MealEntryForm(request.POST or None, instance=item)
     if form.is_valid():
-        form.save()
-        messages.success(request, "Το γεύμα ενημερώθηκε.")
+        updated = form.save()
+        if updated.finished_time:
+            messages.success(
+                request,
+                "Το γεύμα ενημερώθηκε και το επόμενο γεύμα επανυπολογίστηκε από την ώρα ολοκλήρωσης.",
+            )
+        else:
+            messages.warning(
+                request,
+                "Το γεύμα ενημερώθηκε χωρίς ώρα ολοκλήρωσης. "
+                "Δεν μπορεί να υπολογιστεί νέο διάστημα από αυτό το γεύμα.",
+            )
         return redirect("meal_list")
     return render(request, "form.html", {"form": form, "title": "Επεξεργασία γεύματος"})
 

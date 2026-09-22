@@ -8,6 +8,14 @@
 <section class="doctor-summary-grid">
 <div><span>Σήμερα γεύματα</span><strong>{{ today_stats.meal_count }}</strong></div><div><span>Σήμερα ml</span><strong>{{ today_stats.consumed_ml }}</strong></div><div><span>Σήμερα γλυκόζες</span><strong>{{ today_stats.glucose_count }}</strong></div><div><span>7ημ. μ.ό. γλυκόζης</span><strong>{% if glucose_avg_7 != None %}{{ glucose_avg_7 }}{% else %}—{% endif %}</strong></div>
 </section>
+{% if profile %}
+<section class="doctor-section">
+    <h2>🕒 Χρονισμός γευμάτων</h2>
+    <p>
+        Επόμενο γεύμα: <strong>{{ profile.feeding_interval_minutes }} λεπτά μετά την ολοκλήρωση του προηγούμενου γεύματος</strong>.
+    </p>
+</section>
+{% endif %}
 {% if profile and profile.current_feeding_plan %}<section class="doctor-section"><h2>🍼 Τρέχον πλάνο σίτισης</h2><p class="preline">{{ profile.current_feeding_plan }}</p></section>{% endif %}
 {% if milk_guide_today %}
 <section class="doctor-section">

@@ -19,6 +19,12 @@ from django.urls import reverse
 from django.utils import timezone
 
 from .access import user_role
+from .feeding_timing import (
+    feeding_interval_minutes,
+    format_interval,
+    latest_finished_meal,
+    meal_finished_datetime,
+)
 from .advanced_views import _matching_safety_rules, feeding_stats, get_profile
 from .mega_forms import (
     CreateAccessUserForm,
@@ -458,10 +464,8 @@ def reminder_list(request):
             "now": now,
             "push_device_count": push_device_count,
             "next_auto_notifications": next_auto_notifications,
-            "fixed_meal_times": [
-                "01:30", "04:30", "07:30", "10:30",
-                "13:30", "16:30", "19:30", "22:30",
-            ],
+            "feeding_interval_minutes": feeding_interval_minutes(get_profile()),
+            "feeding_interval_label": format_interval(feeding_interval_minutes(get_profile())),
         },
     )
 
@@ -616,7 +620,17 @@ def doctor_visit(request):
 @login_required
 def hospital_mode(request):
     today = timezone.localdate()
-    last_meal = MealEntry.objects.order_by("-date", "-actual_time", "-scheduled_time").first()
+    recent_meals = list(MealEntry.objects.order_by("-date", "-scheduled_time")[:40])
+    last_meal = None
+    if recent_meals:
+        from .feeding_timing import meal_start_datetime
+        last_meal = max(
+            recent_meals,
+            key=lambda meal: meal_start_datetime(meal) or timezone.make_aware(
+                datetime.combine(meal.date, meal.scheduled_time),
+                timezone.get_current_timezone(),
+            ),
+        )
 
     latest_lab = LabResult.objects.order_by("-date", "-time").first()
     latest_lab_date = latest_lab.date if latest_lab else None
@@ -843,10 +857,12 @@ def daily_summary_pdf(request):
         Paragraph(f"Πάνες: {len(summary['diapers'])} · Συμπτώματα: {len(summary['symptoms'])}", styles["body"]),
         Spacer(1, 5*mm),
     ]
-    rows = [["Ώρα", "Γεύμα ml", "Γλυκόζη mg/dL"]]
+    rows = [["Έναρξη–Τέλος", "Γεύμα ml", "Γλυκόζη mg/dL"]]
     by_time = {}
     for m in summary["meals"]:
-        key = (m.actual_time or m.scheduled_time).strftime("%H:%M")
+        start_label = (m.actual_time or m.scheduled_time).strftime("%H:%M")
+        finish_label = m.finished_time.strftime("%H:%M") if m.finished_time else "—"
+        key = f"{start_label}–{finish_label}"
         by_time.setdefault(key, ["", ""])
         by_time[key][0] = str(m.consumed_ml or "")
     for g in summary["glucose"]:

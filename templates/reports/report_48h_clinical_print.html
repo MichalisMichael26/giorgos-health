@@ -326,6 +326,8 @@
                 <span>Τρέχον πλάνο σίτισης</span>
                 <strong class="preline">{% if profile.current_feeding_plan %}{{ profile.current_feeding_plan }}{% else %}Δεν έχει καταχωρηθεί κείμενο πλάνου.{% endif %}</strong>
                 <div style="margin-top:7px; color:var(--muted)">
+                    Διάστημα επόμενου γεύματος: <strong>{{ profile.feeding_interval_minutes }} λεπτά από το τέλος του προηγούμενου</strong>
+                    <br>
                     Ρύθμιση Maxijul: {% if profile.maxijul_plan_active %}ενεργή{% else %}μη ενεργή{% endif %}
                     · {{ profile.planned_maxijul_scoops_per_feed|floatformat:"-2" }} scoop/γεύμα
                     <br>
@@ -398,7 +400,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Ημ/νία</th><th>Ώρα</th><th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th>
+                        <th>Ημ/νία</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th>
                         <th>Formula</th><th>Maxijul</th><th>Κατάσταση</th><th>Σημειώσεις</th>
                     </tr>
                 </thead>
@@ -407,6 +409,7 @@
                     <tr>
                         <td>{{ item.date|date:"d/m/Y" }}</td>
                         <td>{% if item.actual_time %}{{ item.actual_time|time:"H:i" }}{% else %}{{ item.scheduled_time|time:"H:i" }}{% endif %}</td>
+                        <td>{% if item.finished_time %}<strong>{{ item.finished_time|time:"H:i" }}</strong>{% else %}—{% endif %}</td>
                         <td>{% if item.offered_ml != None %}{{ item.offered_ml }} ml{% else %}—{% endif %}</td>
                         <td>{% if item.remaining_ml != None %}{{ item.remaining_ml }} ml{% else %}—{% endif %}</td>
                         <td>{% if item.consumed_ml != None %}<strong>{{ item.consumed_ml }} ml</strong>{% else %}—{% endif %}</td>

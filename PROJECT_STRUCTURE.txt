@@ -13,6 +13,7 @@ core/__pycache__/audit.cpython-313.pyc
 core/__pycache__/auto_reminders.cpython-313.pyc
 core/__pycache__/backup_utils.cpython-313.pyc
 core/__pycache__/context_processors.cpython-313.pyc
+core/__pycache__/feeding_timing.cpython-313.pyc
 core/__pycache__/forms.cpython-313.pyc
 core/__pycache__/mega_forms.cpython-313.pyc
 core/__pycache__/mega_views.cpython-313.pyc
@@ -33,6 +34,7 @@ core/audit.py
 core/auto_reminders.py
 core/backup_utils.py
 core/context_processors.py
+core/feeding_timing.py
 core/forms.py
 core/management/__init__.py
 core/management/__pycache__/__init__.cpython-313.pyc
@@ -63,6 +65,7 @@ core/migrations/0014_dual_feeding_targets.py
 core/migrations/0015_childprofile_known_allergies.py
 core/migrations/0016_mealentry_remaining_ml.py
 core/migrations/0017_diaperentry_possible_diarrhea.py
+core/migrations/0018_dynamic_feeding_from_finish.py
 core/migrations/__init__.py
 core/migrations/__pycache__/0001_initial.cpython-313.pyc
 core/migrations/__pycache__/0002_medications_appointments.cpython-313.pyc
@@ -78,6 +81,10 @@ core/migrations/__pycache__/0011_seed_discharge_lab_results.cpython-313.pyc
 core/migrations/__pycache__/0012_mobile_push_notifications.cpython-313.pyc
 core/migrations/__pycache__/0013_automatic_health_reminders.cpython-313.pyc
 core/migrations/__pycache__/0014_dual_feeding_targets.cpython-313.pyc
+core/migrations/__pycache__/0015_childprofile_known_allergies.cpython-313.pyc
+core/migrations/__pycache__/0016_mealentry_remaining_ml.cpython-313.pyc
+core/migrations/__pycache__/0017_diaperentry_possible_diarrhea.cpython-313.pyc
+core/migrations/__pycache__/0018_dynamic_feeding_from_finish.cpython-313.pyc
 core/migrations/__pycache__/__init__.cpython-313.pyc
 core/models.py
 core/native_alarm_views.py

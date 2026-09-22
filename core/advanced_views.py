@@ -964,7 +964,16 @@ def export_pdf(request):
     story.append(Spacer(1, 4*mm))
 
     sections = [
-        ("Γεύματα", [[m.date.strftime('%d/%m/%Y'), m.scheduled_time.strftime('%H:%M'), str(m.consumed_ml or ''), str(m.offered_ml or ''), m.status] for m in MealEntry.objects.order_by('-date','-scheduled_time')], ["Ημ/νία","Ώρα","Ήπιε","Προσφ.","Κατάσταση"]),
+        ("Γεύματα", [[
+            m.date.strftime('%d/%m/%Y'),
+            m.scheduled_time.strftime('%H:%M'),
+            m.actual_time.strftime('%H:%M') if m.actual_time else '',
+            m.finished_time.strftime('%H:%M') if m.finished_time else '',
+            str(m.consumed_ml or ''),
+            str(m.offered_ml or ''),
+            m.status
+        ] for m in MealEntry.objects.order_by('-date','-scheduled_time')],
+        ["Ημ/νία","Ώρα αναφοράς","Έναρξη","Τέλος","Ήπιε","Προσφ.","Κατάσταση"]),
         ("Γλυκόζη", [[g.date.strftime('%d/%m/%Y'), g.time.strftime('%H:%M'), f"{g.value:g}", g.get_context_display()] for g in GlucoseReading.objects.order_by('-date','-time')], ["Ημ/νία","Ώρα","mg/dL","Σχέση"]),
         ("Ανάπτυξη", [[g.date.strftime('%d/%m/%Y'), str(g.weight_kg or ''), str(g.length_cm or ''), str(g.head_cm or '')] for g in GrowthMeasurement.objects.order_by('-date')], ["Ημ/νία","kg","cm","Κεφάλι"]),
         ("Φάρμακα", [[m.date.strftime('%d/%m/%Y'), m.time.strftime('%H:%M'), m.name, f"{m.dose:g} {m.get_unit_display()}"] for m in MedicationEntry.objects.order_by('-date','-time')], ["Ημ/νία","Ώρα","Όνομα","Δόση"]),

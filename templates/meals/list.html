@@ -13,7 +13,7 @@
 <table class="responsive-table">
 <thead>
 <tr>
-    <th>Ημερομηνία</th><th>Πρόγραμμα</th><th>Πραγματική ώρα</th>
+    <th>Ημερομηνία</th><th>Ώρα αναφοράς</th><th>Έναρξη</th><th>Τέλος</th>
     <th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th><th>Formula</th><th></th>
 </tr>
 </thead>
@@ -21,8 +21,9 @@
 {% for meal in meals %}
 <tr>
     <td data-label="Ημερομηνία">{{ meal.date|date:"d/m/Y" }}</td>
-    <td data-label="Πρόγραμμα">{{ meal.scheduled_time|time:"H:i" }}</td>
-    <td data-label="Πραγματική ώρα">{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
+    <td data-label="Ώρα αναφοράς">{{ meal.scheduled_time|time:"H:i" }}</td>
+    <td data-label="Έναρξη">{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
+    <td data-label="Τέλος">{% if meal.finished_time %}<strong>{{ meal.finished_time|time:"H:i" }}</strong>{% else %}<span class="muted">—</span>{% endif %}</td>
     <td data-label="Προσφέρθηκαν">{% if meal.offered_ml != None %}{{ meal.offered_ml }} ml{% else %}—{% endif %}</td>
     <td data-label="Έμεινε">{% if meal.remaining_ml != None %}{{ meal.remaining_ml }} ml{% else %}—{% endif %}</td>
     <td data-label="Ήπιε">{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
@@ -33,7 +34,7 @@
     </td>
 </tr>
 {% empty %}
-<tr><td colspan="8">Δεν υπάρχουν καταχωρήσεις.</td></tr>
+<tr><td colspan="9">Δεν υπάρχουν καταχωρήσεις.</td></tr>
 {% endfor %}
 </tbody>
 </table>

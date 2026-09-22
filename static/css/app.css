@@ -5156,3 +5156,40 @@ html.night .diaper-diarrhea-flag {
     background: #3c3422;
     border-color: #6d5d39;
 }
+
+
+/* ===== Finish-based feeding schedule ===== */
+.feeding-rule-card {
+    display: grid;
+    gap: 5px;
+    padding: 14px 16px;
+    border: 1px solid #cbdcf2;
+    border-radius: 14px;
+    background: #f5f9ff;
+}
+
+.feeding-rule-card strong {
+    font-size: 16px;
+}
+
+.feeding-rule-card small {
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.finish-now-button {
+    width: fit-content;
+    margin-top: 4px;
+}
+
+.finish-time-note {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+html.night .feeding-rule-card {
+    background: #243349;
+    border-color: #435a78;
+}

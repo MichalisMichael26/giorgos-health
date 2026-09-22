@@ -24,7 +24,7 @@ from .models import (
 
 @admin.register(MealEntry)
 class MealEntryAdmin(admin.ModelAdmin):
-    list_display = ("date", "scheduled_time", "actual_time", "consumed_ml", "status")
+    list_display = ("date", "scheduled_time", "actual_time", "finished_time", "consumed_ml", "status")
     list_filter = ("date", "status")
     search_fields = ("formula", "supplement", "notes")
 

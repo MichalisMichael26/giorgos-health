@@ -1,25 +1,22 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 
 from django.utils import timezone
 
-from .models import HealthReminder, MealEntry, MedicalAppointment
+from .feeding_timing import (
+    feeding_interval_minutes,
+    format_interval,
+    meal_finished_datetime,
+    meal_start_datetime,
+    next_meal_due,
+)
+from .models import ChildProfile, HealthReminder, MedicalAppointment
 
-
-FIXED_MEAL_TIMES = [
-    time(1, 30),
-    time(4, 30),
-    time(7, 30),
-    time(10, 30),
-    time(13, 30),
-    time(16, 30),
-    time(19, 30),
-    time(22, 30),
-]
 
 LOW_MEAL_THRESHOLD_ML = 50
 LOW_MEAL_FOLLOWUP_MINUTES = 60
 APPOINTMENT_NOTIFY_MINUTES_BEFORE = 24 * 60
 MEAL_NOTIFY_MINUTES_BEFORE = 11
+DYNAMIC_MEAL_SOURCE_KEY = "meal-next:dynamic"
 
 
 def _aware(local_date, local_time):
@@ -56,60 +53,56 @@ def _upsert_auto_reminder(source_key, defaults):
     return reminder
 
 
-def sync_fixed_meal_reminders(now=None, include_tomorrow=True):
+def sync_dynamic_meal_reminder(now=None):
     """
-    Ensure reminders exist for the fixed Giorgos feeding schedule.
+    Keep ONE next-meal reminder based on:
+        previous meal finish time + configured feeding interval.
 
-    The reminder's due_at is the scheduled feeding time and the push is sent
-    11 minutes before it.
+    The old fixed clock schedule is no longer used for automatic meal pushes.
     """
     now = now or timezone.now()
-    local_today = timezone.localtime(now).date()
-    days = [local_today]
+    profile = ChildProfile.objects.first()
 
-    if include_tomorrow:
-        days.append(local_today + timedelta(days=1))
+    due_at, last_meal, finished_at = next_meal_due(
+        profile=profile,
+        now=now,
+    )
 
-    created_or_updated = 0
+    # If no completed meal has a finish time, or another meal has already
+    # started but has not yet finished, an exact next-feed time cannot be
+    # calculated safely. Remove any stale dynamic reminder.
+    if due_at is None or last_meal is None or finished_at is None:
+        HealthReminder.objects.filter(source_key=DYNAMIC_MEAL_SOURCE_KEY).delete()
+        return None
 
-    for day in days:
-        for scheduled_time in FIXED_MEAL_TIMES:
-            source_key = f"meal-schedule:{day.isoformat()}:{scheduled_time.strftime('%H%M')}"
-            already_logged = MealEntry.objects.filter(
-                date=day,
-                scheduled_time=scheduled_time,
-            ).exists()
+    interval = feeding_interval_minutes(profile)
 
-            _upsert_auto_reminder(
-                source_key,
-                {
-                    "reminder_type": "meal",
-                    "title": f"Προγραμματισμένο γεύμα {scheduled_time.strftime('%H:%M')}",
-                    "due_at": _aware(day, scheduled_time),
-                    "notes": "Αυτόματη υπενθύμιση: 11 λεπτά πριν από την προγραμματισμένη ώρα γεύματος.",
-                    "notify_minutes_before": MEAL_NOTIFY_MINUTES_BEFORE,
-                    "repeat_if_incomplete_minutes": 0,
-                    "active": True,
-                    "completed": already_logged,
-                },
-            )
-            created_or_updated += 1
-
-    # Keep the database tidy. Old schedule rows have no further purpose.
-    cutoff = local_today - timedelta(days=7)
-    HealthReminder.objects.filter(
-        auto_generated=True,
-        source_key__startswith="meal-schedule:",
-        due_at__date__lt=cutoff,
-    ).delete()
-
-    return created_or_updated
+    return _upsert_auto_reminder(
+        DYNAMIC_MEAL_SOURCE_KEY,
+        {
+            "reminder_type": "meal",
+            "title": f"Επόμενο γεύμα · {timezone.localtime(due_at):%H:%M}",
+            "due_at": due_at,
+            "notes": (
+                "Αυτόματη υπενθύμιση: "
+                f"{format_interval(interval)} μετά την ολοκλήρωση του προηγούμενου γεύματος "
+                f"({timezone.localtime(finished_at):%H:%M}). "
+                f"Push {MEAL_NOTIFY_MINUTES_BEFORE} λεπτά πριν."
+            ),
+            "notify_minutes_before": MEAL_NOTIFY_MINUTES_BEFORE,
+            "repeat_if_incomplete_minutes": 0,
+            "active": True,
+            "completed": False,
+        },
+    )
 
 
 def sync_low_meal_reminder(meal):
     """
     User-defined rule:
-    if consumed amount is 50 ml or less, create a follow-up reminder 1 hour later.
+    if consumed amount is 50 ml or less, create a follow-up reminder 1 hour
+    after the meal FINISH time. Older entries without a finish time fall back
+    to their recorded start/reference time for backwards compatibility.
     """
     source_key = f"low-meal:{meal.pk}"
 
@@ -117,12 +110,11 @@ def sync_low_meal_reminder(meal):
         HealthReminder.objects.filter(source_key=source_key).delete()
         return None
 
-    base_time = meal.actual_time or meal.scheduled_time
-    if not base_time:
+    base_dt = meal_finished_datetime(meal) or meal_start_datetime(meal)
+    if base_dt is None:
         return None
 
-    meal_dt = _aware(meal.date, base_time)
-    due_at = meal_dt + timedelta(minutes=LOW_MEAL_FOLLOWUP_MINUTES)
+    due_at = base_dt + timedelta(minutes=LOW_MEAL_FOLLOWUP_MINUTES)
 
     reminder = _upsert_auto_reminder(
         source_key,
@@ -133,7 +125,8 @@ def sync_low_meal_reminder(meal):
             "notes": (
                 f"Αυτόματη υπενθύμιση βάσει του κανόνα ≤ {LOW_MEAL_THRESHOLD_ML} ml. "
                 f"Το καταχωρημένο γεύμα ήταν {meal.consumed_ml} ml. "
-                f"Υπενθύμιση {LOW_MEAL_FOLLOWUP_MINUTES} λεπτά μετά."
+                f"Υπενθύμιση {LOW_MEAL_FOLLOWUP_MINUTES} λεπτά μετά "
+                "την ολοκλήρωση του γεύματος."
             ),
             "notify_minutes_before": 0,
             "repeat_if_incomplete_minutes": 0,
@@ -142,14 +135,6 @@ def sync_low_meal_reminder(meal):
         },
     )
     return reminder
-
-
-def sync_meal_schedule_completion(meal):
-    if not meal.scheduled_time:
-        return
-
-    source_key = f"meal-schedule:{meal.date.isoformat()}:{meal.scheduled_time.strftime('%H%M')}"
-    HealthReminder.objects.filter(source_key=source_key).update(completed=True)
 
 
 def sync_appointment_reminder(appointment):
@@ -202,7 +187,17 @@ def sync_upcoming_appointment_reminders(now=None):
 
 def sync_all_automatic_reminders(now=None):
     now = now or timezone.now()
+
+    # Clean up any old fixed-clock meal reminders left by older versions.
+    HealthReminder.objects.filter(
+        auto_generated=True,
+        source_key__startswith="meal-schedule:",
+    ).delete()
+
+    meal_reminder = sync_dynamic_meal_reminder(now=now)
+
     return {
-        "meal_schedule": sync_fixed_meal_reminders(now=now, include_tomorrow=True),
+        "meal_schedule": 1 if meal_reminder else 0,
+        "dynamic_meal": 1 if meal_reminder else 0,
         "appointments": sync_upcoming_appointment_reminders(now=now),
     }
