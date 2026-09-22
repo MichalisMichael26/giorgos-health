@@ -681,3 +681,16 @@ Comments are shown in:
 
 Empty comments remain hidden/represented by a dash so screens stay uncluttered.
 No migration is required.
+
+
+## More colour pass
+A stronger pastel colour pass was added while preserving readability:
+- more distinct section colours;
+- richer dashboard KPI cards;
+- coloured meal/glucose/medication panels;
+- more varied shortcut cards;
+- richer comments, reminders and forms;
+- stronger active navigation colours;
+- matching dark-mode colour accents.
+
+No migration is required.

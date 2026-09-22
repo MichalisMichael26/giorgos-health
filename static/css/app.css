@@ -6290,3 +6290,371 @@ html.night .comparison-comment {
         margin-top: 2px;
     }
 }
+
+
+/* =========================================================
+   MORE COLOR · pastel accents pass
+   ========================================================= */
+
+:root {
+    --gh-blue: #6ea8ff;
+    --gh-cyan: #6fd2e8;
+    --gh-mint: #72d8b0;
+    --gh-green: #9bdb84;
+    --gh-yellow: #ffd166;
+    --gh-orange: #ffad73;
+    --gh-pink: #ff96b9;
+    --gh-rose: #f7859d;
+    --gh-purple: #a98cf7;
+    --gh-lilac: #c7a8ff;
+}
+
+/* Background gets a little more life */
+body.kids-bg {
+    background:
+        radial-gradient(circle at 4% 4%, rgba(110,168,255,.28) 0%, transparent 23%),
+        radial-gradient(circle at 97% 5%, rgba(255,150,185,.24) 0%, transparent 24%),
+        radial-gradient(circle at 91% 74%, rgba(114,216,176,.20) 0%, transparent 23%),
+        radial-gradient(circle at 8% 82%, rgba(255,209,102,.18) 0%, transparent 22%),
+        radial-gradient(circle at 52% 105%, rgba(169,140,247,.14) 0%, transparent 28%),
+        linear-gradient(180deg, #f3f8ff 0%, #fff9f5 100%);
+}
+
+/* Navigation */
+.desktop-nav a:nth-child(2):hover { color: #4776da; background: #edf4ff; }
+.desktop-nav a:nth-child(3):hover { color: #3b9bb2; background: #eafafd; }
+.desktop-nav a:nth-child(4):hover { color: #bc6b77; background: #fff0f3; }
+.desktop-nav a:nth-child(5):hover { color: #6a58c9; background: #f3efff; }
+
+.desktop-nav a.is-active {
+    background: linear-gradient(135deg, #6d97f6 0%, #887cf3 48%, #67b8ef 100%);
+}
+
+/* Hero stronger accent */
+.hero-banner {
+    background:
+        radial-gradient(circle at 89% 18%, rgba(111,210,232,.19), transparent 24%),
+        radial-gradient(circle at 14% 94%, rgba(255,150,185,.16), transparent 22%),
+        radial-gradient(circle at 65% 108%, rgba(255,209,102,.14), transparent 26%),
+        linear-gradient(118deg, #ffffff 0%, #edf5ff 53%, #f7efff 100%);
+}
+
+.hero-banner::after {
+    background: radial-gradient(circle, rgba(169,140,247,.22), rgba(169,140,247,0) 68%);
+}
+
+.hero-actions .btn:nth-child(2) {
+    background: linear-gradient(145deg, #fff, #edf7ff);
+    border-color: #c8def5;
+}
+
+.hero-actions .btn:nth-child(3) {
+    background: linear-gradient(145deg, #fff, #fff1f4);
+    border-color: #efcbd4;
+}
+
+.hero-actions .btn:nth-child(4) {
+    background: linear-gradient(145deg, #fff8f8, #ffeded);
+}
+
+.hero-actions .btn:nth-child(5) {
+    background: linear-gradient(145deg, #f8f4ff, #eee8ff);
+    border-color: #d8cef7;
+}
+
+/* Top KPI cards more distinct */
+.overview-card.soft-blue {
+    border-color: #c9e2fb;
+    background: linear-gradient(145deg, #ffffff 0%, #e2f1ff 100%);
+}
+
+.overview-card.soft-green {
+    border-color: #c8ecd8;
+    background: linear-gradient(145deg, #ffffff 0%, #e4f9ec 100%);
+}
+
+.overview-card.soft-peach {
+    border-color: #f2dbc7;
+    background: linear-gradient(145deg, #ffffff 0%, #ffeadb 100%);
+}
+
+.overview-card.soft-purple {
+    border-color: #dfd1fb;
+    background: linear-gradient(145deg, #ffffff 0%, #ede4ff 100%);
+}
+
+.overview-card.soft-blue .big { color: #3f70c8; }
+.overview-card.soft-green .big { color: #348864; }
+.overview-card.soft-peach .big { color: #bf724a; }
+.overview-card.soft-purple .big { color: #7257bd; }
+
+/* Panel section accents */
+.panel:nth-of-type(4n+1)::before {
+    background: linear-gradient(90deg, #71b8ff, #70d4e7);
+}
+.panel:nth-of-type(4n+2)::before {
+    background: linear-gradient(90deg, #71d3ae, #a2df85);
+}
+.panel:nth-of-type(4n+3)::before {
+    background: linear-gradient(90deg, #ffbd73, #ff96b8);
+}
+.panel:nth-of-type(4n+4)::before {
+    background: linear-gradient(90deg, #a78cf5, #cfadff);
+}
+
+/* Home shortcut accents by item */
+.home-health-card:nth-child(1) {
+    border-color: #c7dcfb;
+    background: linear-gradient(145deg, #fff, #eef5ff);
+}
+.home-health-card:nth-child(2) {
+    border-color: #d7cef5;
+    background: linear-gradient(145deg, #fff, #f4efff);
+}
+.home-health-card:nth-child(3) {
+    border-color: #efc8ce;
+    background: linear-gradient(145deg, #fff, #fff0f2);
+}
+.home-health-card:nth-child(4) {
+    border-color: #c9eadb;
+    background: linear-gradient(145deg, #fff, #edfaf4);
+}
+.home-health-card:nth-child(5) {
+    border-color: #efdcb5;
+    background: linear-gradient(145deg, #fff, #fff7e9);
+}
+.home-health-card:nth-child(6) {
+    border-color: #c7e6ee;
+    background: linear-gradient(145deg, #fff, #edfafd);
+}
+
+/* Main focus strip */
+.dashboard-focus-strip .focus-strip-card:nth-child(1) {
+    background: linear-gradient(145deg, #fff, #fff0f1);
+    border-color: #efc9cd;
+}
+.dashboard-focus-strip .focus-strip-card:nth-child(2) {
+    background: linear-gradient(145deg, #fff, #edf6ff);
+    border-color: #cbdff4;
+}
+.dashboard-focus-strip .focus-strip-card:nth-child(3) {
+    background: linear-gradient(145deg, #fff, #f3efff);
+    border-color: #d9cff5;
+}
+
+/* Meal-related cards */
+.meal-slot-comparison-panel {
+    border-color: #cadff5;
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.98), rgba(239,247,255,.95));
+}
+
+.meal-slot-comparison-table th {
+    background: linear-gradient(180deg, #eef6ff, #e8f2ff);
+    color: #536c93;
+}
+
+.feeding-rule-panel {
+    border-color: #c9e6dd;
+}
+
+.feeding-rule-card {
+    background: linear-gradient(145deg, #f9fffc, #e9f8f2);
+    border-color: #c9e8db;
+}
+
+.countdown-panel {
+    border-color: #c8ddf4;
+    background:
+        radial-gradient(circle at 88% 18%, rgba(110,168,255,.24), transparent 26%),
+        radial-gradient(circle at 8% 95%, rgba(169,140,247,.13), transparent 25%),
+        linear-gradient(118deg, #fbfdff, #edf5ff);
+}
+
+.countdown-panel .next-meal-time {
+    background: linear-gradient(90deg, #456fd4, #705bd0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Glucose / medicine compact cards */
+.two-panel-grid > .panel:first-child {
+    border-color: #f0d2c1;
+    background: linear-gradient(145deg, #fff, #fff5ee);
+}
+
+.two-panel-grid > .panel:nth-child(2) {
+    border-color: #cee6d7;
+    background: linear-gradient(145deg, #fff, #f1faf5);
+}
+
+.compact-row {
+    background: rgba(255,255,255,.76);
+}
+
+.two-panel-grid > .panel:first-child .compact-row:hover {
+    border-color: #efcfbc;
+    background: #fff7f1;
+}
+
+.two-panel-grid > .panel:nth-child(2) .compact-row:hover {
+    border-color: #cbe4d4;
+    background: #f3fbf6;
+}
+
+/* Quick actions cycle colors */
+.quick-actions-grid a:nth-child(6n+1) {
+    background: linear-gradient(145deg, #fff, #eef5ff);
+    border-color: #cfdef3;
+}
+.quick-actions-grid a:nth-child(6n+2) {
+    background: linear-gradient(145deg, #fff, #fff0f2);
+    border-color: #efccd2;
+}
+.quick-actions-grid a:nth-child(6n+3) {
+    background: linear-gradient(145deg, #fff, #fff3e8);
+    border-color: #f1d6bf;
+}
+.quick-actions-grid a:nth-child(6n+4) {
+    background: linear-gradient(145deg, #fff, #eefaf4);
+    border-color: #c9e7d8;
+}
+.quick-actions-grid a:nth-child(6n+5) {
+    background: linear-gradient(145deg, #fff, #f2efff);
+    border-color: #d8cff4;
+}
+.quick-actions-grid a:nth-child(6n+6) {
+    background: linear-gradient(145deg, #fff, #eefafd);
+    border-color: #cbe6ed;
+}
+
+/* Forms */
+.form-card {
+    background:
+        radial-gradient(circle at 95% 0%, rgba(169,140,247,.08), transparent 24%),
+        linear-gradient(145deg, rgba(255,255,255,.99), rgba(249,251,255,.98));
+}
+
+form p:nth-of-type(4n+1) input:focus,
+form p:nth-of-type(4n+1) select:focus,
+form p:nth-of-type(4n+1) textarea:focus {
+    border-color: #8fb5f2;
+    box-shadow: 0 0 0 4px rgba(110,168,255,.11);
+}
+
+form p:nth-of-type(4n+2) input:focus,
+form p:nth-of-type(4n+2) select:focus,
+form p:nth-of-type(4n+2) textarea:focus {
+    border-color: #8ed8bc;
+    box-shadow: 0 0 0 4px rgba(114,216,176,.10);
+}
+
+form p:nth-of-type(4n+3) input:focus,
+form p:nth-of-type(4n+3) select:focus,
+form p:nth-of-type(4n+3) textarea:focus {
+    border-color: #e8a7b9;
+    box-shadow: 0 0 0 4px rgba(255,150,185,.09);
+}
+
+form p:nth-of-type(4n+4) input:focus,
+form p:nth-of-type(4n+4) select:focus,
+form p:nth-of-type(4n+4) textarea:focus {
+    border-color: #b49bec;
+    box-shadow: 0 0 0 4px rgba(169,140,247,.10);
+}
+
+/* Comments */
+.entry-comment {
+    border-color: #d8d7f2;
+    background: linear-gradient(145deg, #fbfaff, #f1efff);
+    color: #655b89;
+}
+
+.compact-entry-comment,
+.comparison-comment {
+    background: linear-gradient(145deg, #f6f4ff, #f0eeff);
+    color: #6a628c !important;
+}
+
+/* Table headers per page feel slightly more colourful */
+.responsive-table th {
+    background: linear-gradient(180deg, #f6f9ff, #edf3fb);
+}
+
+.report-table th {
+    background: linear-gradient(180deg, #f7f9ff, #eef3fb);
+}
+
+/* Reminder colours */
+.reminder-panel {
+    border-color: #f2d39b;
+    background: linear-gradient(145deg, #fffdf8, #fff4dc);
+}
+
+.reminder-card:nth-child(3n+1) {
+    border-color: #ceddf4;
+}
+.reminder-card:nth-child(3n+2) {
+    border-color: #d8cff4;
+}
+.reminder-card:nth-child(3n+3) {
+    border-color: #cce8db;
+}
+
+/* Bottom nav */
+.mobile-bottom-nav a:nth-child(1).is-active { background: #eef4ff; color: #4c72d8; }
+.mobile-bottom-nav a:nth-child(2).is-active { background: #edf8ff; color: #388eae; }
+.mobile-bottom-nav a:nth-child(3).is-active { background: #fff1f4; color: #b95f76; }
+.mobile-bottom-nav a:nth-child(4).is-active { background: #f2efff; color: #715bc1; }
+.mobile-bottom-nav a:nth-child(5).is-active { background: #eefaf4; color: #388266; }
+.mobile-bottom-nav a:nth-child(6).is-active { background: #fff6e8; color: #a87530; }
+
+/* Dark mode: preserve colour hints without becoming noisy */
+html.night .home-health-card:nth-child(1),
+html.night .quick-actions-grid a:nth-child(6n+1) {
+    background: linear-gradient(145deg, #273950, #223149);
+}
+
+html.night .home-health-card:nth-child(2),
+html.night .quick-actions-grid a:nth-child(6n+5) {
+    background: linear-gradient(145deg, #332c49, #2a263e);
+}
+
+html.night .home-health-card:nth-child(3),
+html.night .quick-actions-grid a:nth-child(6n+2) {
+    background: linear-gradient(145deg, #44303a, #372832);
+}
+
+html.night .home-health-card:nth-child(4),
+html.night .quick-actions-grid a:nth-child(6n+4) {
+    background: linear-gradient(145deg, #263d38, #21342f);
+}
+
+html.night .home-health-card:nth-child(5),
+html.night .quick-actions-grid a:nth-child(6n+3) {
+    background: linear-gradient(145deg, #42372b, #352d24);
+}
+
+html.night .home-health-card:nth-child(6),
+html.night .quick-actions-grid a:nth-child(6n+6) {
+    background: linear-gradient(145deg, #263b47, #21323d);
+}
+
+html.night .two-panel-grid > .panel:first-child {
+    background: linear-gradient(145deg, #3b302d, #302927);
+    border-color: #55433c;
+}
+
+html.night .two-panel-grid > .panel:nth-child(2) {
+    background: linear-gradient(145deg, #273a34, #22312d);
+    border-color: #3d554c;
+}
+
+html.night .entry-comment,
+html.night .compact-entry-comment,
+html.night .comparison-comment {
+    background: #2e2943;
+    border-color: #494063;
+    color: #cfc4ef !important;
+}
