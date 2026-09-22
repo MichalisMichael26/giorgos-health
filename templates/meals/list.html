@@ -14,7 +14,7 @@
 <thead>
 <tr>
     <th>Ημερομηνία</th><th>Ώρα αναφοράς</th><th>Έναρξη</th><th>Τέλος</th>
-    <th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th><th>Formula</th><th></th>
+    <th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th><th>Formula</th><th>Σχόλιο</th><th></th>
 </tr>
 </thead>
 <tbody>
@@ -28,13 +28,14 @@
     <td data-label="Έμεινε">{% if meal.remaining_ml != None %}{{ meal.remaining_ml }} ml{% else %}—{% endif %}</td>
     <td data-label="Ήπιε">{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
     <td data-label="Formula">{{ meal.formula|default:"—" }}</td>
+    <td data-label="Σχόλιο">{% if meal.notes %}<span class="entry-comment">💬 {{ meal.notes }}</span>{% else %}—{% endif %}</td>
     <td data-label="Ενέργειες" class="row-actions">
         <a class="mini-action" href="{% url 'meal_edit' meal.pk %}">Edit</a>
         <a class="mini-action danger-link" href="{% url 'meal_delete' meal.pk %}">Delete</a>
     </td>
 </tr>
 {% empty %}
-<tr><td colspan="9">Δεν υπάρχουν καταχωρήσεις.</td></tr>
+<tr><td colspan="10">Δεν υπάρχουν καταχωρήσεις.</td></tr>
 {% endfor %}
 </tbody>
 </table>

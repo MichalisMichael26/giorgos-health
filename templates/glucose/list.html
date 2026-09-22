@@ -12,7 +12,7 @@
 <div class="panel table-wrap">
 <table class="responsive-table">
 <thead>
-<tr><th>Ημέρα</th><th>Ημερομηνία</th><th>Ώρα</th><th>Τιμή</th><th>Σχέση</th><th>Γεύμα</th><th></th></tr>
+<tr><th>Ημέρα</th><th>Ημερομηνία</th><th>Ώρα</th><th>Τιμή</th><th>Σχέση</th><th>Γεύμα</th><th>Σχόλιο</th><th></th></tr>
 </thead>
 <tbody>
 {% for item in readings %}
@@ -27,13 +27,14 @@
             {{ item.related_meal.date|date:"d/m" }} · {% if item.related_meal.actual_time %}{{ item.related_meal.actual_time|time:"H:i" }}{% else %}{{ item.related_meal.scheduled_time|time:"H:i" }}{% endif %}{% if item.related_meal.finished_time %}–{{ item.related_meal.finished_time|time:"H:i" }}{% endif %}
         {% else %}—{% endif %}
     </td>
+    <td data-label="Σχόλιο">{% if item.notes %}<span class="entry-comment">💬 {{ item.notes }}</span>{% else %}—{% endif %}</td>
     <td data-label="Ενέργειες" class="row-actions">
         <a class="mini-action" href="{% url 'glucose_edit' item.pk %}">Edit</a>
         <a class="mini-action danger-link" href="{% url 'glucose_delete' item.pk %}">Delete</a>
     </td>
 </tr>
 {% empty %}
-<tr><td colspan="7">Δεν υπάρχουν μετρήσεις.</td></tr>
+<tr><td colspan="8">Δεν υπάρχουν μετρήσεις.</td></tr>
 {% endfor %}
 </tbody>
 </table>

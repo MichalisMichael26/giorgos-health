@@ -662,3 +662,22 @@ A second visual pass adds a bit more colour while keeping the interface clean:
 - dark mode stays balanced and readable.
 
 No migrations are required for this visual update.
+
+
+## Meal and glucose comments visibility
+When a meal or glucose entry contains notes/comments, they are now visible in the main read-only views instead of being hidden inside Edit forms.
+
+Comments are shown in:
+- Dashboard today's meals;
+- Dashboard today's glucose;
+- Dashboard meal-by-meal yesterday vs today comparison;
+- Meals list;
+- Glucose list;
+- History timeline;
+- History preview/report;
+- History PDF;
+- 24-hour preview and PDF;
+- 48-hour clinical report (already supported and retained).
+
+Empty comments remain hidden/represented by a dash so screens stay uncluttered.
+No migration is required.

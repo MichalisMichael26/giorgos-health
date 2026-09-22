@@ -470,6 +470,7 @@ def build_history_days(start_date, end_date):
                         f"Formula: {item.formula}" if item.formula else "",
                         f"Maxijul: {item.supplement} scoop" if item.supplement else "",
                         f"Τέλος: {item.finished_time.strftime('%H:%M')}" if item.finished_time else "",
+                        f"💬 {item.notes}" if item.notes else "",
                     ]
                     if part
                 ),
@@ -482,7 +483,14 @@ def build_history_days(start_date, end_date):
                 "icon": "🩸",
                 "title": "Γλυκόζη",
                 "text": f"{item.value:g} mg/dL",
-                "extra": item.get_context_display(),
+                "extra": " · ".join(
+                    part
+                    for part in [
+                        item.get_context_display(),
+                        f"💬 {item.notes}" if item.notes else "",
+                    ]
+                    if part
+                ),
             })
 
         for item in day_meds:
@@ -864,6 +872,7 @@ def _pdf_styles():
 def history_pdf(request):
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
+    from xml.sax.saxutils import escape
     from reportlab.lib.units import mm
     from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
@@ -917,7 +926,7 @@ def history_pdf(request):
         story.append(Spacer(1, 3 * mm))
 
         if day["meals"]:
-            rows = [["Αναφ.", "Έναρξη", "Τέλος", "Προσφ.", "Ήπιε", "Formula"]]
+            rows = [["Αναφ.", "Έναρξη", "Τέλος", "Προσφ.", "Ήπιε", "Formula", "Σχόλιο"]]
             for item in day["meals"]:
                 rows.append([
                     item.scheduled_time.strftime("%H:%M"),
@@ -926,8 +935,9 @@ def history_pdf(request):
                     f"{item.offered_ml} ml" if item.offered_ml is not None else "—",
                     f"{item.consumed_ml} ml" if item.consumed_ml is not None else "—",
                     item.formula or "—",
+                    Paragraph(escape(item.notes), styles["small"]) if item.notes else "—",
                 ])
-            table = Table(rows, colWidths=[18*mm, 20*mm, 20*mm, 23*mm, 23*mm, 66*mm], repeatRows=1)
+            table = Table(rows, colWidths=[16*mm, 18*mm, 18*mm, 21*mm, 21*mm, 35*mm, 41*mm], repeatRows=1)
             table.setStyle(TableStyle([
                 ("FONTNAME", (0,0), (-1,-1), font_name),
                 ("FONTSIZE", (0,0), (-1,-1), 7.5),
@@ -946,7 +956,7 @@ def history_pdf(request):
                     item.time.strftime("%H:%M"),
                     f"{item.value:g} mg/dL",
                     item.get_context_display(),
-                    Paragraph(item.notes or "—", styles["small"]),
+                    Paragraph(escape(item.notes), styles["small"]) if item.notes else "—",
                 ])
             table = Table(rows, colWidths=[22*mm, 30*mm, 42*mm, 76*mm], repeatRows=1)
             table.setStyle(TableStyle([
@@ -1230,6 +1240,7 @@ def history_report_preview(request):
 def report_24h_pdf(request):
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
+    from xml.sax.saxutils import escape
     from reportlab.lib.units import mm
     from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
@@ -1299,7 +1310,7 @@ def report_24h_pdf(request):
 
     if meals:
         story.append(Paragraph("Γεύματα", styles["heading"]))
-        rows = [["Ημ/νία", "Έναρξη", "Τέλος", "Προσφ.", "Έμεινε", "Ήπιε", "Formula", "Maxijul"]]
+        rows = [["Ημ/νία", "Έναρξη", "Τέλος", "Προσφ.", "Έμεινε", "Ήπιε", "Formula", "Maxijul", "Σχόλιο"]]
         for item in meals:
             event_time = item.actual_time or item.scheduled_time
             rows.append([
@@ -1311,8 +1322,9 @@ def report_24h_pdf(request):
                 f"{item.consumed_ml} ml" if item.consumed_ml is not None else "—",
                 item.formula or "—",
                 f"{_numeric_scoops(item.supplement):g} scoop" if _numeric_scoops(item.supplement) else "—",
+                Paragraph(escape(item.notes), styles["small"]) if item.notes else "—",
             ])
-        table = Table(rows, colWidths=[16*mm, 17*mm, 17*mm, 21*mm, 21*mm, 21*mm, 38*mm, 23*mm], repeatRows=1)
+        table = Table(rows, colWidths=[14*mm, 14*mm, 14*mm, 18*mm, 18*mm, 18*mm, 25*mm, 18*mm, 41*mm], repeatRows=1)
         table.setStyle(TableStyle([
             ("FONTNAME", (0,0), (-1,-1), font_name),
             ("FONTSIZE", (0,0), (-1,-1), 7.5),
@@ -1326,15 +1338,16 @@ def report_24h_pdf(request):
 
     if glucose:
         story.append(Paragraph("Γλυκόζη", styles["heading"]))
-        rows = [["Ημ/νία", "Ώρα", "Τιμή", "Σχέση"]]
+        rows = [["Ημ/νία", "Ώρα", "Τιμή", "Σχέση", "Σχόλιο"]]
         for item in glucose:
             rows.append([
                 item.date.strftime("%d/%m"),
                 item.time.strftime("%H:%M"),
                 f"{item.value:g} mg/dL",
                 item.get_context_display(),
+                Paragraph(escape(item.notes), styles["small"]) if item.notes else "—",
             ])
-        table = Table(rows, colWidths=[30*mm, 30*mm, 40*mm, 70*mm], repeatRows=1)
+        table = Table(rows, colWidths=[22*mm, 20*mm, 30*mm, 45*mm, 55*mm], repeatRows=1)
         table.setStyle(TableStyle([
             ("FONTNAME", (0,0), (-1,-1), font_name),
             ("FONTSIZE", (0,0), (-1,-1), 7.5),

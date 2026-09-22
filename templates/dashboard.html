@@ -150,6 +150,7 @@
                         {% if row.yesterday_ml != None %}
                             <strong>{{ row.yesterday_ml }} ml</strong>
                             <small>{{ row.yesterday_time_label }}{% if row.yesterday.supplement %} · Maxijul {{ row.yesterday.supplement }}{% endif %}</small>
+                            {% if row.yesterday.notes %}<small class="comparison-comment">💬 {{ row.yesterday.notes }}</small>{% endif %}
                         {% else %}
                             <span class="muted">—</span>
                         {% endif %}
@@ -158,6 +159,7 @@
                         {% if row.today_ml != None %}
                             <strong>{{ row.today_ml }} ml</strong>
                             <small>{{ row.today_time_label }}{% if row.today.supplement %} · Maxijul {{ row.today.supplement }}{% endif %}</small>
+                            {% if row.today.notes %}<small class="comparison-comment">💬 {{ row.today.notes }}</small>{% endif %}
                         {% else %}
                             <span class="muted">—</span>
                         {% endif %}
@@ -466,7 +468,7 @@
     <div class="table-wrap">
         <table class="responsive-table">
             <thead>
-                <tr><th>Ώρα αναφοράς</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφ.</th><th>Ήπιε</th><th></th></tr>
+                <tr><th>Ώρα αναφοράς</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφ.</th><th>Ήπιε</th><th>Σχόλιο</th><th></th></tr>
             </thead>
             <tbody>
             {% for meal in meals_today %}
@@ -476,10 +478,11 @@
                     <td data-label="Τέλος">{% if meal.finished_time %}<strong>{{ meal.finished_time|time:"H:i" }}</strong>{% else %}<span class="muted">Δεν καταχωρήθηκε</span>{% endif %}</td>
                     <td data-label="Προσφέρθηκαν">{% if meal.offered_ml != None %}{{ meal.offered_ml }} ml{% else %}—{% endif %}</td>
                     <td data-label="Ήπιε">{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
+                    <td data-label="Σχόλιο">{% if meal.notes %}<span class="entry-comment">💬 {{ meal.notes }}</span>{% else %}—{% endif %}</td>
                     <td data-label=""><a class="mini-action" href="{% url 'meal_edit' meal.pk %}">Edit</a></td>
                 </tr>
             {% empty %}
-                <tr><td colspan="6">Δεν υπάρχουν γεύματα σήμερα.</td></tr>
+                <tr><td colspan="7">Δεν υπάρχουν γεύματα σήμερα.</td></tr>
             {% endfor %}
             </tbody>
         </table>
@@ -494,10 +497,11 @@
         </div>
         <div class="compact-list">
             {% for reading in glucose_today %}
-            <a href="{% url 'glucose_edit' reading.pk %}" class="compact-row">
+            <a href="{% url 'glucose_edit' reading.pk %}" class="compact-row{% if reading.notes %} has-note{% endif %}">
                 <strong>{{ reading.time|time:"H:i" }}</strong>
                 <span>{{ reading.value|floatformat:0 }} mg/dL</span>
                 <small>{{ reading.get_context_display }}</small>
+                {% if reading.notes %}<em class="compact-entry-comment">💬 {{ reading.notes }}</em>{% endif %}
             </a>
             {% empty %}
             <p class="muted">Δεν υπάρχουν μετρήσεις σήμερα.</p>
