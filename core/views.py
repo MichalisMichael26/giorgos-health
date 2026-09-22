@@ -15,14 +15,11 @@ from django.utils import timezone
 from .access import user_role
 
 from .feeding_timing import (
-    REFERENCE_FEED_TIMES,
-    feeding_interval_minutes,
-    format_interval,
-    latest_finished_meal,
-    meal_finished_datetime,
+    FIXED_FEED_TIMES,
+    latest_started_meal,
     meal_start_datetime,
-    next_meal_due,
-    next_reference_due,
+    next_fixed_meal_due,
+    suggested_meal_datetime,
 )
 
 from .forms import (
@@ -68,7 +65,7 @@ class PersistentLoginView(LoginView):
         return response
 
 
-SCHEDULED_TIMES = REFERENCE_FEED_TIMES  # reference/bootstrap times only
+SCHEDULED_TIMES = FIXED_FEED_TIMES
 
 
 def get_child_profile():
@@ -338,43 +335,23 @@ def daily_milk_guide(profile, latest_growth, today, meals_today):
 
 
 def meal_timing_context(now_local):
-    profile = get_child_profile()
     now = timezone.now()
-
-    next_due, last_meal, last_finished_at = next_meal_due(
-        profile=profile,
-        now=now,
-    )
-
-    waiting_for_finish = bool(last_meal and last_finished_at is None)
-    uses_reference_time = False
-
-    if next_due is None and not waiting_for_finish:
-        next_due = next_reference_due(now_local)
-        uses_reference_time = True
-
-    interval = feeding_interval_minutes(profile)
+    next_due = next_fixed_meal_due(now)
+    last_meal, last_started_at = latest_started_meal(now)
 
     return {
         "next_meal_dt": next_due,
-        "next_meal_iso": next_due.isoformat() if next_due else "",
-        "next_meal_uses_reference": uses_reference_time,
-        "next_meal_waiting_for_finish": waiting_for_finish,
+        "next_meal_iso": next_due.isoformat(),
         "last_meal": last_meal,
-        "last_meal_dt": last_finished_at,
-        "last_meal_iso": last_finished_at.isoformat() if last_finished_at else "",
-        "feeding_interval_minutes": interval,
-        "feeding_interval_label": format_interval(interval),
+        "last_meal_dt": last_started_at,
+        "last_meal_iso": last_started_at.isoformat() if last_started_at else "",
+        "fixed_feed_times": FIXED_FEED_TIMES,
+        "meal_notify_minutes_before": 12,
     }
 
 
-
-
 def next_scheduled_datetime(now_local):
-    profile = get_child_profile()
-    due_at, _, _ = next_meal_due(profile=profile, now=timezone.now())
-    return due_at or next_reference_due(now_local)
-
+    return suggested_meal_datetime(timezone.now())
 
 
 
@@ -564,29 +541,34 @@ def dashboard(request):
 
     yesterday = today - timedelta(days=1)
 
-    def _ordered_day_meals(day):
-        rows = list(MealEntry.objects.filter(date=day).exclude(status="missed"))
-        rows.sort(
-            key=lambda meal: (
-                meal_start_datetime(meal) or timezone.make_aware(
-                    datetime.combine(meal.date, meal.scheduled_time),
-                    timezone.get_current_timezone(),
-                ),
-                meal.pk,
-            )
-        )
-        return rows
+    today_rows = list(
+        MealEntry.objects.filter(date=today).exclude(status="missed").order_by("scheduled_time", "pk")
+    )
+    yesterday_rows = list(
+        MealEntry.objects.filter(date=yesterday).exclude(status="missed").order_by("scheduled_time", "pk")
+    )
 
-    today_meal_rows = _ordered_day_meals(today)
-    yesterday_meal_rows = _ordered_day_meals(yesterday)
-    comparison_count = max(len(today_meal_rows), len(yesterday_meal_rows))
+    today_by_slot = {meal.scheduled_time: meal for meal in today_rows}
+    yesterday_by_slot = {meal.scheduled_time: meal for meal in yesterday_rows}
+
+    def _time_label(meal):
+        if not meal:
+            return ""
+        start_time = meal.actual_time or meal.scheduled_time
+        if meal.finished_time:
+            return f"{start_time.strftime('%H:%M')}–{meal.finished_time.strftime('%H:%M')}"
+        return start_time.strftime("%H:%M")
 
     meal_comparison_rows = []
-    for index in range(comparison_count):
-        today_meal = today_meal_rows[index] if index < len(today_meal_rows) else None
-        yesterday_meal = yesterday_meal_rows[index] if index < len(yesterday_meal_rows) else None
+    for slot in FIXED_FEED_TIMES:
+        today_meal = today_by_slot.get(slot)
+        yesterday_meal = yesterday_by_slot.get(slot)
 
-        today_ml = today_meal.consumed_ml if today_meal and today_meal.consumed_ml is not None else None
+        today_ml = (
+            today_meal.consumed_ml
+            if today_meal and today_meal.consumed_ml is not None
+            else None
+        )
         yesterday_ml = (
             yesterday_meal.consumed_ml
             if yesterday_meal and yesterday_meal.consumed_ml is not None
@@ -598,17 +580,10 @@ def dashboard(request):
             else None
         )
 
-        def _time_label(meal):
-            if not meal:
-                return ""
-            start_time = meal.actual_time or meal.scheduled_time
-            if meal.finished_time:
-                return f"{start_time.strftime('%H:%M')}–{meal.finished_time.strftime('%H:%M')}"
-            return start_time.strftime("%H:%M")
-
         meal_comparison_rows.append(
             {
-                "number": index + 1,
+                "slot": slot,
+                "slot_label": slot.strftime("%H:%M"),
                 "today": today_meal,
                 "yesterday": yesterday_meal,
                 "today_ml": today_ml,
@@ -640,7 +615,7 @@ def dashboard(request):
         "consumed_total": consumed_total,
         "meal_comparison_rows": meal_comparison_rows,
         "yesterday": yesterday,
-        "reference_schedule": REFERENCE_FEED_TIMES,
+        "reference_schedule": FIXED_FEED_TIMES,
         "previous_days": previous_days[:3],
         "reminder_appointments": reminder_appointments,
         "upcoming_appointments": upcoming_appointments,
@@ -926,7 +901,7 @@ def history_pdf(request):
         story.append(Spacer(1, 3 * mm))
 
         if day["meals"]:
-            rows = [["Αναφ.", "Έναρξη", "Τέλος", "Προσφ.", "Ήπιε", "Formula", "Σχόλιο"]]
+            rows = [["Προγρ.", "Έναρξη", "Τέλος", "Προσφ.", "Ήπιε", "Formula", "Σχόλιο"]]
             for item in day["meals"]:
                 rows.append([
                     item.scheduled_time.strftime("%H:%M"),
@@ -1414,18 +1389,10 @@ def meal_create(request):
         item = form.save(commit=False)
         item.created_by = request.user
         item.save()
-        if item.finished_time:
-            messages.success(
-                request,
-                "Το γεύμα αποθηκεύτηκε και το επόμενο γεύμα υπολογίστηκε "
-                "από την ώρα ολοκλήρωσης.",
-            )
-        else:
-            messages.warning(
-                request,
-                "Το γεύμα αποθηκεύτηκε χωρίς ώρα ολοκλήρωσης. "
-                "Το επόμενο διάστημα δεν μπορεί να επανυπολογιστεί μέχρι να προστεθεί ώρα τέλους.",
-            )
+        messages.success(
+            request,
+            "Το γεύμα αποθηκεύτηκε. Το επόμενο γεύμα παραμένει στη σταθερή ώρα του 3ώρου.",
+        )
         return redirect("meal_list")
     return render(request, "form.html", {"form": form, "title": "Νέο γεύμα"})
 
@@ -1437,18 +1404,11 @@ def meal_edit(request, pk):
     item = get_object_or_404(MealEntry, pk=pk)
     form = MealEntryForm(request.POST or None, instance=item)
     if form.is_valid():
-        updated = form.save()
-        if updated.finished_time:
-            messages.success(
-                request,
-                "Το γεύμα ενημερώθηκε και το επόμενο γεύμα επανυπολογίστηκε από την ώρα ολοκλήρωσης.",
-            )
-        else:
-            messages.warning(
-                request,
-                "Το γεύμα ενημερώθηκε χωρίς ώρα ολοκλήρωσης. "
-                "Δεν μπορεί να υπολογιστεί νέο διάστημα από αυτό το γεύμα.",
-            )
+        form.save()
+        messages.success(
+            request,
+            "Το γεύμα ενημερώθηκε. Η ώρα ολοκλήρωσης είναι μόνο καταγραφή και δεν μετακινεί το σταθερό 3ωρο.",
+        )
         return redirect("meal_list")
     return render(request, "form.html", {"form": form, "title": "Επεξεργασία γεύματος"})
 

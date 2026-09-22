@@ -41,7 +41,7 @@ class MealEntryForm(forms.ModelForm):
     same_as_scheduled = forms.BooleanField(
         required=False,
         initial=True,
-        label="Ώρα έναρξης ίδια με την ώρα αναφοράς",
+        label="Ώρα έναρξης ίδια με την προγραμματισμένη ώρα",
     )
 
     class Meta:
@@ -60,7 +60,7 @@ class MealEntryForm(forms.ModelForm):
             "notes",
         ]
         labels = {
-            "scheduled_time": "Ώρα αναφοράς / προγραμματισμένη",
+            "scheduled_time": "Προγραμματισμένη ώρα γεύματος",
             "actual_time": "Ώρα έναρξης γεύματος",
             "finished_time": "Ώρα ολοκλήρωσης γεύματος",
             "formula": "Formula (κουταλάκια)",
@@ -97,7 +97,7 @@ class MealEntryForm(forms.ModelForm):
         ])
 
         self.fields["finished_time"].help_text = (
-            "Από αυτή την ώρα αρχίζει να μετρά το διάστημα μέχρι το επόμενο γεύμα."
+            "Προαιρετική καταγραφή. Δεν αλλάζει την ώρα του επόμενου γεύματος."
         )
         self.fields["remaining_ml"].help_text = (
             "Προαιρετικό. Αν το συμπληρώσεις, το «Ήπιε» υπολογίζεται αυτόματα: "
@@ -301,9 +301,6 @@ class ChildProfileForm(forms.ModelForm):
         self.fields["target_without_maxijul_min_ml"].help_text = (
             "Συμπληρώνεται μόνο αν έχει δοθεί συγκεκριμένος στόχος χωρίς Maxijul."
         )
-        self.fields["feeding_interval_minutes"].help_text = (
-            "Τώρα: 180 λεπτά = 3 ώρες. Το διάστημα μετρά από το ΤΕΛΟΣ του προηγούμενου γεύματος."
-        )
 
     class Meta:
         model = ChildProfile
@@ -318,7 +315,6 @@ class ChildProfileForm(forms.ModelForm):
             "target_without_maxijul_min_ml",
             "target_without_maxijul_max_ml",
             "feeding_target_note",
-            "feeding_interval_minutes",
             "known_allergies",
             "maxijul_scoop_grams",
             "maxijul_kcal_per_100g",
@@ -328,9 +324,6 @@ class ChildProfileForm(forms.ModelForm):
             "birth_date": DateInput(),
             "planned_maxijul_scoops_per_feed": forms.NumberInput(
                 attrs={"min": "0", "step": "0.25", "inputmode": "decimal"}
-            ),
-            "feeding_interval_minutes": forms.NumberInput(
-                attrs={"min": "1", "max": "720", "step": "1", "inputmode": "numeric"}
             ),
             "target_with_maxijul_min_ml": forms.NumberInput(
                 attrs={"min": "0", "step": "1", "inputmode": "numeric"}

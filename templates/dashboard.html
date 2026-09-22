@@ -127,7 +127,7 @@
     <div class="panel-head">
         <div>
             <h2>🍼 Γεύμα με γεύμα · σήμερα vs χθες</h2>
-            <p class="muted">Σύγκριση ανά σειρά γεύματος, γιατί οι ώρες πλέον μετακινούνται ανάλογα με το πότε τελείωσε το προηγούμενο.</p>
+            <p class="muted">Σύγκριση της ίδιας προγραμματισμένης ώρας στο σταθερό 3ωρο.</p>
         </div>
         <a href="{% url 'feeding_performance' %}">Feeding performance</a>
     </div>
@@ -136,7 +136,7 @@
         <table class="meal-slot-comparison-table">
             <thead>
                 <tr>
-                    <th>Γεύμα</th>
+                    <th>Ώρα</th>
                     <th>Χθες<br><small>{{ yesterday|date:"d/m" }}</small></th>
                     <th>Σήμερα<br><small>{{ today|date:"d/m" }}</small></th>
                     <th>Διαφορά</th>
@@ -145,7 +145,7 @@
             <tbody>
             {% for row in meal_comparison_rows %}
                 <tr>
-                    <td><strong>#{{ row.number }}</strong></td>
+                    <td><strong>{{ row.slot_label }}</strong></td>
                     <td>
                         {% if row.yesterday_ml != None %}
                             <strong>{{ row.yesterday_ml }} ml</strong>
@@ -395,19 +395,13 @@
          data-last-meal="{{ last_meal_iso }}">
     <div class="next-meal-block">
         <span class="label">⏱️ Επόμενο γεύμα</span>
-        <strong class="next-meal-time" id="next-meal-countdown">{% if next_meal_waiting_for_finish %}Περιμένει τέλος γεύματος{% else %}--:--{% endif %}</strong>
+        <strong class="next-meal-time" id="next-meal-countdown">--:--</strong>
         <small>
-            {% if next_meal_waiting_for_finish %}
-                Καταχώρησε την ώρα ολοκλήρωσης του τρέχοντος γεύματος για να ξεκινήσει το νέο {{ feeding_interval_label }}.
-            {% elif next_meal_uses_reference %}
-                Ώρα αναφοράς {{ next_meal_dt|time:"H:i" }} · δεν υπάρχει ακόμη καταχωρημένη ώρα ολοκλήρωσης.
-            {% else %}
-                Υπολογισμένο για {{ next_meal_dt|time:"H:i" }} · {{ feeding_interval_label }} μετά το τέλος.
-            {% endif %}
+            Σταθερή ώρα {{ next_meal_dt|time:"H:i" }} · ειδοποίηση {{ meal_notify_minutes_before }}′ πριν.
         </small>
     </div>
     <div class="since-last-meal">
-        <span>Από το τέλος του τελευταίου γεύματος</span>
+        <span>Από την έναρξη του τελευταίου γεύματος</span>
         <strong id="since-last-meal">{% if last_meal_dt %}υπολογισμός…{% else %}—{% endif %}</strong>
     </div>
     <a class="btn secondary" href="{% url 'meal_create' %}">Καταχώρηση γεύματος</a>
@@ -420,24 +414,22 @@
  const next=panel.dataset.nextMeal ? new Date(panel.dataset.nextMeal) : null;
  const last=panel.dataset.lastMeal ? new Date(panel.dataset.lastMeal) : null;
  function fmt(ms){
-   const overdue=ms<0;
-   const abs=Math.abs(ms);
-   const total=Math.floor(abs/60000);
+   const remaining=Math.max(0,ms);
+   const total=Math.floor(remaining/60000);
    const h=Math.floor(total/60);
    const m=total%60;
-   const value=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
-   return overdue ? "Καθυστέρηση " + value : value;
+   return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
  }
  function elapsed(ms){
-   if(ms<0) return "—"; const total=Math.floor(ms/60000); const h=Math.floor(total/60); const m=total%60;
+   if(ms<0) return "—";
+   const total=Math.floor(ms/60000);
+   const h=Math.floor(total/60);
+   const m=total%60;
    return h+"ω "+m+"λ";
  }
  function tick(){
    const now=new Date();
-   if(next && !Number.isNaN(next.getTime())) {
-     const remaining=next-now;
-     nextEl.textContent=fmt(remaining);
-   }
+   if(next && !Number.isNaN(next.getTime())) nextEl.textContent=fmt(next-now);
    if(last&&lastEl) lastEl.textContent=elapsed(now-last);
  }
  tick(); setInterval(tick,30000);
@@ -447,16 +439,18 @@
 <section class="panel feeding-rule-panel">
     <div class="panel-head">
         <div>
-            <h2>🕒 Ρυθμός σίτισης</h2>
-            <p class="muted">Το επόμενο γεύμα δεν βασίζεται πλέον σε σταθερό ρολόι.</p>
+            <h2>🕒 Σταθερό πρόγραμμα 3ώρου</h2>
+            <p class="muted">Οδηγία παιδιάτρου · η επόμενη ώρα δεν αλλάζει ανάλογα με το πόσο διαρκεί το γεύμα.</p>
         </div>
     </div>
+    <div class="schedule-grid fixed-feed-schedule">
+        {% for feed_time in fixed_feed_times %}
+            <div class="schedule-time">{{ feed_time|time:"H:i" }}</div>
+        {% endfor %}
+    </div>
     <div class="feeding-rule-card">
-        <strong>{{ feeding_interval_label }} από την ολοκλήρωση του προηγούμενου γεύματος</strong>
-        <small>
-            Οι παλιές ώρες 01:30 · 04:30 · 07:30 · 10:30 · 13:30 · 16:30 · 19:30 · 22:30
-            χρησιμοποιούνται μόνο ως ώρες αναφοράς όταν δεν υπάρχει ακόμη καταχωρημένη ώρα ολοκλήρωσης.
-        </small>
+        <strong>00:00 · 03:00 · 06:00 · 09:00 · 12:00 · 15:00 · 18:00 · 21:00</strong>
+        <small>Αυτόματη push ειδοποίηση 12 λεπτά πριν από κάθε γεύμα.</small>
     </div>
 </section>
 
@@ -468,12 +462,12 @@
     <div class="table-wrap">
         <table class="responsive-table">
             <thead>
-                <tr><th>Ώρα αναφοράς</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφ.</th><th>Ήπιε</th><th>Σχόλιο</th><th></th></tr>
+                <tr><th>Προγραμματισμένη</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφ.</th><th>Ήπιε</th><th>Σχόλιο</th><th></th></tr>
             </thead>
             <tbody>
             {% for meal in meals_today %}
                 <tr>
-                    <td data-label="Ώρα αναφοράς">{{ meal.scheduled_time|time:"H:i" }}</td>
+                    <td data-label="Προγραμματισμένη">{{ meal.scheduled_time|time:"H:i" }}</td>
                     <td data-label="Έναρξη">{% if meal.actual_time %}{{ meal.actual_time|time:"H:i" }}{% else %}—{% endif %}</td>
                     <td data-label="Τέλος">{% if meal.finished_time %}<strong>{{ meal.finished_time|time:"H:i" }}</strong>{% else %}<span class="muted">Δεν καταχωρήθηκε</span>{% endif %}</td>
                     <td data-label="Προσφέρθηκαν">{% if meal.offered_ml != None %}{{ meal.offered_ml }} ml{% else %}—{% endif %}</td>

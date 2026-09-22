@@ -116,20 +116,20 @@ def audit_post_delete(sender, instance, **kwargs):
 @receiver(post_save, sender=MealEntry)
 def sync_meal_automatic_reminders(sender, instance, **kwargs):
     from .auto_reminders import (
-        sync_dynamic_meal_reminder,
+        sync_fixed_meal_schedule_reminders,
         sync_low_meal_reminder,
     )
 
     sync_low_meal_reminder(instance)
-    sync_dynamic_meal_reminder()
+    sync_fixed_meal_schedule_reminders()
 
 
 @receiver(post_delete, sender=MealEntry)
 def remove_meal_automatic_reminders(sender, instance, **kwargs):
-    from .auto_reminders import sync_dynamic_meal_reminder
+    from .auto_reminders import sync_fixed_meal_schedule_reminders
 
     HealthReminder.objects.filter(source_key=f"low-meal:{instance.pk}").delete()
-    sync_dynamic_meal_reminder()
+    sync_fixed_meal_schedule_reminders()
 
 
 @receiver(post_save, sender=MedicalAppointment)

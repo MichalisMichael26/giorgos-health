@@ -326,7 +326,9 @@
                 <span>Τρέχον πλάνο σίτισης</span>
                 <strong class="preline">{% if profile.current_feeding_plan %}{{ profile.current_feeding_plan }}{% else %}Δεν έχει καταχωρηθεί κείμενο πλάνου.{% endif %}</strong>
                 <div style="margin-top:7px; color:var(--muted)">
-                    Διάστημα επόμενου γεύματος: <strong>{{ profile.feeding_interval_minutes }} λεπτά από το τέλος του προηγούμενου</strong>
+                    Πρόγραμμα γευμάτων (οδηγία παιδιάτρου): <strong>00:00 · 03:00 · 06:00 · 09:00 · 12:00 · 15:00 · 18:00 · 21:00</strong>
+                    <br>
+                    Η διάρκεια του γεύματος δεν μετακινεί την επόμενη προγραμματισμένη ώρα.
                     <br>
                     Ρύθμιση Maxijul: {% if profile.maxijul_plan_active %}ενεργή{% else %}μη ενεργή{% endif %}
                     · {{ profile.planned_maxijul_scoops_per_feed|floatformat:"-2" }} scoop/γεύμα

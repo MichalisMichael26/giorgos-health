@@ -2,19 +2,22 @@ from datetime import datetime, time, timedelta
 
 from django.utils import timezone
 
-from .models import ChildProfile, MealEntry
+from .models import MealEntry
 
 
-REFERENCE_FEED_TIMES = [
-    time(1, 30),
-    time(4, 30),
-    time(7, 30),
-    time(10, 30),
-    time(13, 30),
-    time(16, 30),
-    time(19, 30),
-    time(22, 30),
+FIXED_FEED_TIMES = [
+    time(0, 0),
+    time(3, 0),
+    time(6, 0),
+    time(9, 0),
+    time(12, 0),
+    time(15, 0),
+    time(18, 0),
+    time(21, 0),
 ]
+
+# Backwards-compatible alias used in a few views/templates.
+REFERENCE_FEED_TIMES = FIXED_FEED_TIMES
 
 DEFAULT_FEEDING_INTERVAL_MINUTES = 180
 
@@ -38,8 +41,6 @@ def meal_finished_datetime(meal):
     finish_date = meal.date
     start_time = meal.actual_time or meal.scheduled_time
 
-    # If a feed crosses midnight, a finish clock time smaller than its start
-    # belongs to the following calendar day.
     if start_time and meal.finished_time < start_time:
         finish_date = finish_date + timedelta(days=1)
 
@@ -47,14 +48,19 @@ def meal_finished_datetime(meal):
 
 
 def feeding_interval_minutes(profile=None):
-    if profile is None:
-        profile = ChildProfile.objects.first()
-    value = getattr(profile, "feeding_interval_minutes", None) if profile else None
-    try:
-        value = int(value)
-    except (TypeError, ValueError):
-        value = DEFAULT_FEEDING_INTERVAL_MINUTES
-    return max(value, 1)
+    # The current pediatrician-directed schedule is fixed every 3 hours.
+    # Kept for backwards compatibility with older code/data.
+    return DEFAULT_FEEDING_INTERVAL_MINUTES
+
+
+def format_interval(minutes):
+    minutes = int(minutes or 0)
+    hours, remainder = divmod(minutes, 60)
+    if hours and remainder:
+        return f"{hours}ω {remainder}λ"
+    if hours:
+        return f"{hours} ώρες" if hours != 1 else "1 ώρα"
+    return f"{remainder} λεπτά"
 
 
 def recent_meals(limit=80):
@@ -62,21 +68,6 @@ def recent_meals(limit=80):
         MealEntry.objects.exclude(status="missed")
         .order_by("-date", "-scheduled_time", "-pk")[:limit]
     )
-
-
-def latest_finished_meal(now=None):
-    candidates = []
-    now = now or timezone.now()
-    for meal in recent_meals():
-        finished_at = meal_finished_datetime(meal)
-        if finished_at is not None and finished_at <= now:
-            candidates.append((finished_at, meal))
-
-    if not candidates:
-        return None, None
-
-    finished_at, meal = max(candidates, key=lambda pair: pair[0])
-    return meal, finished_at
 
 
 def latest_started_meal(now=None):
@@ -92,59 +83,80 @@ def latest_started_meal(now=None):
     return meal, started_at
 
 
-def meal_after_datetime(moment, now=None):
+def latest_finished_meal(now=None):
     now = now or timezone.now()
-    matches = []
+    candidates = []
     for meal in recent_meals():
-        started_at = meal_start_datetime(meal)
-        if started_at and moment < started_at <= now + timedelta(minutes=10):
-            matches.append((started_at, meal))
-    if not matches:
+        finished_at = meal_finished_datetime(meal)
+        if finished_at is not None and finished_at <= now:
+            candidates.append((finished_at, meal))
+    if not candidates:
         return None, None
-    return min(matches, key=lambda pair: pair[0])[1], min(matches, key=lambda pair: pair[0])[0]
+    finished_at, meal = max(candidates, key=lambda pair: pair[0])
+    return meal, finished_at
+
+
+def next_fixed_meal_due(now=None):
+    now = now or timezone.now()
+    local_now = timezone.localtime(now)
+    day = local_now.date()
+
+    for feed_time in FIXED_FEED_TIMES:
+        candidate = _aware(day, feed_time)
+        if candidate >= local_now:
+            return candidate
+
+    return _aware(day + timedelta(days=1), FIXED_FEED_TIMES[0])
+
+
+def suggested_meal_datetime(now=None):
+    """
+    For a new meal form, prefer the most recent fixed slot for up to 90 minutes
+    if it has not been logged yet. Otherwise suggest the next fixed slot.
+
+    Example: at 15:20 an unlogged 15:00 meal opens as 15:00, while the dashboard
+    countdown still points to 18:00.
+    """
+    now = now or timezone.now()
+    local_now = timezone.localtime(now)
+    day = local_now.date()
+
+    previous_candidate = None
+    for feed_time in FIXED_FEED_TIMES:
+        candidate = _aware(day, feed_time)
+        if candidate <= local_now:
+            previous_candidate = candidate
+        else:
+            break
+
+    if previous_candidate is None:
+        previous_candidate = _aware(day - timedelta(days=1), FIXED_FEED_TIMES[-1])
+
+    if local_now - previous_candidate <= timedelta(minutes=90):
+        local_candidate = timezone.localtime(previous_candidate)
+        already_logged = MealEntry.objects.filter(
+            date=local_candidate.date(),
+            scheduled_time=local_candidate.time().replace(tzinfo=None, second=0, microsecond=0),
+        ).exclude(status="missed").exists()
+
+        if not already_logged:
+            return previous_candidate
+
+    return next_fixed_meal_due(now)
 
 
 def next_meal_due(profile=None, now=None):
+    """
+    Backwards-compatible signature. The due time is now determined only by the
+    fixed clock schedule, never by the previous meal's finish time.
+    """
     now = now or timezone.now()
-    meal, finished_at = latest_finished_meal(now=now)
-
-    if not meal or not finished_at:
-        latest_started, _ = latest_started_meal(now=now)
-        if latest_started is not None and meal_finished_datetime(latest_started) is None:
-            # A meal is currently/incompletely logged. The next interval cannot
-            # start until its finish time is entered.
-            return None, latest_started, None
-        return None, None, None
-
-    # If another feed has already started after that finish but has not yet
-    # been completed/logged, do not keep reminding for the feed already begun.
-    newer_meal, newer_started_at = meal_after_datetime(finished_at, now=now)
-    if newer_meal is not None:
-        newer_finished_at = meal_finished_datetime(newer_meal)
-        if newer_finished_at is None:
-            return None, newer_meal, None
-
-    interval = feeding_interval_minutes(profile)
-    return finished_at + timedelta(minutes=interval), meal, finished_at
+    due_at = next_fixed_meal_due(now)
+    last_meal, last_started_at = latest_started_meal(now)
+    return due_at, last_meal, last_started_at
 
 
 def next_reference_due(now_local=None):
-    now_local = now_local or timezone.localtime()
-    current_time = now_local.time().replace(tzinfo=None, second=0, microsecond=0)
-    day = now_local.date()
-
-    for reference_time in REFERENCE_FEED_TIMES:
-        if reference_time >= current_time:
-            return _aware(day, reference_time)
-
-    return _aware(day + timedelta(days=1), REFERENCE_FEED_TIMES[0])
-
-
-def format_interval(minutes):
-    minutes = int(minutes or 0)
-    hours, remainder = divmod(minutes, 60)
-    if hours and remainder:
-        return f"{hours}ω {remainder}λ"
-    if hours:
-        return f"{hours} ώρες" if hours != 1 else "1 ώρα"
-    return f"{remainder} λεπτά"
+    if now_local is None:
+        return next_fixed_meal_due()
+    return next_fixed_meal_due(now_local)

@@ -3,7 +3,7 @@
 Private responsive Django app for family health tracking.
 
 ## Included
-- Feeding schedule: 01:30, then every 3 hours
+- Fixed feeding schedule: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00
 - Scheduled and actual feeding time
 - Offered / consumed ml
 - Formula and supplement fields
@@ -407,8 +407,9 @@ No push endpoint or subscription encryption key is returned to the browser.
 ## Automatic reminder rules
 The app now creates/synchronizes these rules automatically:
 
-1. **Fixed feeding schedule** — push 11 minutes before:
-   `01:30, 04:30, 07:30, 10:30, 13:30, 16:30, 19:30, 22:30`.
+1. **Fixed feeding schedule** — push 12 minutes before:
+   `00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00`.
+   Meal duration / finish time does not move the next scheduled feed.
    The repetitive schedule rows are kept out of the main reminder-card list to avoid clutter.
 
 2. **Appointments** — push exactly 24 hours before the appointment, at the same clock time.
@@ -553,7 +554,7 @@ from the upcoming list.
 - Dashboard hero now has **+ Πάνα** beside **+ Γλυκόζη**.
 - Diaper list no longer loads every photo inline; this reduces mobile layout flicker.
 - Each diaper has a dedicated **View** page with full details and a large photo when available.
-- Automatic meal reminder UI now correctly says **11 minutes before**.
+- Automatic meal reminder UI now uses **12 minutes before**.
 - Production WSGI starts a lightweight push dispatcher approximately every 30 seconds.
 - PostgreSQL advisory locking prevents concurrent scheduler processes from double-sending.
 - Failed push attempts are no longer marked as successfully notified.
@@ -597,24 +598,23 @@ The flag appears in:
 - 48-hour clinical print report.
 
 
-## Feeding interval starts from meal finish
-The feeding schedule is now dynamic instead of being driven by the old fixed clock slots.
+## Fixed pediatrician-directed 3-hour feeding schedule
+The current feeding schedule is fixed by clock time:
+
+`00:00 · 03:00 · 06:00 · 09:00 · 12:00 · 15:00 · 18:00 · 21:00`
 
 Current logic:
-- each meal can store **start time** and **finish time**;
-- the default feeding interval is **180 minutes (3 hours)**;
-- the next meal is calculated as `previous meal finish + feeding interval`;
-- the automatic meal push is scheduled **11 minutes before** that calculated next meal;
-- if a feed starts but has no finish time yet, the app does not invent the next exact feed time;
-- old fixed `meal-schedule:*` reminders are removed by migration `0018`;
-- the ≤50 ml follow-up rule now counts its one hour from meal completion when a finish time is available;
-- dashboard comparison is by meal sequence (#1, #2, #3...) rather than fixed clock slot;
-- reports, meal history, Hospital Mode, Doctor View and exports include finish time;
-- existing historical meals are NOT assigned an invented finish time.
+- the next feed is determined only by the fixed clock schedule;
+- meal duration and `finished_time` do **not** shift the next feed;
+- `finished_time` remains available as a useful record only;
+- automatic meal push notifications are sent **12 minutes before** each slot:
+  `23:48 · 02:48 · 05:48 · 08:48 · 11:48 · 14:48 · 17:48 · 20:48`;
+- dashboard countdown always points to the next fixed slot;
+- yesterday-vs-today meal comparison is again aligned by the same scheduled clock slot;
+- migration `0020` clears reminder rows from the superseded dynamic schedule;
+- the separate user-defined `≤50 ml` follow-up reminder remains independent and does not move the fixed feeding schedule.
 
-The old 01:30 / 04:30 / ... times remain only as bootstrap/reference times when no completed meal with a finish time is available yet.
-
-The interval can be changed in Child Profile through `feeding_interval_minutes`; it defaults to 180.
+The legacy `feeding_interval_minutes` database field is retained only for backwards compatibility and is no longer editable or used for scheduling.
 
 
 ## Dr Grafakou read-only account
@@ -729,3 +729,22 @@ After barcode lookup, direct ingredient import, online ingredient-image OCR, man
 Migration `0019_default_fructose_rules.py` adds and activates the Greek and English fructose rules. Existing lactose and sugar rules remain unchanged.
 
 The three-status display is a literal ingredient-text check and does not claim that a product is medically safe simply because those three words were not detected.
+
+
+## Current fixed 3-hour schedule — pediatrician instruction
+Current active meal times:
+
+`00:00 · 03:00 · 06:00 · 09:00 · 12:00 · 15:00 · 18:00 · 21:00`
+
+Automatic push lead time: **12 minutes before**.
+
+Corresponding notification clock times:
+`23:48 · 02:48 · 05:48 · 08:48 · 11:48 · 14:48 · 17:48 · 20:48`.
+
+The next feed does not move when a feed takes longer to finish. `finished_time`
+remains a record only. The dashboard countdown, automatic reminders, new-meal
+defaults, yesterday-vs-today comparison, Doctor View and 48-hour clinical report
+all follow the fixed clock schedule.
+
+Migration `0020_fixed_three_hour_schedule.py` clears the superseded automatic
+meal reminders so the scheduler can rebuild them with the new times.

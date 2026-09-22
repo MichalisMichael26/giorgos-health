@@ -21,9 +21,7 @@ from django.utils import timezone
 
 from .access import user_role
 from .feeding_timing import (
-    feeding_interval_minutes,
-    format_interval,
-    latest_finished_meal,
+    FIXED_FEED_TIMES,
     meal_finished_datetime,
 )
 from .advanced_views import _matching_safety_rules, feeding_stats, get_profile
@@ -653,8 +651,8 @@ def reminder_list(request):
             "now": now,
             "push_device_count": push_device_count,
             "next_auto_notifications": next_auto_notifications,
-            "feeding_interval_minutes": feeding_interval_minutes(get_profile()),
-            "feeding_interval_label": format_interval(feeding_interval_minutes(get_profile())),
+            "fixed_meal_times": [value.strftime("%H:%M") for value in FIXED_FEED_TIMES],
+            "meal_notify_minutes_before": 12,
         },
     )
 
