@@ -615,3 +615,20 @@ Current logic:
 The old 01:30 / 04:30 / ... times remain only as bootstrap/reference times when no completed meal with a finish time is available yet.
 
 The interval can be changed in Child Profile through `feeding_interval_minutes`; it defaults to 180.
+
+
+## Dr Grafakou read-only account
+A second protected doctor account is provisioned automatically during deploy:
+
+- username: `drgrafakou`
+- display name: `Δρ Όλγα Γραφάκου`
+- default password: `Olga`
+- role: `doctor_readonly`
+
+The password may later be overridden with the Render environment variable
+`DJANGO_GRAFAKOU_PASSWORD`.
+
+Both `drsavvas` and `drgrafakou` are hard-protected as read-only by `core/access.py`,
+even if their access-profile row is accidentally changed. Read-only doctors are also
+excluded from push subscriptions and push delivery through the existing
+`is_readonly_doctor()` checks.

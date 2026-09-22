@@ -33,35 +33,52 @@ from core.models import UserAccessProfile
 
 User = get_user_model()
 
-username = os.environ.get('DJANGO_DOCTOR_USERNAME', 'drsavvas')
-password = os.environ.get('DJANGO_DOCTOR_PASSWORD')
-display_name = os.environ.get('DJANGO_DOCTOR_DISPLAY_NAME', 'Δρ Σάββας Σάββα')
+doctor_configs = [
+    {
+        'username': os.environ.get('DJANGO_DOCTOR_USERNAME', 'drsavvas'),
+        'password': os.environ.get('DJANGO_DOCTOR_PASSWORD'),
+        'display_name': os.environ.get('DJANGO_DOCTOR_DISPLAY_NAME', 'Δρ Σάββας Σάββα'),
+    },
+    {
+        'username': os.environ.get('DJANGO_GRAFAKOU_USERNAME', 'drgrafakou'),
+        'password': os.environ.get('DJANGO_GRAFAKOU_PASSWORD', 'Olga'),
+        'display_name': os.environ.get('DJANGO_GRAFAKOU_DISPLAY_NAME', 'Δρ Όλγα Γραφάκου'),
+    },
+]
 
-doctor = User.objects.filter(username=username).first()
+for config in doctor_configs:
+    username = (config['username'] or '').strip()
+    password = config['password']
+    display_name = config['display_name']
 
-if doctor is None and password:
-    doctor = User.objects.create_user(username=username, password=password)
+    if not username:
+        continue
 
-if doctor:
-    doctor.is_staff = False
-    doctor.is_superuser = False
-    doctor.is_active = True
+    doctor = User.objects.filter(username=username).first()
 
-    if password:
-        doctor.set_password(password)
+    if doctor is None and password:
+        doctor = User.objects.create_user(username=username, password=password)
 
-    doctor.save()
+    if doctor:
+        doctor.is_staff = False
+        doctor.is_superuser = False
+        doctor.is_active = True
 
-    UserAccessProfile.objects.update_or_create(
-        user=doctor,
-        defaults={
-            'role': 'doctor_readonly',
-            'display_name': display_name,
-        },
-    )
+        if password:
+            doctor.set_password(password)
 
-    print('Doctor account enforced as read-only')
-else:
-    print('Doctor account does not exist and DJANGO_DOCTOR_PASSWORD is not set')
+        doctor.save()
+
+        UserAccessProfile.objects.update_or_create(
+            user=doctor,
+            defaults={
+                'role': 'doctor_readonly',
+                'display_name': display_name,
+            },
+        )
+
+        print(f'Doctor account {username} enforced as read-only')
+    else:
+        print(f'Doctor account {username} was not created because no password is configured')
 "
 

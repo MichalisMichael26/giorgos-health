@@ -23,6 +23,10 @@ services:
         value: "Δρ Σάββας Σάββα"
       - key: DJANGO_DOCTOR_PASSWORD
         sync: false
+      - key: DJANGO_GRAFAKOU_USERNAME
+        value: drgrafakou
+      - key: DJANGO_GRAFAKOU_DISPLAY_NAME
+        value: "Δρ Όλγα Γραφάκου"
       - key: DATABASE_URL
         fromDatabase:
           name: giorgos-health-db

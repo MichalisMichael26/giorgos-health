@@ -61,7 +61,16 @@ UNSAFE_VIEW_NAMES = {
 }
 
 
+def configured_doctor_usernames():
+    usernames = {
+        (os.environ.get("DJANGO_DOCTOR_USERNAME") or "drsavvas").strip().casefold(),
+        (os.environ.get("DJANGO_GRAFAKOU_USERNAME") or "drgrafakou").strip().casefold(),
+    }
+    return {username for username in usernames if username}
+
+
 def configured_doctor_username():
+    """Backward-compatible helper for the original doctor account."""
     return (os.environ.get("DJANGO_DOCTOR_USERNAME") or "drsavvas").strip().casefold()
 
 
@@ -72,9 +81,9 @@ def user_role(user):
     if user.is_superuser:
         return "parent"
 
-    # Hard safety fallback: the configured Dr Savvas account is ALWAYS read-only,
-    # even if its UserAccessProfile was missing or was accidentally changed.
-    if (user.username or "").strip().casefold() == configured_doctor_username():
+    # Hard safety fallback: all configured doctor accounts are ALWAYS read-only,
+    # even if a UserAccessProfile is missing or was accidentally changed.
+    if (user.username or "").strip().casefold() in configured_doctor_usernames():
         return "doctor_readonly"
 
     try:
