@@ -20,7 +20,7 @@
         <span>⛔</span>
         <div>
             <strong>Βασικοί ενεργοί περιορισμοί</strong>
-            <p>Λακτόζη / Lactose · Ζάχαρη / Sugar</p>
+            <p>Λακτόζη / Lactose · Ζάχαρη / Sugar · Φρουκτόζη / Fructose</p>
         </div>
     </div>
     <a href="{% url 'safety_rule_list' %}">Προβολή κανόνων</a>
@@ -31,7 +31,7 @@
     <p>
         Το app διαβάζει την ονομασία και τα συστατικά / έκδοχα που καταχωρείς
         και τα συγκρίνει με τους ενεργούς περιορισμούς.
-        Αν εντοπιστεί λακτόζη / lactose ή ζάχαρη / sugar, εμφανίζεται άμεσα σχετική προειδοποίηση.
+        Αν εντοπιστεί λακτόζη / lactose, ζάχαρη / sugar ή φρουκτόζη / fructose, εμφανίζεται άμεσα σχετική προειδοποίηση.
     </p>
 </section>
 
@@ -94,6 +94,30 @@
         <small class="checker-scope-note">
             Ο έλεγχος βασίζεται στα συστατικά που καταχωρήθηκαν και στους ενεργούς κανόνες του app.
         </small>
+        {% endif %}
+
+        {% if analysis.restriction_checks %}
+        <div class="baseline-check-grid">
+            {% for check in analysis.restriction_checks %}
+            <div class="baseline-check {% if check.detected == True %}baseline-hit{% elif check.detected == False %}baseline-clear{% else %}baseline-unknown{% endif %}">
+                <span>
+                    {% if check.detected == True %}⛔{% elif check.detected == False %}✅{% else %}❔{% endif %}
+                </span>
+                <div>
+                    <strong>{{ check.label }}</strong>
+                    <small>
+                        {% if check.detected == True %}
+                            Εντοπίστηκε στα συστατικά
+                        {% elif check.detected == False %}
+                            Δεν εντοπίστηκε
+                        {% else %}
+                            Χρειάζονται συστατικά
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
         {% endif %}
 
         {% if analysis.matches %}

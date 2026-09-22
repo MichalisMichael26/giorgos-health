@@ -6658,3 +6658,159 @@ html.night .comparison-comment {
     border-color: #494063;
     color: #cfc4ef !important;
 }
+
+
+/* ===== Automatic barcode ingredients flow ===== */
+.scanner-auto-flow {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin: 8px 0 12px;
+    color: #60718b;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.scanner-auto-flow span {
+    padding: 6px 9px;
+    border: 1px solid #d7e3f4;
+    border-radius: 999px;
+    background: linear-gradient(145deg, #f8fbff, #eef5ff);
+}
+
+.scanner-auto-flow span:nth-of-type(2) {
+    border-color: #cbe8dc;
+    background: linear-gradient(145deg, #fafffc, #edf9f3);
+}
+
+.scanner-auto-flow span:nth-of-type(3) {
+    border-color: #e0d3f6;
+    background: linear-gradient(145deg, #fcfaff, #f3efff);
+}
+
+.scanner-auto-flow b {
+    color: #9aa8ba;
+}
+
+html.night .scanner-auto-flow span {
+    background: #25354c;
+    border-color: #425673;
+    color: #c4d0df;
+}
+
+@media (max-width: 720px) {
+    .scanner-auto-flow {
+        gap: 5px;
+    }
+
+    .scanner-auto-flow span {
+        padding: 5px 7px;
+        font-size: 10px;
+    }
+}
+
+
+/* ===== Three baseline ingredient checks ===== */
+.baseline-check-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.baseline-check {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 11px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: rgba(255,255,255,.72);
+}
+
+.baseline-check > span {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: rgba(255,255,255,.7);
+}
+
+.baseline-check > div {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.baseline-check strong {
+    font-size: 12px;
+}
+
+.baseline-check small {
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.25;
+}
+
+.baseline-hit {
+    border-color: #e5aeb6;
+    background: linear-gradient(145deg, #fff8f8, #ffe8ec);
+}
+
+.baseline-hit strong {
+    color: #9f4052;
+}
+
+.baseline-clear {
+    border-color: #bfe1cf;
+    background: linear-gradient(145deg, #fafffc, #eaf8f0);
+}
+
+.baseline-clear strong {
+    color: #32765a;
+}
+
+.baseline-unknown {
+    border-color: #e4d19f;
+    background: linear-gradient(145deg, #fffdf7, #fff4dc);
+}
+
+.baseline-unknown strong {
+    color: #856124;
+}
+
+.scanner-scope-note {
+    display: block;
+    margin-top: 9px;
+    color: var(--muted);
+    line-height: 1.35;
+}
+
+html.night .baseline-hit {
+    background: #452b34;
+    border-color: #704650;
+}
+
+html.night .baseline-clear {
+    background: #243a32;
+    border-color: #3f6354;
+}
+
+html.night .baseline-unknown {
+    background: #403621;
+    border-color: #655638;
+}
+
+html.night .baseline-check > span {
+    background: rgba(255,255,255,.06);
+}
+
+@media (max-width: 720px) {
+    .baseline-check-grid {
+        grid-template-columns: 1fr;
+    }
+}

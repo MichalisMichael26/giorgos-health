@@ -21,6 +21,7 @@ core/__pycache__/models.cpython-313.pyc
 core/__pycache__/native_alarm_views.cpython-313.pyc
 core/__pycache__/push_utils.cpython-313.pyc
 core/__pycache__/push_views.cpython-313.pyc
+core/__pycache__/restriction_checks.cpython-313.pyc
 core/__pycache__/signals.cpython-313.pyc
 core/__pycache__/urls.cpython-313.pyc
 core/__pycache__/views.cpython-313.pyc
@@ -66,6 +67,7 @@ core/migrations/0015_childprofile_known_allergies.py
 core/migrations/0016_mealentry_remaining_ml.py
 core/migrations/0017_diaperentry_possible_diarrhea.py
 core/migrations/0018_dynamic_feeding_from_finish.py
+core/migrations/0019_default_fructose_rules.py
 core/migrations/__init__.py
 core/migrations/__pycache__/0001_initial.cpython-313.pyc
 core/migrations/__pycache__/0002_medications_appointments.cpython-313.pyc
@@ -90,6 +92,7 @@ core/models.py
 core/native_alarm_views.py
 core/push_utils.py
 core/push_views.py
+core/restriction_checks.py
 core/signals.py
 core/urls.py
 core/views.py

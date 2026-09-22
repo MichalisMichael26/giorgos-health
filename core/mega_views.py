@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
+from urllib.parse import urlparse
 
 import qrcode
 import requests
@@ -26,6 +27,7 @@ from .feeding_timing import (
     meal_finished_datetime,
 )
 from .advanced_views import _matching_safety_rules, feeding_stats, get_profile
+from .restriction_checks import baseline_restriction_checks
 from .mega_forms import (
     CreateAccessUserForm,
     DoctorQuestionAnswerForm,
@@ -85,12 +87,15 @@ def product_label_photo(request, pk):
 
 def _analysis_payload(kind, name, ingredients):
     ingredients = (ingredients or "").strip()
+    restriction_checks = baseline_restriction_checks(ingredients)
+
     if not ingredients:
         return {
             "level": "needs_ingredients",
             "title": "Χρειάζονται συστατικά για έλεγχο",
             "decision": "caution",
             "matches": [],
+            "restriction_checks": restriction_checks,
         }
 
     matches = _matching_safety_rules(kind, ingredients)
@@ -107,13 +112,14 @@ def _analysis_payload(kind, name, ingredients):
         decision = "caution"
     else:
         level = "clear"
-        title = "Δεν εντοπίστηκε λακτόζη ή ζάχαρη"
+        title = "Δεν εντοπίστηκε λακτόζη, ζάχαρη ή φρουκτόζη"
         decision = "checked"
 
     return {
         "level": level,
         "title": title,
         "decision": decision,
+        "restriction_checks": restriction_checks,
         "matches": [
             {"term": r.term, "guidance": r.guidance, "label": r.get_guidance_display(), "note": r.note}
             for r in matches
@@ -129,17 +135,106 @@ def scanner_check(request):
     return JsonResponse(_analysis_payload(kind, name, ingredients))
 
 
+def _openfoodfacts_product(code):
+    """
+    Lookup a barcode in Open Food Facts.
+
+    Return a normalized dict or None. The ingredient text is preferred, but an
+    ingredient-label image can be returned as a fallback for browser OCR.
+    """
+    url = f"https://world.openfoodfacts.org/api/v2/product/{code}"
+    response = requests.get(
+        url,
+        params={
+            "fields": (
+                "code,product_name,product_name_el,product_name_en,brands,"
+                "ingredients_text,ingredients_text_el,ingredients_text_en,"
+                "image_ingredients_url,image_ingredients_small_url"
+            )
+        },
+        headers={
+            "User-Agent": "GiorgosHealth/1.1 (private family health tracker)"
+        },
+        timeout=7,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    product = payload.get("product") or {}
+
+    if payload.get("status") != 1 or not product:
+        return None
+
+    name = (
+        product.get("product_name_el")
+        or product.get("product_name")
+        or product.get("product_name_en")
+        or product.get("brands")
+        or f"Barcode {code}"
+    )
+    ingredients = (
+        product.get("ingredients_text_el")
+        or product.get("ingredients_text")
+        or product.get("ingredients_text_en")
+        or ""
+    )
+    ingredients_image = (
+        product.get("image_ingredients_url")
+        or product.get("image_ingredients_small_url")
+        or ""
+    )
+
+    return {
+        "name": name,
+        "ingredients": ingredients,
+        "ingredients_image": ingredients_image,
+    }
+
+
+def _safe_openfoodfacts_image_url(url):
+    if not url:
+        return None
+
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return None
+
+    if parsed.scheme != "https":
+        return None
+
+    hostname = (parsed.hostname or "").lower()
+    allowed_hosts = {
+        "images.openfoodfacts.org",
+        "world.openfoodfacts.org",
+        "static.openfoodfacts.org",
+    }
+    if hostname not in allowed_hosts:
+        return None
+
+    return url
+
+
 @login_required
 def barcode_lookup(request, code):
     code = re.sub(r"[^0-9A-Za-z_-]", "", code or "")[:64]
     if not code:
-        return JsonResponse({"found": False, "error": "Μη έγκυρο barcode."}, status=400)
+        return JsonResponse(
+            {"found": False, "error": "Μη έγκυρο barcode."},
+            status=400,
+        )
 
-    local = ProductSafetyRecord.objects.filter(barcode=code).order_by("-reviewed_on", "-updated_at").first()
-    if local:
+    local = (
+        ProductSafetyRecord.objects.filter(barcode=code)
+        .order_by("-reviewed_on", "-updated_at")
+        .first()
+    )
+
+    # If our local record already has ingredients, use it immediately.
+    if local and (local.ingredients or "").strip():
         return JsonResponse({
             "found": True,
             "source": "local",
+            "local_review": True,
             "id": local.pk,
             "name": local.name,
             "barcode": local.barcode,
@@ -150,52 +245,146 @@ def barcode_lookup(request, code):
             "reviewed_on": local.reviewed_on.isoformat() if local.reviewed_on else "",
             "confirmed_by": local.confirmed_by,
             "analysis": _analysis_payload(local.kind, local.name, local.ingredients),
+            "ingredients_image_available": False,
         })
 
-    # Food products only: public Open Food Facts lookup. If unavailable, manual entry remains available.
+    # If the product is local but ingredients were never saved, continue
+    # online instead of stopping at the incomplete local record.
+    off = None
     try:
-        url = f"https://world.openfoodfacts.org/api/v2/product/{code}"
-        response = requests.get(
-            url,
-            params={"fields": "code,product_name,product_name_el,product_name_en,ingredients_text,ingredients_text_el,ingredients_text_en,brands"},
-            headers={"User-Agent": "GiorgosHealth/1.0 (private family health tracker)"},
-            timeout=7,
-        )
-        response.raise_for_status()
-        payload = response.json()
-        product = payload.get("product") or {}
-        if payload.get("status") == 1 and product:
-            name = (
-                product.get("product_name_el")
-                or product.get("product_name")
-                or product.get("product_name_en")
-                or product.get("brands")
-                or f"Barcode {code}"
-            )
-            ingredients = (
-                product.get("ingredients_text_el")
-                or product.get("ingredients_text")
-                or product.get("ingredients_text_en")
-                or ""
-            )
-            return JsonResponse({
-                "found": True,
-                "source": "openfoodfacts",
-                "name": name,
-                "barcode": code,
-                "kind": "food",
-                "ingredients": ingredients,
-                "analysis": _analysis_payload("food", name, ingredients),
-            })
+        off = _openfoodfacts_product(code)
     except Exception:
-        pass
+        off = None
+
+    if off:
+        name = (local.name if local and local.name else "") or off["name"]
+        ingredients = off["ingredients"] or (local.ingredients if local else "") or ""
+        image_url = _safe_openfoodfacts_image_url(off["ingredients_image"])
+
+        payload = {
+            "found": True,
+            "source": "local+openfoodfacts" if local else "openfoodfacts",
+            "local_review": bool(local),
+            "name": name,
+            "barcode": code,
+            "kind": local.kind if local else "food",
+            "ingredients": ingredients,
+            "analysis": _analysis_payload(
+                local.kind if local else "food",
+                name,
+                ingredients,
+            ),
+            "ingredients_image_available": bool(image_url),
+            "ingredients_image_proxy": (
+                reverse("barcode_ingredients_image", kwargs={"code": code})
+                if image_url
+                else ""
+            ),
+        }
+
+        if local:
+            payload.update({
+                "id": local.pk,
+                "decision": local.decision,
+                "decision_label": local.get_decision_display(),
+                "reviewed_on": local.reviewed_on.isoformat() if local.reviewed_on else "",
+                "confirmed_by": local.confirmed_by,
+            })
+
+        return JsonResponse(payload)
+
+    # No online product. Still return the local record if it exists, even if
+    # incomplete, so the user does not lose previously saved metadata.
+    if local:
+        return JsonResponse({
+            "found": True,
+            "source": "local",
+            "local_review": True,
+            "id": local.pk,
+            "name": local.name,
+            "barcode": local.barcode,
+            "kind": local.kind,
+            "ingredients": local.ingredients,
+            "decision": local.decision,
+            "decision_label": local.get_decision_display(),
+            "reviewed_on": local.reviewed_on.isoformat() if local.reviewed_on else "",
+            "confirmed_by": local.confirmed_by,
+            "analysis": _analysis_payload(local.kind, local.name, local.ingredients),
+            "ingredients_image_available": False,
+        })
 
     return JsonResponse({
         "found": False,
         "source": "none",
         "barcode": code,
-        "message": "Δεν βρέθηκε αποθηκευμένο προϊόν. Φωτογράφισε ή επικόλλησε τα συστατικά για έλεγχο.",
+        "message": (
+            "Δεν βρέθηκε το προϊόν online. "
+            "Φωτογράφισε την ετικέτα συστατικών για έλεγχο."
+        ),
     })
+
+
+@login_required
+def barcode_ingredients_image(request, code):
+    """
+    Same-origin proxy for the ingredient-label photo published by Open Food
+    Facts. This lets Tesseract.js OCR the remote label without cross-origin
+    browser restrictions.
+    """
+    code = re.sub(r"[^0-9A-Za-z_-]", "", code or "")[:64]
+    if not code:
+        raise Http404("Μη έγκυρο barcode.")
+
+    try:
+        product = _openfoodfacts_product(code)
+    except Exception:
+        product = None
+
+    image_url = _safe_openfoodfacts_image_url(
+        product.get("ingredients_image") if product else ""
+    )
+    if not image_url:
+        raise Http404("Δεν υπάρχει φωτογραφία συστατικών.")
+
+    try:
+        image_response = requests.get(
+            image_url,
+            headers={
+                "User-Agent": "GiorgosHealth/1.1 (private family health tracker)"
+            },
+            timeout=10,
+            stream=True,
+        )
+        image_response.raise_for_status()
+
+        # Verify the final URL too in case of redirects.
+        if not _safe_openfoodfacts_image_url(image_response.url):
+            raise Http404("Μη επιτρεπτή πηγή φωτογραφίας.")
+
+        content_type = (
+            image_response.headers.get("Content-Type") or "image/jpeg"
+        ).split(";")[0].strip().lower()
+        if not content_type.startswith("image/"):
+            raise Http404("Το αρχείο δεν είναι εικόνα.")
+
+        chunks = []
+        total = 0
+        max_bytes = 6 * 1024 * 1024
+        for chunk in image_response.iter_content(chunk_size=64 * 1024):
+            if not chunk:
+                continue
+            total += len(chunk)
+            if total > max_bytes:
+                raise Http404("Η φωτογραφία είναι πολύ μεγάλη.")
+            chunks.append(chunk)
+
+        response = HttpResponse(b"".join(chunks), content_type=content_type)
+        response["Cache-Control"] = "private, max-age=3600"
+        return response
+    except Http404:
+        raise
+    except Exception:
+        raise Http404("Δεν ήταν δυνατή η λήψη φωτογραφίας συστατικών.")
 
 
 @login_required

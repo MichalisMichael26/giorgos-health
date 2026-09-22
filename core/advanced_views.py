@@ -27,6 +27,7 @@ from .advanced_forms import (
 )
 from .mega_forms import DiaperWithPhotoForm, SymptomWithPhotoForm, ScannedProductForm
 
+from .restriction_checks import baseline_restriction_checks
 from .models import (
     AuditLog,
     ChildProfile,
@@ -665,7 +666,7 @@ def safety_checker(request):
             result_text = "Βρέθηκε ένας ή περισσότεροι όροι που έχουν καταχωρηθεί ως «Χρειάζεται έλεγχος»."
         else:
             result_level = "clear"
-            result_title = "Δεν εντοπίστηκε λακτόζη ή ζάχαρη"
+            result_title = "Δεν εντοπίστηκε λακτόζη, ζάχαρη ή φρουκτόζη"
             result_text = (
                 "Στα συστατικά που καταχωρήθηκαν δεν βρέθηκε αντιστοιχία "
                 "με τους ενεργούς περιορισμούς του app."
@@ -675,6 +676,7 @@ def safety_checker(request):
             "kind": kind,
             "name": name,
             "ingredients": ingredients,
+            "restriction_checks": baseline_restriction_checks(ingredients),
             "matches": matches,
             "avoid": avoid,
             "caution": caution,

@@ -694,3 +694,38 @@ A stronger pastel colour pass was added while preserving readability:
 - matching dark-mode colour accents.
 
 No migration is required.
+
+
+## Automatic barcode ingredient lookup
+Barcode scanning now follows this automatic flow:
+
+1. Scan or enter a barcode.
+2. Check any existing local reviewed record.
+3. Look up the barcode in Open Food Facts.
+4. If ingredient text is available, fill the Ingredients field automatically and run the existing Giorgos Health restriction checker.
+5. If ingredient text is missing but Open Food Facts has an ingredient-label photo, proxy that image through the app and automatically run browser OCR (Tesseract.js).
+6. If neither text nor an ingredient image is available, keep the existing camera/photo/manual fallback.
+
+Important implementation details:
+- an incomplete local record no longer prevents online enrichment;
+- local review decisions are preserved even when online ingredients are found;
+- remote ingredient images are accepted only from approved Open Food Facts HTTPS hosts;
+- proxied images are limited to 6 MB;
+- no database migration is required.
+
+
+## Three ingredient restrictions in scanner
+The barcode/ingredient checker now explicitly checks the three restrictions configured for Giorgos:
+
+- Lactose / λακτόζη
+- Sugar / ζάχαρη
+- Fructose / φρουκτόζη
+
+After barcode lookup, direct ingredient import, online ingredient-image OCR, manual OCR or manual ingredient entry, the scanner shows a dedicated status for all three:
+- `Εντοπίστηκε`
+- `Δεν εντοπίστηκε`
+- `Χρειάζονται συστατικά`
+
+Migration `0019_default_fructose_rules.py` adds and activates the Greek and English fructose rules. Existing lactose and sugar rules remain unchanged.
+
+The three-status display is a literal ingredient-text check and does not claim that a product is medically safe simply because those three words were not detected.

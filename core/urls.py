@@ -85,6 +85,11 @@ urlpatterns = [
     path("scanner/", mega_views.product_scanner, name="product_scanner"),
     path("scanner/check/", mega_views.scanner_check, name="scanner_check"),
     path("scanner/barcode/<str:code>/", mega_views.barcode_lookup, name="barcode_lookup"),
+    path(
+        "scanner/barcode/<str:code>/ingredients-image/",
+        mega_views.barcode_ingredients_image,
+        name="barcode_ingredients_image",
+    ),
     path("products/reviewed/", mega_views.reviewed_products, name="reviewed_products"),
     path("products/<int:pk>/label-photo/", mega_views.product_label_photo, name="product_label_photo"),
 

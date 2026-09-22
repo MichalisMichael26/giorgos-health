@@ -4,7 +4,7 @@
 <div class="page-head">
     <div>
         <h1>📷 Scan προϊόντος / συστατικών</h1>
-        <p class="muted">Σκάναρε barcode ή φωτογράφισε την ετικέτα. Τα συστατικά ελέγχονται αυτόματα με τους ενεργούς περιορισμούς.</p>
+        <p class="muted">Σκάναρε barcode και το app θα προσπαθήσει να βρει αυτόματα προϊόν και συστατικά. Αν υπάρχουν μόνο ως φωτογραφία, θα δοκιμάσει OCR. Η φωτογράφιση ετικέτας μένει ως fallback.</p>
     </div>
     <a class="btn secondary" href="{% url 'reviewed_products' %}">✅ Ελεγμένα προϊόντα</a>
 </div>
@@ -12,6 +12,11 @@
 <div class="scanner-grid">
     <section class="panel">
         <h2>📦 Barcode scanner</h2>
+        <div class="scanner-auto-flow" aria-label="Αυτόματη ροή αναζήτησης συστατικών">
+            <span>1 · Barcode</span><b>→</b>
+            <span>2 · Online συστατικά</span><b>→</b>
+            <span>3 · OCR fallback</span>
+        </div>
         <div id="barcode-reader" class="barcode-reader"></div>
         <div class="scanner-actions">
             <button type="button" class="btn primary" id="start-barcode">Άνοιγμα κάμερας</button>
@@ -89,6 +94,26 @@
         const matches = (analysis.matches || []).map(function (m) {
             return `<li><strong>${escapeHtml(m.term)}</strong> — ${escapeHtml(m.label)}${m.note ? `<br><small>${escapeHtml(m.note)}</small>` : ""}</li>`;
         }).join("");
+
+        const baselineChecks = (analysis.restriction_checks || []).map(function (check) {
+            const stateClass = check.detected === true
+                ? "baseline-hit"
+                : (check.detected === false ? "baseline-clear" : "baseline-unknown");
+            const icon = check.detected === true ? "⛔" : (check.detected === false ? "✅" : "❔");
+            const stateText = check.detected === true
+                ? "Εντοπίστηκε"
+                : (check.detected === false ? "Δεν εντοπίστηκε" : "Χρειάζονται συστατικά");
+
+            return `
+                <div class="baseline-check ${stateClass}">
+                    <span>${icon}</span>
+                    <div>
+                        <strong>${escapeHtml(check.label)}</strong>
+                        <small>${stateText}</small>
+                    </div>
+                </div>`;
+        }).join("");
+
         result.hidden = false;
         result.className = "scanner-auto-result scanner-" + analysis.level;
         result.innerHTML = `
@@ -96,7 +121,9 @@
             <div>
                 <strong>${escapeHtml(analysis.title)}</strong>
                 ${source ? `<small>Πηγή προϊόντος: ${escapeHtml(source)}</small>` : ""}
+                ${baselineChecks ? `<div class="baseline-check-grid">${baselineChecks}</div>` : ""}
                 ${matches ? `<ul>${matches}</ul>` : (analysis.level === "needs_ingredients" ? `<p>Φωτογράφισε ή επικόλλησε τη λίστα συστατικών για να γίνει ο έλεγχος.</p>` : `<p>Δεν βρέθηκε αντιστοιχία με τους ενεργούς περιορισμούς.</p>`)}
+                <small class="scanner-scope-note">Ο έλεγχος αφορά τις λέξεις που εμφανίζονται στα διαθέσιμα συστατικά και δεν αποτελεί συνολική ιατρική επιβεβαίωση του προϊόντος.</small>
             </div>`;
         if (decisionInput && analysis.decision) decisionInput.value = analysis.decision;
     }
@@ -112,38 +139,117 @@
         renderAnalysis(analysis, "κανόνες Giorgos Health");
     }
 
+    async function autoOcrIngredientsImage(imageUrl, code) {
+        if (!imageUrl || !ingredientsInput) return false;
+
+        if (typeof Tesseract === "undefined") {
+            status.textContent = "Βρέθηκε φωτογραφία συστατικών, αλλά η OCR βιβλιοθήκη δεν φορτώθηκε.";
+            return false;
+        }
+
+        status.textContent = "Βρέθηκε φωτογραφία συστατικών · αυτόματη ανάγνωση…";
+
+        try {
+            const output = await Tesseract.recognize(imageUrl, "eng+ell", {
+                logger: function (m) {
+                    if (m.status === "recognizing text") {
+                        status.textContent =
+                            "Αυτόματη ανάγνωση συστατικών " +
+                            Math.round((m.progress || 0) * 100) + "%";
+                    }
+                }
+            });
+
+            const text = (output.data && output.data.text || "").trim();
+            if (!text) {
+                status.textContent =
+                    "Βρέθηκε φωτογραφία συστατικών, αλλά δεν αναγνωρίστηκε καθαρό κείμενο. " +
+                    "Βγάλε δική σου φωτογραφία της ετικέτας.";
+                return false;
+            }
+
+            ingredientsInput.value = text;
+            await checkIngredients();
+            status.textContent =
+                "✅ Τα συστατικά βρέθηκαν από φωτογραφία του προϊόντος και διαβάστηκαν αυτόματα.";
+            return true;
+        } catch (err) {
+            status.textContent =
+                "Βρέθηκε φωτογραφία συστατικών, αλλά η αυτόματη ανάγνωση απέτυχε. " +
+                "Μπορείς να φωτογραφίσεις την ετικέτα.";
+            return false;
+        }
+    }
+
     async function lookupBarcode(code) {
         code = (code || "").trim();
         if (!code) return;
+
         status.textContent = "Αναζήτηση barcode " + code + "…";
         if (barcodeInput) barcodeInput.value = code;
         manual.value = code;
-        const url = "{% url 'barcode_lookup' 'BARCODECODE' %}".replace("BARCODECODE", encodeURIComponent(code));
+
+        const url = "{% url 'barcode_lookup' 'BARCODECODE' %}".replace(
+            "BARCODECODE",
+            encodeURIComponent(code)
+        );
+
         try {
             const response = await fetch(url, {credentials: "same-origin"});
             const data = await response.json();
-            if (data.found) {
-                status.textContent = data.source === "local"
-                    ? "Βρέθηκε ήδη αποθηκευμένη αξιολόγηση."
-                    : "Βρέθηκε προϊόν από Open Food Facts.";
-                if (nameInput) nameInput.value = data.name || "";
-                if (kindInput) kindInput.value = data.kind || "food";
-                if (ingredientsInput) ingredientsInput.value = data.ingredients || "";
-                if (data.reviewed_on && reviewedInput) reviewedInput.value = data.reviewed_on;
-                if (data.analysis) renderAnalysis(data.analysis, data.source);
-                if (data.source === "local" && data.decision_label && !result.hidden) {
-                    const details = document.createElement("div");
-                    details.className = "local-review-banner";
-                    details.innerHTML = `<strong>Προηγούμενη αξιολόγηση:</strong> ${escapeHtml(data.decision_label)}${data.reviewed_on ? ` · ${escapeHtml(data.reviewed_on)}` : ""}${data.confirmed_by ? `<br><small>Επιβεβαίωση: ${escapeHtml(data.confirmed_by)}</small>` : ""}`;
-                    result.querySelector("div:last-child").appendChild(details);
-                }
-                if (data.decision && decisionInput) decisionInput.value = data.decision;
-            } else {
-                status.textContent = data.message || "Δεν βρέθηκε προϊόν. Φωτογράφισε τα συστατικά.";
+
+            if (!data.found) {
+                status.textContent =
+                    data.message ||
+                    "Δεν βρέθηκε προϊόν online. Φωτογράφισε τα συστατικά.";
                 result.hidden = true;
+                return;
+            }
+
+            if (nameInput) nameInput.value = data.name || "";
+            if (kindInput) kindInput.value = data.kind || "food";
+            if (ingredientsInput) ingredientsInput.value = data.ingredients || "";
+            if (data.reviewed_on && reviewedInput) {
+                reviewedInput.value = data.reviewed_on;
+            }
+
+            if (data.ingredients) {
+                status.textContent = data.local_review
+                    ? "✅ Βρέθηκε αποθηκευμένο προϊόν με συστατικά."
+                    : "✅ Βρέθηκαν αυτόματα προϊόν και συστατικά από Open Food Facts.";
+                if (data.analysis) renderAnalysis(data.analysis, data.source);
+            } else if (data.ingredients_image_available && data.ingredients_image_proxy) {
+                status.textContent =
+                    "Βρέθηκε προϊόν και φωτογραφία συστατικών · ξεκινά αυτόματο OCR…";
+                if (data.analysis) renderAnalysis(data.analysis, data.source);
+                await autoOcrIngredientsImage(data.ingredients_image_proxy, code);
+            } else {
+                status.textContent =
+                    "Βρέθηκε το προϊόν, αλλά δεν υπάρχουν διαθέσιμα συστατικά online. " +
+                    "Φωτογράφισε την ετικέτα.";
+                if (data.analysis) renderAnalysis(data.analysis, data.source);
+            }
+
+            if (data.local_review && data.decision_label && !result.hidden) {
+                const details = document.createElement("div");
+                details.className = "local-review-banner";
+                details.innerHTML =
+                    `<strong>Προηγούμενη αξιολόγηση:</strong> ${escapeHtml(data.decision_label)}` +
+                    `${data.reviewed_on ? ` · ${escapeHtml(data.reviewed_on)}` : ""}` +
+                    `${data.confirmed_by ? `<br><small>Επιβεβαίωση: ${escapeHtml(data.confirmed_by)}</small>` : ""}`;
+                const target = result.querySelector("div:last-child");
+                if (target) target.appendChild(details);
+            }
+
+            // Preserve an explicit local review decision after any automatic
+            // ingredient analysis.
+            if (data.decision && decisionInput) {
+                decisionInput.value = data.decision;
             }
         } catch (err) {
-            status.textContent = "Δεν μπόρεσε να γίνει online αναζήτηση. Μπορείς να χρησιμοποιήσεις τη φωτογραφία συστατικών.";
+            status.textContent =
+                "Δεν μπόρεσε να γίνει online αναζήτηση. " +
+                "Μπορείς να χρησιμοποιήσεις τη φωτογραφία συστατικών.";
         }
     }
 
