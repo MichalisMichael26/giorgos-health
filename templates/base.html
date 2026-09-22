@@ -189,6 +189,34 @@
 
 
 
+
+{% if user.is_authenticated %}
+<script>
+(function () {
+    const current = window.location.pathname || "/";
+    const links = document.querySelectorAll(".desktop-nav a, .mobile-bottom-nav a");
+
+    links.forEach(function (link) {
+        let path = "/";
+        try {
+            path = new URL(link.href, window.location.origin).pathname;
+        } catch (e) {
+            return;
+        }
+
+        const active = path === "/"
+            ? current === "/"
+            : current === path || current.startsWith(path);
+
+        if (active) {
+            link.classList.add("is-active");
+            link.setAttribute("aria-current", "page");
+        }
+    });
+})();
+</script>
+{% endif %}
+
 {% if user.is_authenticated and not is_readonly_doctor %}
 <script>
 (function () {

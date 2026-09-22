@@ -632,3 +632,20 @@ Both `drsavvas` and `drgrafakou` are hard-protected as read-only by `core/access
 even if their access-profile row is accidentally changed. Read-only doctors are also
 excluded from push subscriptions and push delivery through the existing
 `is_readonly_doctor()` checks.
+
+
+## UI design refresh
+A light visual refresh was applied without changing application behaviour:
+- cleaner glass-style top navigation;
+- active page highlighting on desktop and mobile navigation;
+- refined typography, spacing, borders and shadows;
+- upgraded hero and dashboard KPI cards;
+- clearer countdown / feeding panels;
+- more polished forms and focus states;
+- softer table styling and row feedback;
+- improved shortcut cards and buttons;
+- refined mobile bottom navigation;
+- matching dark-mode refinements;
+- reduced-motion accessibility support.
+
+No database migration is required for this visual update.
