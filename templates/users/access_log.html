@@ -9,8 +9,16 @@
     <a class="btn secondary" href="{% url 'user_access_list' %}">← Χρήστες</a>
 </div>
 
+<nav class="access-period-tabs" aria-label="Χρονικό διάστημα access log">
+    <a class="{% if period == 'today' %}is-active{% endif %}" href="?period=today{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">Σήμερα</a>
+    <a class="{% if period == '7' %}is-active{% endif %}" href="?period=7{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">7 ημέρες</a>
+    <a class="{% if period == '30' %}is-active{% endif %}" href="?period=30{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">30 ημέρες</a>
+    <a class="{% if period == 'all' %}is-active{% endif %}" href="?period=all{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">Όλα</a>
+</nav>
+
 <section class="panel access-log-filter">
     <form method="get" class="access-log-filter-form">
+        <input type="hidden" name="period" value="{{ period }}">
         <label>
             <span>Χρήστης</span>
             <select name="user">
@@ -27,7 +35,7 @@
             <input type="search" name="q" value="{{ q }}" placeholder="username / όνομα / browser">
         </label>
         <button class="btn primary" type="submit">Φίλτρο</button>
-        <a class="btn secondary" href="{% url 'user_access_log' %}">Καθαρισμός</a>
+        <a class="btn secondary" href="{% url 'user_access_log' %}?period={{ period }}">Καθαρισμός</a>
     </form>
 </section>
 
@@ -36,7 +44,7 @@
     <thead>
         <tr>
             <th>Χρήστης</th>
-            <th>Είσοδος</th>
+            <th>Είσοδος / 1η δραστηριότητα</th>
             <th>Last seen</th>
             <th>Έξοδος</th>
             <th>Τύπος</th>
@@ -51,16 +59,24 @@
                 <strong>{% if item.user.access_profile.display_name %}{{ item.user.access_profile.display_name }}{% else %}@{{ item.user.username }}{% endif %}</strong>
                 <small>@{{ item.user.username }} · {{ item.user.access_profile.get_role_display }}</small>
             </td>
-            <td data-label="Είσοδος">{{ item.login_at|date:"d/m/Y H:i:s" }}</td>
+            <td data-label="Είσοδος / 1η δραστηριότητα">
+                {{ item.login_at|date:"d/m/Y H:i:s" }}
+                {% if item.entry_source == "audit_backfill" %}<small>1η πραγματική ενέργεια της ημέρας στο Audit Log</small>{% endif %}
+            </td>
             <td data-label="Last seen">{% if item.last_seen_at %}{{ item.last_seen_at|date:"d/m/Y H:i:s" }}{% else %}—{% endif %}</td>
             <td data-label="Έξοδος">
                 {% if item.logout_at %}
                     {{ item.logout_at|date:"d/m/Y H:i:s" }}
+                {% elif item.entry_source == "audit_backfill" %}
+                    <span class="access-history-only">δεν καταγραφόταν logout τότε</span>
                 {% else %}
                     <span class="access-open-session">χωρίς καταγεγραμμένο logout</span>
                 {% endif %}
             </td>
-            <td data-label="Τύπος">{{ item.get_entry_source_display }}</td>
+            <td data-label="Τύπος">
+                {{ item.get_entry_source_display }}
+                {% if item.entry_source == "audit_backfill" %}<small>Πραγματικά δεδομένα από παλιότερες ενέργειες</small>{% endif %}
+            </td>
             <td data-label="Σελίδα">{{ item.last_path|default:"—" }}</td>
             <td data-label="Συσκευή"><span title="{{ item.user_agent }}">{{ item.user_agent|default:"—"|truncatechars:90 }}</span></td>
         </tr>
@@ -74,11 +90,11 @@
 {% if page_obj.has_other_pages %}
 <nav class="compact-pagination" aria-label="Σελίδες access log">
     {% if page_obj.has_previous %}
-        <a class="mini-action" href="?page={{ page_obj.previous_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">← Νεότερα</a>
+        <a class="mini-action" href="?page={{ page_obj.previous_page_number }}&period={{ period }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">← Νεότερα</a>
     {% endif %}
     <span>Σελίδα {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-        <a class="mini-action" href="?page={{ page_obj.next_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">Παλιότερα →</a>
+        <a class="mini-action" href="?page={{ page_obj.next_page_number }}&period={{ period }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">Παλιότερα →</a>
     {% endif %}
 </nav>
 {% endif %}
@@ -87,8 +103,11 @@
     <strong>ℹ️ Τι σημαίνει “last seen”;</strong>
     <p class="muted">
         Ενημερώνεται το πολύ μία φορά ανά 5 λεπτά όσο ο χρήστης χρησιμοποιεί το app.
-        Αν ο χρήστης είχε ήδη ενεργή συνεδρία πριν ενεργοποιηθεί το log, η πρώτη καταγραφή εμφανίζεται ως
-        «Ήδη ενεργή συνεδρία». Το κλείσιμο browser/app χωρίς logout δεν δημιουργεί τεχνητή ώρα εξόδου.
+        Για τις προηγούμενες 7 ημέρες, όπου υπάρχουν πραγματικές ενέργειες στο παλιό Audit Log,
+        δημιουργείται ένδειξη «Ιστορική δραστηριότητα από Audit Log» με την πρώτη και τελευταία
+        πραγματική ενέργεια της ημέρας. Αυτές οι γραμμές δεν παρουσιάζονται ως login/logout, επειδή
+        εκείνες οι ώρες δεν καταγράφονταν τότε. Αν ο χρήστης είχε ήδη ενεργή συνεδρία πριν ενεργοποιηθεί
+        το νέο log, η πρώτη νέα καταγραφή εμφανίζεται ως «Ήδη ενεργή συνεδρία».
     </p>
 </section>
 {% endblock %}

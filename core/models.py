@@ -768,6 +768,7 @@ class UserAccessLog(models.Model):
     SOURCE_CHOICES = [
         ("login", "Κανονικό login"),
         ("existing_session", "Ήδη ενεργή συνεδρία"),
+        ("audit_backfill", "Ιστορική δραστηριότητα από Audit Log"),
     ]
 
     user = models.ForeignKey(

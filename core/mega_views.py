@@ -1154,6 +1154,10 @@ def user_access_list(request):
 def user_access_log(request):
     q = (request.GET.get("q") or "").strip()
     user_id = (request.GET.get("user") or "").strip()
+    period = (request.GET.get("period") or "7").strip()
+
+    if period not in {"today", "7", "30", "all"}:
+        period = "7"
 
     logs = (
         UserAccessLog.objects
@@ -1161,6 +1165,29 @@ def user_access_log(request):
         .all()
         .order_by("-login_at")
     )
+
+    now = timezone.now()
+    if period == "today":
+        start_day = timezone.localdate()
+        start_at = timezone.make_aware(
+            datetime.combine(start_day, datetime.min.time()),
+            timezone.get_current_timezone(),
+        )
+        logs = logs.filter(login_at__gte=start_at)
+    elif period == "7":
+        start_day = timezone.localdate() - timedelta(days=6)
+        start_at = timezone.make_aware(
+            datetime.combine(start_day, datetime.min.time()),
+            timezone.get_current_timezone(),
+        )
+        logs = logs.filter(login_at__gte=start_at)
+    elif period == "30":
+        start_day = timezone.localdate() - timedelta(days=29)
+        start_at = timezone.make_aware(
+            datetime.combine(start_day, datetime.min.time()),
+            timezone.get_current_timezone(),
+        )
+        logs = logs.filter(login_at__gte=start_at)
 
     if q:
         logs = logs.filter(
@@ -1190,6 +1217,7 @@ def user_access_log(request):
             "users": users,
             "q": q,
             "selected_user": user_id,
+            "period": period,
         },
     )
 

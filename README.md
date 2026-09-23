@@ -878,3 +878,27 @@ Because Giorgos Health uses persistent login sessions, users who were already si
 The Users & Roles page now shows each account's latest login and last-seen time and links directly to that user's access history.
 
 Migration: `0025_user_access_log.py`.
+
+
+## Access Log 7-day real historical backfill
+The admin User Access Log now defaults to **7 days** and includes quick filters:
+- Today
+- 7 days
+- 30 days
+- All
+
+Migration `0026_backfill_access_from_audit_7days.py` uses only real existing
+`AuditLog` rows from the previous 7 days. For each user/day with real audited
+activity, it creates one clearly labelled
+`Ιστορική δραστηριότητα από Audit Log` row:
+- the first audited action timestamp becomes the displayed first activity;
+- the last audited action timestamp becomes last seen;
+- no fake login time, logout time, browser or page path is invented;
+- the row explicitly states that logout was not being tracked then.
+
+Where available, the user's profile last-seen value is also backfilled from the
+latest real Audit Log timestamp.
+
+This backfill can only show prior activity for users/actions that were actually
+recorded in the existing Audit Log. Days with no historical audit evidence remain
+empty rather than being fabricated.

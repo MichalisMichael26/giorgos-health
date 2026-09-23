@@ -7233,3 +7233,61 @@ html.night .access-open-session {
         word-break: break-word;
     }
 }
+
+
+/* =========================================================
+   ACCESS LOG PERIOD FILTERS / HISTORICAL ACTIVITY
+   ========================================================= */
+
+.access-period-tabs {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin: 0 0 12px;
+}
+
+.access-period-tabs a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255,255,255,.76);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.access-period-tabs a.is-active {
+    border-color: #a9bdf0;
+    background: linear-gradient(135deg, #edf4ff, #f2eeff);
+    color: #5369b4;
+}
+
+.access-history-only {
+    display: inline-block;
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: #eef3ff;
+    color: #5d6e9c;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+html.night .access-period-tabs a {
+    background: rgba(255,255,255,.04);
+}
+
+html.night .access-period-tabs a.is-active {
+    background: #2e3150;
+    border-color: #555b8a;
+    color: #c7ccf4;
+}
+
+html.night .access-history-only {
+    background: #293249;
+    color: #c1c9e5;
+}
