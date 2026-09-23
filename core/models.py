@@ -195,6 +195,8 @@ class MedicationPlan(models.Model):
         "Χρειάζεται επιβεβαίωση μονάδας",
         default=False,
     )
+    reminder_enabled = models.BooleanField("Καθημερινή υπενθύμιση", default=False)
+    reminder_time = models.TimeField("Ώρα υπενθύμισης", blank=True, null=True)
     active = models.BooleanField("Ενεργό", default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -6997,3 +6997,144 @@ html.night .medication-unit-warning {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* =========================================================
+   DAILY MEDICATION QUICK LOGGING
+   ========================================================= */
+
+.dashboard-medication-panel {
+    border-color: #d9d0f2;
+    background:
+        radial-gradient(circle at 96% 0%, rgba(169,140,247,.12), transparent 28%),
+        linear-gradient(145deg, #fff, #faf7ff);
+}
+
+.dashboard-medication-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.dashboard-medication-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #ded8ee;
+    border-radius: 16px;
+    background: rgba(255,255,255,.82);
+}
+
+.dashboard-medication-card.medication-done {
+    border-color: #bfe1cf;
+    background: linear-gradient(145deg, #fbfffd, #eaf8f0);
+}
+
+.dashboard-medication-card.medication-pending {
+    border-color: #ead7a7;
+    background: linear-gradient(145deg, #fffefa, #fff5df);
+}
+
+.dashboard-medication-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.dashboard-medication-top > div {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+}
+
+.dashboard-medication-top strong {
+    font-size: 16px;
+}
+
+.dashboard-medication-top small {
+    color: var(--muted);
+    line-height: 1.35;
+}
+
+.medication-status-icon {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: rgba(255,255,255,.8);
+    font-size: 18px;
+}
+
+.medication-reminder-time {
+    width: fit-content;
+    padding: 6px 9px;
+    border: 1px solid #d8d0ef;
+    border-radius: 999px;
+    background: #f6f2ff;
+    color: #67578f;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.medication-today-state {
+    padding: 8px 10px;
+    border-radius: 11px;
+    background: #eaf8f0;
+    color: #2f7658;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.medication-today-state.pending {
+    background: #fff3d9;
+    color: #86601f;
+}
+
+.medication-log-now {
+    width: 100%;
+}
+
+.current-medication-card form,
+.dashboard-medication-card form {
+    margin: 0;
+}
+
+html.night .dashboard-medication-panel {
+    background: linear-gradient(145deg, #2a2739, #242331);
+    border-color: #48405f;
+}
+
+html.night .dashboard-medication-card {
+    background: #292c36;
+    border-color: #454957;
+}
+
+html.night .dashboard-medication-card.medication-done {
+    background: #24382f;
+    border-color: #3c5b4d;
+}
+
+html.night .dashboard-medication-card.medication-pending {
+    background: #403620;
+    border-color: #655638;
+}
+
+html.night .medication-reminder-time {
+    background: #302a43;
+    border-color: #514668;
+    color: #d2c5f4;
+}
+
+@media (max-width: 820px) {
+    .dashboard-medication-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-medication-card {
+        padding: 13px;
+    }
+}

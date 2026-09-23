@@ -67,6 +67,7 @@
     {% for item in current_medication_plans %}
     <p>
         <strong>{{ item.name }}</strong> · {{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }} · {{ item.frequency }}
+        {% if item.reminder_enabled and item.reminder_time %} · reminder {{ item.reminder_time|time:"H:i" }}{% endif %}
         {% if item.unit_confirmation_required %}<br><small>⚠️ Η μονάδα χρειάζεται επιβεβαίωση.</small>{% endif %}
     </p>
     {% endfor %}

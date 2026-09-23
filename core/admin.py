@@ -55,10 +55,12 @@ class MedicationPlanAdmin(admin.ModelAdmin):
         "dose",
         "unit",
         "frequency",
+        "reminder_time",
+        "reminder_enabled",
         "unit_confirmation_required",
         "active",
     )
-    list_filter = ("active", "unit_confirmation_required", "unit")
+    list_filter = ("active", "reminder_enabled", "unit_confirmation_required", "unit")
     search_fields = ("name", "frequency", "notes")
 
 

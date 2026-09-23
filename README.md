@@ -833,3 +833,23 @@ Seeded current plan:
 No administration times or medication reminders are invented because no clock times were provided.
 
 The Medications page shows the active plan above the administration history and provides a one-tap `Καταχώρηση δόσης τώρα` action that pre-fills the existing medication-entry form. Doctor View and the 48-hour clinical report also show the active plan separately from doses actually logged.
+
+
+## Daily medication quick logging and conditional reminders
+Migration `0024_daily_medication_reminders.py` adds configurable reminder fields to the active MedicationPlan records.
+
+Current defaults:
+- Vitamin D — morning reminder at 08:00
+- Colipro — morning reminder at 08:00
+- Hemafer — afternoon reminder at 15:00
+
+Medication reminders are conditional:
+- if a matching MedicationEntry has already been logged for the day, that day's automatic reminder is completed and no push is sent;
+- if the dose has not been logged, the automatic reminder remains pending and is pushed at the configured time;
+- deleting the day's medication entry reopens the conditional reminder.
+
+The dashboard and Medications page now provide one-tap `Καταχώρηση τώρα` buttons for each active daily medication/supplement. One-tap logging creates a MedicationEntry at the current local time and immediately satisfies that day's conditional reminder.
+
+No medication time is recorded as an administration time until the parent actually taps the log action. The configured 08:00/15:00 values are reminder times only.
+
+The Vitamin D unit remains stored exactly as supplied (`400 mg`) and continues to display the unit-confirmation warning.

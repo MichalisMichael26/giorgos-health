@@ -50,6 +50,7 @@ from .models import (
     MedicalAppointment,
     MedicalDocument,
     MedicationEntry,
+    MedicationPlan,
     ProductSafetyRecord,
     SymptomEntry,
     UserAccessProfile,
@@ -700,6 +701,11 @@ def reminder_list(request):
             "next_auto_notifications": next_auto_notifications,
             "fixed_meal_times": [value.strftime("%H:%M") for value in FIXED_FEED_TIMES],
             "meal_notify_minutes_before": 12,
+            "medication_reminder_plans": MedicationPlan.objects.filter(
+                active=True,
+                reminder_enabled=True,
+                reminder_time__isnull=False,
+            ).order_by("reminder_time", "name"),
         },
     )
 

@@ -6,7 +6,7 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from .audit import get_current_user
-from .models import AuditLog, HealthReminder, MealEntry, MedicalAppointment
+from .models import AuditLog, HealthReminder, MealEntry, MedicationEntry, MedicationPlan, MedicalAppointment
 
 
 def _tracked_sender(sender):
@@ -142,3 +142,24 @@ def sync_appointment_automatic_reminder(sender, instance, **kwargs):
 @receiver(post_delete, sender=MedicalAppointment)
 def remove_appointment_automatic_reminder(sender, instance, **kwargs):
     HealthReminder.objects.filter(source_key=f"appointment:{instance.pk}").delete()
+
+
+@receiver(post_save, sender=MedicationEntry)
+def sync_medication_plan_reminder_after_entry(sender, instance, **kwargs):
+    from .auto_reminders import sync_medication_plan_reminders
+
+    sync_medication_plan_reminders()
+
+
+@receiver(post_delete, sender=MedicationEntry)
+def sync_medication_plan_reminder_after_delete(sender, instance, **kwargs):
+    from .auto_reminders import sync_medication_plan_reminders
+
+    sync_medication_plan_reminders()
+
+
+@receiver(post_save, sender=MedicationPlan)
+def sync_medication_plan_after_plan_change(sender, instance, **kwargs):
+    from .auto_reminders import sync_medication_plan_reminders
+
+    sync_medication_plan_reminders()

@@ -10,6 +10,7 @@
         <a class="btn primary" href="{% url 'meal_create' %}">+ Γεύμα</a>
         <a class="btn secondary" href="{% url 'glucose_create' %}">+ Γλυκόζη</a>
         <a class="btn secondary diaper-quick-btn" href="{% url 'diaper_create' %}">+ Πάνα</a>
+        <a class="btn secondary" href="{% url 'medication_list' %}">💊 Φάρμακα</a>
         <a class="btn pdf-btn" href="{% url 'report_24h_preview' %}">📄 24ωρη αναφορά</a>
         <a class="btn print-clinical-btn" href="{% url 'report_48h_print' %}">🖨️ 48ωρος φάκελος</a>
     </div>
@@ -88,6 +89,51 @@
         <span>📝</span><div><strong>Ερωτήσεις για γιατρό</strong><small>Κράτησε ό,τι θέλεις να ρωτήσεις</small></div>
     </a>
 </section>
+
+{% if medication_plans_today %}
+<section class="panel dashboard-medication-panel">
+    <div class="panel-head">
+        <div>
+            <h2>💊 Σημερινά φάρμακα / συμπληρώματα</h2>
+            <p class="muted">Ένα πάτημα για καταχώρηση. Αν μια δόση δεν καταχωρηθεί, ενεργοποιείται η καθημερινή υπενθύμιση.</p>
+        </div>
+        <a href="{% url 'medication_list' %}">Ιστορικό</a>
+    </div>
+
+    <div class="dashboard-medication-grid">
+        {% for plan in medication_plans_today %}
+        <article class="dashboard-medication-card{% if plan.logged_today %} medication-done{% else %} medication-pending{% endif %}">
+            <div class="dashboard-medication-top">
+                <span class="medication-status-icon">{% if plan.logged_today %}✅{% else %}💊{% endif %}</span>
+                <div>
+                    <strong>{{ plan.name }}</strong>
+                    <small>
+                        {{ plan.dose|floatformat:"-2" }} {{ plan.get_unit_display }} · {{ plan.frequency }}
+                        {% if plan.reminder_enabled and plan.reminder_time %} · reminder {{ plan.reminder_time|time:"H:i" }}{% endif %}
+                    </small>
+                </div>
+            </div>
+
+            {% if plan.unit_confirmation_required %}
+            <span class="medication-unit-warning">⚠️ Επιβεβαίωση μονάδας</span>
+            {% endif %}
+
+            {% if plan.logged_today %}
+                <div class="medication-today-state">Καταχωρήθηκε σήμερα</div>
+            {% elif not is_readonly_doctor %}
+                <form method="post" action="{% url 'medication_plan_log_now' plan.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'dashboard' %}">
+                    <button class="btn primary medication-log-now" type="submit">✓ Καταχώρηση τώρα</button>
+                </form>
+            {% else %}
+                <div class="medication-today-state pending">Δεν έχει καταχωρηθεί σήμερα</div>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 
 <section class="panel comparison-panel">
     <div class="panel-head">

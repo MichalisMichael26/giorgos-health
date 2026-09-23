@@ -72,6 +72,7 @@ core/migrations/0020_fixed_three_hour_schedule.py
 core/migrations/0021_growth_history_and_measured_by.py
 core/migrations/0022_shift_feeds_to_half_hour_and_seed_2309_labs.py
 core/migrations/0023_current_daily_medications.py
+core/migrations/0024_daily_medication_reminders.py
 core/migrations/__init__.py
 core/migrations/__pycache__/0001_initial.cpython-313.pyc
 core/migrations/__pycache__/0002_medications_appointments.cpython-313.pyc

@@ -14,7 +14,7 @@
     <div class="panel-head">
         <div>
             <h2>📌 Τρέχον καθημερινό πλάνο</h2>
-            <p class="muted">Οι ώρες δεν έχουν οριστεί. Η ενότητα δείχνει το καταχωρημένο ημερήσιο πλάνο, όχι ότι η σημερινή δόση δόθηκε.</p>
+            <p class="muted">Γρήγορη καθημερινή καταχώρηση. Αν δεν καταχωρηθεί η δόση, εμφανίζεται η προγραμματισμένη υπενθύμιση.</p>
         </div>
     </div>
     <div class="current-medication-grid">
@@ -24,13 +24,29 @@
                 <strong>{{ plan.name }}</strong>
                 <span>{{ plan.dose|floatformat:"-2" }} {{ plan.get_unit_display }} · {{ plan.frequency }}</span>
             </div>
+            {% if plan.reminder_enabled and plan.reminder_time %}
+                <div class="medication-reminder-time">🔔 {{ plan.reminder_time|time:"H:i" }} · μόνο αν δεν έχει καταχωρηθεί</div>
+            {% endif %}
             {% if plan.unit_confirmation_required %}
                 <div class="medication-unit-warning">⚠️ Επιβεβαίωση μονάδας</div>
             {% endif %}
             {% if plan.notes %}<small>{{ plan.notes }}</small>{% endif %}
+
+            {% if plan.logged_today %}
+                <div class="medication-today-state">✅ Καταχωρήθηκε σήμερα</div>
+            {% elif not is_readonly_doctor %}
+                <form method="post" action="{% url 'medication_plan_log_now' plan.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'medication_list' %}">
+                    <button class="btn primary medication-log-now" type="submit">✓ Καταχώρηση τώρα</button>
+                </form>
+            {% else %}
+                <div class="medication-today-state pending">Δεν έχει καταχωρηθεί σήμερα</div>
+            {% endif %}
+
             <a class="mini-action"
                href="{% url 'medication_create' %}?name={{ plan.name|urlencode }}&dose={{ plan.dose }}&unit={{ plan.unit|urlencode }}">
-                + Καταχώρηση δόσης τώρα
+                Λεπτομερής καταχώρηση
             </a>
         </article>
         {% endfor %}

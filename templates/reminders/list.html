@@ -32,6 +32,20 @@
             </div>
         </div>
 
+        {% if medication_reminder_plans %}
+        <div class="auto-rule-card">
+            <span>💊</span>
+            <div>
+                <strong>Καθημερινά φάρμακα · μόνο αν δεν καταχωρηθούν</strong>
+                <small>
+                    {% for plan in medication_reminder_plans %}
+                        {{ plan.name }} {{ plan.reminder_time|time:"H:i" }}{% if not forloop.last %} · {% endif %}
+                    {% endfor %}
+                </small>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="auto-rule-card">
             <span>📅</span>
             <div>
@@ -208,7 +222,7 @@
         <h2>Δεν υπάρχουν επιπλέον καταχωρημένες υπενθυμίσεις</h2>
     {% else %}
         <h2>Δεν υπάρχουν χειροκίνητες υπενθυμίσεις</h2>
-        <p class="muted">Οι αυτόματες υπενθυμίσεις γεύματος, ραντεβού και χαμηλής κατανάλωσης εμφανίζονται ξεχωριστά πιο πάνω.</p>
+        <p class="muted">Οι αυτόματες υπενθυμίσεις γεύματος, φαρμάκων, ραντεβού και χαμηλής κατανάλωσης εμφανίζονται ξεχωριστά πιο πάνω.</p>
     {% endif %}
 </div>
 {% endfor %}

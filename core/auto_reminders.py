@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 
 from .feeding_timing import FIXED_FEED_TIMES, meal_finished_datetime, meal_start_datetime
-from .models import HealthReminder, MealEntry, MedicalAppointment
+from .models import HealthReminder, MealEntry, MedicalAppointment, MedicationEntry, MedicationPlan
 
 
 LOW_MEAL_THRESHOLD_ML = 50
@@ -197,6 +197,86 @@ def sync_upcoming_appointment_reminders(now=None):
     return count
 
 
+def _medication_plan_source_key(plan, day):
+    return f"med-plan:{plan.pk}:{day.isoformat()}"
+
+
+def sync_medication_plan_reminders(now=None):
+    """
+    Daily medication reminders are conditional: if the day's dose has already
+    been logged, the reminder is marked completed and no push is sent.
+    """
+    now = now or timezone.now()
+    local_now = timezone.localtime(now)
+    today = local_now.date()
+
+    HealthReminder.objects.filter(
+        auto_generated=True,
+        reminder_type="medication",
+        source_key__startswith="med-plan:",
+        due_at__lt=now - timedelta(days=2),
+    ).delete()
+
+    plans = MedicationPlan.objects.filter(
+        active=True,
+        reminder_enabled=True,
+        reminder_time__isnull=False,
+    ).order_by("reminder_time", "name")
+
+    count = 0
+
+    for day in (today, today + timedelta(days=1)):
+        for plan in plans:
+            source_key = _medication_plan_source_key(plan, day)
+            due_at = _aware(day, plan.reminder_time)
+
+            dose_logged = MedicationEntry.objects.filter(
+                date=day,
+                name__iexact=plan.name,
+            ).exists()
+
+            existing = HealthReminder.objects.filter(source_key=source_key).first()
+
+            # The reminder is completed only by an actual MedicationEntry for
+            # this day. If such an entry is deleted, reopen the reminder and
+            # allow a fresh push if the reminder time has not passed too far.
+            if existing and existing.completed and not dose_logged:
+                existing.completed = False
+                existing.push_notified_at = None
+                existing.push_repeat_notified_at = None
+                existing.save(
+                    update_fields=[
+                        "completed",
+                        "push_notified_at",
+                        "push_repeat_notified_at",
+                        "updated_at",
+                    ]
+                )
+
+            completed = dose_logged
+
+            _upsert_auto_reminder(
+                source_key,
+                {
+                    "reminder_type": "medication",
+                    "title": f"{plan.name} · εκκρεμεί η σημερινή δόση",
+                    "due_at": due_at,
+                    "notes": (
+                        f"Καθημερινό πλάνο: {plan.dose:g} {plan.get_unit_display()} · "
+                        f"{plan.frequency}. "
+                        "Η υπενθύμιση παραμένει αν δεν έχει καταχωρηθεί η σημερινή δόση."
+                    ),
+                    "notify_minutes_before": 0,
+                    "repeat_if_incomplete_minutes": 0,
+                    "active": True,
+                    "completed": completed,
+                },
+            )
+            count += 1
+
+    return count
+
+
 def sync_all_automatic_reminders(now=None):
     now = now or timezone.now()
 
@@ -205,5 +285,6 @@ def sync_all_automatic_reminders(now=None):
     return {
         "meal_schedule": meal_count,
         "dynamic_meal": 0,
+        "medications": sync_medication_plan_reminders(now=now),
         "appointments": sync_upcoming_appointment_reminders(now=now),
     }

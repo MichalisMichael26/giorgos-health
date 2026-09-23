@@ -472,7 +472,10 @@
                     <tr>
                         <td><strong>{{ item.name }}</strong></td>
                         <td>{{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }}</td>
-                        <td>{{ item.frequency }}</td>
+                        <td>
+                            {{ item.frequency }}
+                            {% if item.reminder_enabled and item.reminder_time %}<br><small>Reminder {{ item.reminder_time|time:"H:i" }}</small>{% endif %}
+                        </td>
                         <td>
                             {% if item.unit_confirmation_required %}
                                 ⚠️ Η μονάδα χρειάζεται επιβεβαίωση.

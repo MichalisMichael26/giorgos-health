@@ -529,12 +529,29 @@ def appointment_reminder_items(today):
     return reminders[:5], upcoming[:5]
 
 
+def medication_plan_status_for_day(day):
+    plans = list(
+        MedicationPlan.objects.filter(active=True)
+        .order_by("reminder_time", "name")
+    )
+    logged_names = {
+        (name or "").strip().casefold()
+        for name in MedicationEntry.objects.filter(date=day).values_list("name", flat=True)
+    }
+
+    for plan in plans:
+        plan.logged_today = plan.name.strip().casefold() in logged_names
+
+    return plans
+
+
 @login_required
 def dashboard(request):
     today = timezone.localdate()
     meals_today = MealEntry.objects.filter(date=today).order_by("scheduled_time")
     glucose_today = GlucoseReading.objects.filter(date=today).order_by("time")
     medications_today = MedicationEntry.objects.filter(date=today).order_by("time")
+    medication_plans_today = medication_plan_status_for_day(today)
     latest_growth = GrowthMeasurement.objects.first()
     profile = get_child_profile()
     consumed_total = sum(item.consumed_ml or 0 for item in meals_today)
@@ -613,6 +630,7 @@ def dashboard(request):
         "meals_today": meals_today,
         "glucose_today": glucose_today,
         "medications_today": medications_today,
+        "medication_plans_today": medication_plans_today,
         "meal_count": meals_today.count(),
         "glucose_count": glucose_today.count(),
         "latest_glucose": GlucoseReading.objects.first(),
@@ -1515,9 +1533,11 @@ def growth_delete(request, pk):
 
 @login_required
 def medication_list(request):
+    today = timezone.localdate()
     return render(request, "medications/list.html", {
         "medications": MedicationEntry.objects.all(),
-        "current_plans": MedicationPlan.objects.filter(active=True).order_by("name"),
+        "current_plans": medication_plan_status_for_day(today),
+        "today": today,
     })
 
 
@@ -1540,6 +1560,40 @@ def medication_create(request):
         messages.success(request, "Η καταχώρηση φαρμάκου/συμπληρώματος αποθηκεύτηκε.")
         return redirect("medication_list")
     return render(request, "form.html", {"form": form, "title": "Νέο φάρμακο / συμπλήρωμα"})
+
+
+@login_required
+def medication_plan_log_now(request, pk):
+    if request.method != "POST":
+        return redirect("medication_list")
+
+    if user_role(request.user) == "doctor_readonly":
+        return redirect("doctor_view")
+
+    plan = get_object_or_404(MedicationPlan, pk=pk, active=True)
+    today = timezone.localdate()
+
+    already_logged = MedicationEntry.objects.filter(
+        date=today,
+        name__iexact=plan.name,
+    ).exists()
+
+    if already_logged:
+        messages.info(request, f"Η σημερινή δόση για {plan.name} έχει ήδη καταχωρηθεί.")
+        return redirect(request.POST.get("next") or "medication_list")
+
+    now_local = timezone.localtime()
+    MedicationEntry.objects.create(
+        date=today,
+        time=now_local.time().replace(second=0, microsecond=0),
+        name=plan.name,
+        dose=plan.dose,
+        unit=plan.unit,
+        notes="Γρήγορη καταχώρηση από το καθημερινό πλάνο.",
+        created_by=request.user,
+    )
+    messages.success(request, f"Καταχωρήθηκε η σημερινή δόση: {plan.name}.")
+    return redirect(request.POST.get("next") or "medication_list")
 
 
 @login_required
