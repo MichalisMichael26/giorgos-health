@@ -14,6 +14,7 @@ from PIL import Image, ImageOps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 from django.db.models import Avg, Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -53,6 +54,7 @@ from .models import (
     MedicationPlan,
     ProductSafetyRecord,
     SymptomEntry,
+    UserAccessLog,
     UserAccessProfile,
     VaccineEntry,
 )
@@ -1133,8 +1135,63 @@ def user_access_list(request):
     rows = []
     for user in users:
         profile, _ = UserAccessProfile.objects.get_or_create(user=user)
-        rows.append({"user": user, "profile": profile})
+        latest_access = (
+            UserAccessLog.objects.filter(user=user)
+            .order_by("-login_at")
+            .first()
+        )
+        rows.append(
+            {
+                "user": user,
+                "profile": profile,
+                "latest_access": latest_access,
+            }
+        )
     return render(request, "users/list.html", {"rows": rows})
+
+
+@user_passes_test(_superuser)
+def user_access_log(request):
+    q = (request.GET.get("q") or "").strip()
+    user_id = (request.GET.get("user") or "").strip()
+
+    logs = (
+        UserAccessLog.objects
+        .select_related("user", "user__access_profile")
+        .all()
+        .order_by("-login_at")
+    )
+
+    if q:
+        logs = logs.filter(
+            Q(user__username__icontains=q)
+            | Q(user__access_profile__display_name__icontains=q)
+            | Q(user_agent__icontains=q)
+        )
+
+    if user_id.isdigit():
+        logs = logs.filter(user_id=int(user_id))
+
+    paginator = Paginator(logs, 50)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    users = (
+        User.objects.select_related("access_profile")
+        .all()
+        .order_by("username")
+    )
+
+    return render(
+        request,
+        "users/access_log.html",
+        {
+            "page_obj": page_obj,
+            "logs": page_obj.object_list,
+            "users": users,
+            "q": q,
+            "selected_user": user_id,
+        },
+    )
 
 
 @user_passes_test(_superuser)

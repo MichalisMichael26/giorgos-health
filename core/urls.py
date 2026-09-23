@@ -150,6 +150,7 @@ urlpatterns = [
 
     # User roles
     path("users/access/", mega_views.user_access_list, name="user_access_list"),
+    path("users/access-log/", mega_views.user_access_log, name="user_access_log"),
     path("users/access/new/", mega_views.user_access_create, name="user_access_create"),
     path("users/access/<int:pk>/edit/", mega_views.user_access_edit, name="user_access_edit"),
 

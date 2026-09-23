@@ -1,6 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Χρήστες{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>👥 Χρήστες & ρόλοι</h1><p class="muted">Γονέας = πλήρης πρόσβαση. Ιατρός = μόνο προβολή.</p></div><a class="btn primary" href="{% url 'user_access_create' %}">+ Νέος χρήστης</a></div>
-<div class="user-role-grid">{% for row in rows %}<article class="panel"><h2>{{ row.profile.display_name|default:row.user.username }}</h2><p>@{{ row.user.username }}</p><span class="decision-label">{{ row.profile.get_role_display }}</span><p>{% if row.user.is_active %}Ενεργός{% else %}Ανενεργός{% endif %}</p><a class="btn secondary" href="{% url 'user_access_edit' row.user.pk %}">Ρυθμίσεις</a></article>{% endfor %}</div>
+<div class="page-head">
+    <div>
+        <h1>👥 Χρήστες & ρόλοι</h1>
+        <p class="muted">Γονέας = πλήρης πρόσβαση. Ιατρός = μόνο προβολή.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn secondary" href="{% url 'user_access_log' %}">🕒 User Access Log</a>
+        <a class="btn primary" href="{% url 'user_access_create' %}">+ Νέος χρήστης</a>
+    </div>
+</div>
+
+<div class="user-role-grid">
+{% for row in rows %}
+<article class="panel user-access-card">
+    <h2>{{ row.profile.display_name|default:row.user.username }}</h2>
+    <p>@{{ row.user.username }}</p>
+    <span class="decision-label">{{ row.profile.get_role_display }}</span>
+    <p>{% if row.user.is_active %}Ενεργός{% else %}Ανενεργός{% endif %}</p>
+
+    <div class="user-access-meta">
+        <span>Τελευταίο login</span>
+        <strong>{% if row.user.last_login %}{{ row.user.last_login|date:"d/m/Y H:i" }}{% else %}—{% endif %}</strong>
+    </div>
+    <div class="user-access-meta">
+        <span>Last seen</span>
+        <strong>{% if row.profile.last_seen_at %}{{ row.profile.last_seen_at|date:"d/m/Y H:i" }}{% else %}—{% endif %}</strong>
+    </div>
+    {% if row.profile.last_seen_path %}
+    <small class="muted">Τελευταία σελίδα: {{ row.profile.last_seen_path }}</small>
+    {% endif %}
+
+    <div class="user-access-actions">
+        <a class="btn secondary" href="{% url 'user_access_edit' row.user.pk %}">Ρυθμίσεις</a>
+        <a class="mini-action" href="{% url 'user_access_log' %}?user={{ row.user.pk }}">Log χρήστη</a>
+    </div>
+</article>
+{% endfor %}
+</div>
 {% endblock %}

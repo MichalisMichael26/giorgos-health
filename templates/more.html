@@ -85,7 +85,10 @@
         <a href="{% url 'safety_rule_list' %}" class="health-menu-card"><span>⚙️</span><div><strong>Κανόνες ελέγχου</strong><small>Περιορισμοί για τρόφιμα / φάρμακα</small></div></a>
         <a href="{% url 'daily_summary' %}" class="health-menu-card"><span>📊</span><div><strong>Daily Summary</strong><small>Σύνοψη ημέρας και PDF</small></div></a>
         <a href="{% url 'backup_status' %}" class="health-menu-card"><span>☁️</span><div><strong>Cloud Backup</strong><small>Κατάσταση αυτόματου backup</small></div></a>
-        {% if user.is_superuser %}<a href="{% url 'user_access_list' %}" class="health-menu-card"><span>👥</span><div><strong>Χρήστες & ρόλοι</strong><small>Γονείς και read-only ιατρός</small></div></a>{% endif %}
+        {% if user.is_superuser %}
+        <a href="{% url 'user_access_list' %}" class="health-menu-card"><span>👥</span><div><strong>Χρήστες & ρόλοι</strong><small>Γονείς και read-only ιατρός</small></div></a>
+        <a href="{% url 'user_access_log' %}" class="health-menu-card"><span>🕒</span><div><strong>User Access Log</strong><small>Login, logout και last seen ανά χρήστη</small></div></a>
+        {% endif %}
         <a href="{% url 'audit_log' %}" class="health-menu-card"><span>🧾</span><div><strong>Audit Log</strong><small>Ποιος άλλαξε τι και πότε</small></div></a>
     </div>
 </section>

@@ -756,9 +756,47 @@ class UserAccessProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="access_profile")
     role = models.CharField("Ρόλος", max_length=30, choices=ROLE_CHOICES, default="parent")
     display_name = models.CharField("Εμφανιζόμενο όνομα", max_length=120, blank=True)
+    last_seen_at = models.DateTimeField("Τελευταία δραστηριότητα", blank=True, null=True)
+    last_seen_path = models.CharField("Τελευταία σελίδα", max_length=240, blank=True)
+    last_seen_user_agent = models.CharField("Τελευταία συσκευή / browser", max_length=500, blank=True)
 
     def __str__(self):
         return self.display_name or self.user.username
+
+
+class UserAccessLog(models.Model):
+    SOURCE_CHOICES = [
+        ("login", "Κανονικό login"),
+        ("existing_session", "Ήδη ενεργή συνεδρία"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="giorgos_access_logs",
+    )
+    login_at = models.DateTimeField("Είσοδος")
+    last_seen_at = models.DateTimeField("Τελευταία δραστηριότητα", blank=True, null=True)
+    logout_at = models.DateTimeField("Έξοδος", blank=True, null=True)
+    entry_source = models.CharField(
+        "Τρόπος εισόδου",
+        max_length=30,
+        choices=SOURCE_CHOICES,
+        default="login",
+    )
+    user_agent = models.CharField("Συσκευή / browser", max_length=500, blank=True)
+    first_path = models.CharField("Πρώτη σελίδα", max_length=240, blank=True)
+    last_path = models.CharField("Τελευταία σελίδα", max_length=240, blank=True)
+
+    class Meta:
+        ordering = ["-login_at"]
+        indexes = [
+            models.Index(fields=["user", "-login_at"], name="gh_access_user_login"),
+            models.Index(fields=["-last_seen_at"], name="gh_access_last_seen"),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.login_at:%d/%m/%Y %H:%M}"
 
 
 class BackupRun(models.Model):

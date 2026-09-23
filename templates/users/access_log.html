@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}User Access Log{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>🕒 User Access Log</h1>
+        <p class="muted">Μόνο για admin · login, logout και τελευταία δραστηριότητα.</p>
+    </div>
+    <a class="btn secondary" href="{% url 'user_access_list' %}">← Χρήστες</a>
+</div>
+
+<section class="panel access-log-filter">
+    <form method="get" class="access-log-filter-form">
+        <label>
+            <span>Χρήστης</span>
+            <select name="user">
+                <option value="">Όλοι</option>
+                {% for account in users %}
+                <option value="{{ account.pk }}" {% if selected_user == account.pk|stringformat:"s" %}selected{% endif %}>
+                    {% if account.access_profile.display_name %}{{ account.access_profile.display_name }} · {% endif %}@{{ account.username }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            <span>Αναζήτηση</span>
+            <input type="search" name="q" value="{{ q }}" placeholder="username / όνομα / browser">
+        </label>
+        <button class="btn primary" type="submit">Φίλτρο</button>
+        <a class="btn secondary" href="{% url 'user_access_log' %}">Καθαρισμός</a>
+    </form>
+</section>
+
+<section class="panel table-wrap">
+<table class="responsive-table access-log-table">
+    <thead>
+        <tr>
+            <th>Χρήστης</th>
+            <th>Είσοδος</th>
+            <th>Last seen</th>
+            <th>Έξοδος</th>
+            <th>Τύπος</th>
+            <th>Τελευταία σελίδα</th>
+            <th>Συσκευή / browser</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in logs %}
+        <tr>
+            <td data-label="Χρήστης">
+                <strong>{% if item.user.access_profile.display_name %}{{ item.user.access_profile.display_name }}{% else %}@{{ item.user.username }}{% endif %}</strong>
+                <small>@{{ item.user.username }} · {{ item.user.access_profile.get_role_display }}</small>
+            </td>
+            <td data-label="Είσοδος">{{ item.login_at|date:"d/m/Y H:i:s" }}</td>
+            <td data-label="Last seen">{% if item.last_seen_at %}{{ item.last_seen_at|date:"d/m/Y H:i:s" }}{% else %}—{% endif %}</td>
+            <td data-label="Έξοδος">
+                {% if item.logout_at %}
+                    {{ item.logout_at|date:"d/m/Y H:i:s" }}
+                {% else %}
+                    <span class="access-open-session">χωρίς καταγεγραμμένο logout</span>
+                {% endif %}
+            </td>
+            <td data-label="Τύπος">{{ item.get_entry_source_display }}</td>
+            <td data-label="Σελίδα">{{ item.last_path|default:"—" }}</td>
+            <td data-label="Συσκευή"><span title="{{ item.user_agent }}">{{ item.user_agent|default:"—"|truncatechars:90 }}</span></td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="7">Δεν υπάρχουν καταγραφές πρόσβασης.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</section>
+
+{% if page_obj.has_other_pages %}
+<nav class="compact-pagination" aria-label="Σελίδες access log">
+    {% if page_obj.has_previous %}
+        <a class="mini-action" href="?page={{ page_obj.previous_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">← Νεότερα</a>
+    {% endif %}
+    <span>Σελίδα {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="mini-action" href="?page={{ page_obj.next_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}">Παλιότερα →</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+<section class="panel access-log-note">
+    <strong>ℹ️ Τι σημαίνει “last seen”;</strong>
+    <p class="muted">
+        Ενημερώνεται το πολύ μία φορά ανά 5 λεπτά όσο ο χρήστης χρησιμοποιεί το app.
+        Αν ο χρήστης είχε ήδη ενεργή συνεδρία πριν ενεργοποιηθεί το log, η πρώτη καταγραφή εμφανίζεται ως
+        «Ήδη ενεργή συνεδρία». Το κλείσιμο browser/app χωρίς logout δεν δημιουργεί τεχνητή ώρα εξόδου.
+    </p>
+</section>
+{% endblock %}

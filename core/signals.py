@@ -1,12 +1,23 @@
 from datetime import date, datetime, time
 from decimal import Decimal
 
+from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.db import OperationalError, ProgrammingError
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 from .audit import get_current_user
-from .models import AuditLog, HealthReminder, MealEntry, MedicationEntry, MedicationPlan, MedicalAppointment
+from .models import (
+    AuditLog,
+    HealthReminder,
+    MealEntry,
+    MedicationEntry,
+    MedicationPlan,
+    MedicalAppointment,
+    UserAccessLog,
+    UserAccessProfile,
+)
 
 
 def _tracked_sender(sender):
@@ -14,6 +25,7 @@ def _tracked_sender(sender):
         "PushConfig",
         "PushSubscription",
         "PushDeliveryLog",
+        "UserAccessLog",
     }
     return (
         getattr(sender, "_meta", None)
@@ -163,3 +175,76 @@ def sync_medication_plan_after_plan_change(sender, instance, **kwargs):
     from .auto_reminders import sync_medication_plan_reminders
 
     sync_medication_plan_reminders()
+
+
+@receiver(user_logged_in)
+def record_user_login(sender, request, user, **kwargs):
+    now = timezone.now()
+    path = ((getattr(request, "path", "") or "")[:240] if request else "")
+    user_agent = (
+        ((request.META.get("HTTP_USER_AGENT") or "")[:500])
+        if request
+        else ""
+    )
+
+    try:
+        log = UserAccessLog.objects.create(
+            user=user,
+            login_at=now,
+            last_seen_at=now,
+            entry_source="login",
+            user_agent=user_agent,
+            first_path=path,
+            last_path=path,
+        )
+
+        if request is not None:
+            request.session["_gh_access_log_id"] = log.pk
+            request.session["_gh_access_last_seen_write"] = int(now.timestamp())
+
+        profile, _ = UserAccessProfile.objects.get_or_create(user=user)
+        UserAccessProfile.objects.filter(pk=profile.pk).update(
+            last_seen_at=now,
+            last_seen_path=path,
+            last_seen_user_agent=user_agent,
+        )
+    except (OperationalError, ProgrammingError):
+        return
+
+
+@receiver(user_logged_out)
+def record_user_logout(sender, request, user, **kwargs):
+    if user is None:
+        return
+
+    now = timezone.now()
+    path = ((getattr(request, "path", "") or "")[:240] if request else "")
+
+    try:
+        log_id = request.session.get("_gh_access_log_id") if request else None
+        updated = 0
+
+        if log_id:
+            updated = UserAccessLog.objects.filter(
+                pk=log_id,
+                user=user,
+                logout_at__isnull=True,
+            ).update(
+                logout_at=now,
+                last_seen_at=now,
+                last_path=path,
+            )
+
+        if not updated:
+            latest_open = UserAccessLog.objects.filter(
+                user=user,
+                logout_at__isnull=True,
+            ).order_by("-login_at").first()
+            if latest_open:
+                UserAccessLog.objects.filter(pk=latest_open.pk).update(
+                    logout_at=now,
+                    last_seen_at=now,
+                    last_path=path,
+                )
+    except (OperationalError, ProgrammingError):
+        return

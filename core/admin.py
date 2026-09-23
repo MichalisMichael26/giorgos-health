@@ -18,6 +18,7 @@ from .models import (
     LabResult,
     HealthReminder,
     DoctorQuestion,
+    UserAccessLog,
     UserAccessProfile,
     BackupRun,
 )
@@ -113,6 +114,35 @@ class AuditLogAdmin(admin.ModelAdmin):
     search_fields = ("object_repr", "object_id")
     readonly_fields = ("timestamp", "user", "action", "model_name", "object_id", "object_repr", "changes")
 
+
+
+@admin.register(UserAccessLog)
+class UserAccessLogAdmin(admin.ModelAdmin):
+    list_display = (
+        "login_at",
+        "user",
+        "last_seen_at",
+        "logout_at",
+        "entry_source",
+    )
+    list_filter = ("entry_source", "login_at")
+    search_fields = ("user__username", "user_agent", "last_path")
+    readonly_fields = (
+        "user",
+        "login_at",
+        "last_seen_at",
+        "logout_at",
+        "entry_source",
+        "user_agent",
+        "first_path",
+        "last_path",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(SafetyRule)

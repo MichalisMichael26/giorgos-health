@@ -853,3 +853,28 @@ The dashboard and Medications page now provide one-tap `Καταχώρηση τ�
 No medication time is recorded as an administration time until the parent actually taps the log action. The configured 08:00/15:00 values are reminder times only.
 
 The Vitamin D unit remains stored exactly as supplied (`400 mg`) and continues to display the unit-confirmation warning.
+
+
+## Admin User Access Log
+A superuser-only access log is available at `/users/access-log/`.
+
+It records:
+- successful login time;
+- logout time when the user explicitly logs out;
+- last-seen activity;
+- last visited path;
+- browser/device user-agent;
+- whether the row came from a normal login or from an already-persistent session detected after deployment.
+
+Privacy/security:
+- passwords are never logged;
+- raw Django session keys are never stored;
+- IP addresses are not collected;
+- service-worker/push background traffic does not update last-seen;
+- last-seen writes are throttled to at most once every 5 minutes per active session.
+
+Because Giorgos Health uses persistent login sessions, users who were already signed in when this feature is deployed are captured as `Ήδη ενεργή συνεδρία` on their first subsequent app request. Closing the browser without pressing logout does not invent a logout time.
+
+The Users & Roles page now shows each account's latest login and last-seen time and links directly to that user's access history.
+
+Migration: `0025_user_access_log.py`.

@@ -35,6 +35,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.access_activity.AccessActivityMiddleware",
     "core.audit.AuditUserMiddleware",
     "core.access.ReadOnlyDoctorMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
