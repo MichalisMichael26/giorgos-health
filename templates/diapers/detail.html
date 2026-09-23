@@ -35,13 +35,20 @@
     </div>
     {% endif %}
 
-    {% if item.photo_data %}
+    {% if item.has_photo %}
     <div class="diaper-photo-view">
         <div class="panel-head">
             <h2>📷 Φωτογραφία</h2>
-            <a href="{% url 'diaper_photo' item.pk %}" target="_blank" rel="noopener">Άνοιγμα αρχείου</a>
+            <a href="{% url 'diaper_photo' item.pk %}?full=1" target="_blank" rel="noopener">Άνοιγμα πλήρους αρχείου</a>
         </div>
-        <img src="{% url 'diaper_photo' item.pk %}" alt="Φωτογραφία πάνας {{ item.date|date:'d/m/Y' }}">
+        <div class="diaper-photo-frame">
+            <img
+                src="{% url 'diaper_photo' item.pk %}"
+                alt="Φωτογραφία πάνας {{ item.date|date:'d/m/Y' }}"
+                loading="lazy"
+                decoding="async"
+                fetchpriority="low">
+        </div>
     </div>
     {% else %}
     <div class="empty-state compact-empty">

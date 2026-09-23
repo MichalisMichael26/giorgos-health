@@ -10,6 +10,7 @@ from .models import (
     MedicalAppointment,
     MedicalDocument,
     MedicationEntry,
+    MedicationPlan,
     SymptomEntry,
     VaccineEntry,
     SafetyRule,
@@ -45,6 +46,20 @@ class MedicationEntryAdmin(admin.ModelAdmin):
     list_display = ("date", "time", "name", "dose", "unit")
     list_filter = ("date", "unit")
     search_fields = ("name", "notes")
+
+
+@admin.register(MedicationPlan)
+class MedicationPlanAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "dose",
+        "unit",
+        "frequency",
+        "unit_confirmation_required",
+        "active",
+    )
+    list_filter = ("active", "unit_confirmation_required", "unit")
+    search_fields = ("name", "frequency", "notes")
 
 
 @admin.register(MedicalAppointment)

@@ -11,7 +11,7 @@
 <td data-label="Χρώμα">{{ item.stool_color|default:"—" }}</td>
 <td data-label="Σύσταση">{{ item.stool_consistency|default:"—" }}</td>
 <td data-label="Πιθανή διάρροια">{% if item.possible_diarrhea %}<strong>⚠️ Ναι</strong>{% else %}—{% endif %}</td>
-<td data-label="Φωτο">{% if item.photo_data %}<a class="mini-action diaper-view-photo" href="{% url 'diaper_detail' item.pk %}">👁 View</a>{% else %}—{% endif %}</td>
+<td data-label="Φωτο">{% if item.has_photo %}<a class="mini-action diaper-view-photo" href="{% url 'diaper_detail' item.pk %}">📷 View</a>{% else %}—{% endif %}</td>
 <td data-label="Ενέργειες" class="row-actions">
 <a class="mini-action" href="{% url 'diaper_detail' item.pk %}">View</a>
 {% if not is_readonly_doctor %}<a class="mini-action" href="{% url 'diaper_edit' item.pk %}">Edit</a><a class="mini-action danger-link" href="{% url 'diaper_delete' item.pk %}">Delete</a>{% endif %}
@@ -19,4 +19,16 @@
 </tr>
 {% empty %}<tr><td colspan="8">Δεν υπάρχουν καταχωρήσεις.</td></tr>{% endfor %}
 </tbody></table></div>
+
+{% if page_obj.has_other_pages %}
+<nav class="compact-pagination" aria-label="Σελίδες πανών">
+    {% if page_obj.has_previous %}
+        <a class="mini-action" href="?page={{ page_obj.previous_page_number }}">← Νεότερες</a>
+    {% endif %}
+    <span>Σελίδα {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="mini-action" href="?page={{ page_obj.next_page_number }}">Παλιότερες →</a>
+    {% endif %}
+</nav>
+{% endif %}
 {% endblock %}

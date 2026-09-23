@@ -9,7 +9,8 @@ import unicodedata
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Sum
+from django.core.paginator import Paginator
+from django.db.models import Avg, Sum, BooleanField, Case, Value, When
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -38,6 +39,7 @@ from .models import (
     MedicalAppointment,
     MedicalDocument,
     MedicationEntry,
+    MedicationPlan,
     SymptomEntry,
     VaccineEntry,
     SafetyRule,
@@ -357,16 +359,46 @@ def symptom_delete(request, pk):
     return render(request, "confirm_delete.html", {"title": "Διαγραφή συμπτώματος"})
 
 
+def _diaper_lightweight_queryset():
+    """
+    Diaper photos are stored in PostgreSQL as BinaryField blobs. The list and
+    detail HTML only need to know whether a photo exists, so do not transfer
+    the blob from PostgreSQL until the dedicated photo endpoint is requested.
+    """
+    return (
+        DiaperEntry.objects
+        .annotate(
+            has_photo=Case(
+                When(photo_data__isnull=False, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
+        )
+        .defer("photo_data")
+        .order_by("-date", "-time", "-pk")
+    )
+
+
 @login_required
 def diaper_list(request):
-    # Do not stream photo binaries inside the list page. Loading multiple large
-    # images caused visible layout shifts/flicker on some mobile browsers.
-    return render(request, "diapers/list.html", {"items": DiaperEntry.objects.all()})
+    # Keep the DOM and database payload small on phones. Photos remain on their
+    # dedicated endpoint and only 25 records are rendered per page.
+    paginator = Paginator(_diaper_lightweight_queryset(), 25)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    return render(
+        request,
+        "diapers/list.html",
+        {
+            "items": page_obj.object_list,
+            "page_obj": page_obj,
+            "paginator": paginator,
+        },
+    )
 
 
 @login_required
 def diaper_detail(request, pk):
-    item = get_object_or_404(DiaperEntry, pk=pk)
+    item = get_object_or_404(_diaper_lightweight_queryset(), pk=pk)
     return render(request, "diapers/detail.html", {"item": item})
 
 
@@ -547,6 +579,7 @@ def doctor_view(request):
         "glucose_min_7": min(glucose_values) if glucose_values else None,
         "glucose_max_7": max(glucose_values) if glucose_values else None,
         "medications_today": MedicationEntry.objects.filter(date=today).order_by("time"),
+        "current_medication_plans": MedicationPlan.objects.filter(active=True).order_by("name"),
         "symptoms_7": SymptomEntry.objects.filter(date__range=(last7, today)).order_by("-date", "-time")[:12],
         "upcoming_appointments": MedicalAppointment.objects.filter(status="scheduled", date__gte=today).order_by("date", "time")[:5],
         "vaccines": VaccineEntry.objects.order_by("-date")[:8],

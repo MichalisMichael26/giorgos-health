@@ -461,8 +461,37 @@
         {% endif %}
     </section>
 
+    {% if current_medication_plans %}
     <section class="section allow-break">
-        <h2>💊 Φάρμακα / συμπληρώματα τελευταίων 48 ωρών</h2>
+        <h2>💊 Τρέχον καθημερινό πλάνο φαρμάκων / συμπληρωμάτων</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Όνομα</th><th>Ποσότητα</th><th>Συχνότητα</th><th>Σημείωση</th></tr></thead>
+                <tbody>
+                {% for item in current_medication_plans %}
+                    <tr>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td>{{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }}</td>
+                        <td>{{ item.frequency }}</td>
+                        <td>
+                            {% if item.unit_confirmation_required %}
+                                ⚠️ Η μονάδα χρειάζεται επιβεβαίωση.
+                            {% elif item.notes %}
+                                {{ item.notes }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="section allow-break">
+        <h2>💊 Δόσεις που καταχωρήθηκαν τις τελευταίες 48 ώρες</h2>
         {% if medications %}
         <div class="table-wrap">
             <table>

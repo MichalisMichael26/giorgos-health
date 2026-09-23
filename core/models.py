@@ -183,6 +183,29 @@ class MedicationEntry(models.Model):
         return f"{self.date} {self.time.strftime('%H:%M')} - {self.name}"
 
 
+class MedicationPlan(models.Model):
+    UNIT_CHOICES = MedicationEntry.UNIT_CHOICES
+
+    name = models.CharField("Φάρμακο / συμπλήρωμα", max_length=160)
+    dose = models.DecimalField("Ποσότητα", max_digits=8, decimal_places=2)
+    unit = models.CharField("Μονάδα", max_length=20, choices=UNIT_CHOICES, default="ml")
+    frequency = models.CharField("Συχνότητα", max_length=120, default="1 φορά/ημέρα")
+    notes = models.TextField("Σημειώσεις", blank=True)
+    unit_confirmation_required = models.BooleanField(
+        "Χρειάζεται επιβεβαίωση μονάδας",
+        default=False,
+    )
+    active = models.BooleanField("Ενεργό", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} - {self.dose} {self.get_unit_display()} - {self.frequency}"
+
+
 class MedicalAppointment(models.Model):
     STATUS_CHOICES = [
         ("scheduled", "Προγραμματισμένο"),

@@ -1,4 +1,7 @@
+from io import BytesIO
 from pathlib import Path
+
+from PIL import Image, ImageOps
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -31,10 +34,45 @@ def validate_image(upload):
 
 
 def save_photo_to_instance(instance, upload):
-    if upload:
-        instance.photo_name = Path(upload.name).name
-        instance.photo_mime = upload.content_type or "image/jpeg"
-        instance.photo_data = upload.read()
+    if not upload:
+        return
+
+    raw = upload.read()
+    instance.photo_name = Path(upload.name).name
+    instance.photo_mime = upload.content_type or "image/jpeg"
+    instance.photo_data = raw
+
+    # Mobile photos can have very large pixel dimensions even when the file is
+    # below the 6 MB upload limit. Store an optimized copy for faster database
+    # reads, page rendering and photo display. If Pillow cannot decode the
+    # image, keep the original bytes rather than losing the upload.
+    try:
+        with Image.open(BytesIO(raw)) as source:
+            image = ImageOps.exif_transpose(source)
+            image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+
+            if image.mode not in {"RGB", "L"}:
+                image = image.convert("RGB")
+            elif image.mode == "L":
+                image = image.convert("RGB")
+
+            output = BytesIO()
+            image.save(
+                output,
+                format="JPEG",
+                quality=82,
+                optimize=True,
+                progressive=True,
+            )
+            optimized = output.getvalue()
+
+        if optimized and len(optimized) < len(raw):
+            stem = Path(upload.name).stem or "photo"
+            instance.photo_name = f"{stem}.jpg"
+            instance.photo_mime = "image/jpeg"
+            instance.photo_data = optimized
+    except Exception:
+        pass
 
 
 class SymptomWithPhotoForm(forms.ModelForm):

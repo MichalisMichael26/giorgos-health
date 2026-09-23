@@ -36,6 +36,7 @@ from .models import (
     GrowthMeasurement,
     MealEntry,
     MedicationEntry,
+    MedicationPlan,
     MedicalAppointment,
     ChildProfile,
     VaccineEntry,
@@ -1147,6 +1148,7 @@ def _rolling_48h_clinical_data():
         "meals": meals,
         "glucose": glucose,
         "medications": medications,
+        "current_medication_plans": list(MedicationPlan.objects.filter(active=True).order_by("name")),
         "symptoms": symptoms,
         "diapers": diapers,
         "labs_48h": labs_48h,
@@ -1515,6 +1517,7 @@ def growth_delete(request, pk):
 def medication_list(request):
     return render(request, "medications/list.html", {
         "medications": MedicationEntry.objects.all(),
+        "current_plans": MedicationPlan.objects.filter(active=True).order_by("name"),
     })
 
 
@@ -1525,6 +1528,9 @@ def medication_create(request):
         initial={
             "date": timezone.localdate(),
             "time": timezone.localtime().strftime("%H:%M"),
+            "name": (request.GET.get("name") or "").strip(),
+            "dose": (request.GET.get("dose") or "").strip(),
+            "unit": (request.GET.get("unit") or "").strip(),
         },
     )
     if form.is_valid():

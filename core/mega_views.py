@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import qrcode
 import requests
+from PIL import Image, ImageOps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
@@ -56,25 +57,71 @@ from .models import (
 )
 
 
-def _photo_response(data, mime, filename):
+def _photo_response(data, mime, filename, *, optimize=False):
     if not data:
         raise Http404("Δεν υπάρχει φωτογραφία.")
-    response = HttpResponse(bytes(data), content_type=mime or "image/jpeg")
+
+    payload = bytes(data)
+    content_type = mime or "image/jpeg"
     safe_name = Path(filename or "photo.jpg").name
+
+    if optimize:
+        try:
+            with Image.open(io.BytesIO(payload)) as source:
+                image = ImageOps.exif_transpose(source)
+                image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+                if image.mode not in {"RGB", "L"}:
+                    image = image.convert("RGB")
+                elif image.mode == "L":
+                    image = image.convert("RGB")
+
+                output = io.BytesIO()
+                image.save(
+                    output,
+                    format="JPEG",
+                    quality=82,
+                    optimize=True,
+                    progressive=True,
+                )
+                optimized = output.getvalue()
+
+            if optimized and len(optimized) < len(payload):
+                payload = optimized
+                content_type = "image/jpeg"
+                safe_name = f"{Path(safe_name).stem or 'photo'}.jpg"
+        except Exception:
+            pass
+
+    response = HttpResponse(payload, content_type=content_type)
     response["Content-Disposition"] = f'inline; filename="{safe_name}"'
+    response["Cache-Control"] = "private, max-age=86400"
+    response["X-Content-Type-Options"] = "nosniff"
     return response
 
 
 @login_required
 def symptom_photo(request, pk):
-    item = get_object_or_404(SymptomEntry, pk=pk)
+    item = get_object_or_404(
+        SymptomEntry.objects.only("photo_data", "photo_mime", "photo_name"),
+        pk=pk,
+    )
     return _photo_response(item.photo_data, item.photo_mime, item.photo_name)
 
 
 @login_required
 def diaper_photo(request, pk):
-    item = get_object_or_404(DiaperEntry, pk=pk)
-    return _photo_response(item.photo_data, item.photo_mime, item.photo_name)
+    # Pull only the photo columns from PostgreSQL. The normal detail image is
+    # optimized for mobile; ?full=1 keeps access to the stored original.
+    item = get_object_or_404(
+        DiaperEntry.objects.only("photo_data", "photo_mime", "photo_name"),
+        pk=pk,
+    )
+    return _photo_response(
+        item.photo_data,
+        item.photo_mime,
+        item.photo_name,
+        optimize=request.GET.get("full") != "1",
+    )
 
 
 @login_required

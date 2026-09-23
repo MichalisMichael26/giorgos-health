@@ -10,6 +10,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>{% block title %}Giorgos Health{% endblock %}</title>
 
+    <style id="critical-first-paint">
+        html, body { background: #f7faff; }
+        html.night, html.night body { background: #141d2b; }
+    </style>
+
     <script>
     (function () {
         try {
@@ -18,6 +23,9 @@
             const autoNight = hour >= 22 || hour < 6;
             if (saved === "dark" || (!saved && autoNight)) {
                 document.documentElement.classList.add("night");
+                document.documentElement.style.colorScheme = "dark";
+            } else {
+                document.documentElement.style.colorScheme = "light";
             }
         } catch (e) {}
     })();
@@ -152,6 +160,7 @@
         try {
             localStorage.setItem("giorgos-theme", enabled ? "dark" : "light");
         } catch (e) {}
+        document.documentElement.style.colorScheme = enabled ? "dark" : "light";
         syncIcon();
     });
 

@@ -798,3 +798,38 @@ Migration `0022_shift_feeds_to_half_hour_and_seed_2309_labs.py`:
 - imports the 23/09/2026 CBC from `LabTestResults40926045.pdf`.
 
 Existing blood-gas values from 12/09 and 14/09 remain seeded by migration `0011`.
+
+
+## Mobile performance / diaper flicker pass
+This pass targets the intermittent mobile jank/flicker reported especially on the Diapers pages.
+
+Changes:
+- Diaper list/detail no longer load PostgreSQL `photo_data` BinaryField blobs with the HTML page.
+- Diaper list is paginated to 25 records per page to keep the mobile DOM smaller.
+- Photo presence is detected without transferring the binary image.
+- Diaper detail photo is lazy-loaded and asynchronously decoded.
+- The normal diaper photo endpoint serves a mobile-sized optimized image and uses private browser caching.
+- `?full=1` keeps access to the stored full image.
+- New diaper/symptom photo uploads are resized to max 1600×1600 and JPEG-compressed when this reduces file size.
+- Mobile blurred floating shapes are disabled.
+- Mobile header/bottom-nav backdrop blur is disabled to reduce expensive GPU compositing.
+- Touch hover/transition effects are reduced.
+- A tiny critical background style is included before the main stylesheet to reduce white/theme flashes during navigation.
+
+No database migration is required.
+
+
+## Current daily medications
+Migration `0023_current_daily_medications.py` adds a separate active medication/supplement plan, distinct from individual administration history.
+
+Seeded current plan:
+- Vitamin D — 400 mg — 1 φορά/ημέρα
+  - unit is stored exactly as provided by the parent;
+  - `unit_confirmation_required=True`;
+  - the UI and clinical views visibly flag that the unit needs confirmation.
+- Colipro — 5 drops — 1 φορά/ημέρα
+- Hemafer — 2.5 ml — 1 φορά/ημέρα
+
+No administration times or medication reminders are invented because no clock times were provided.
+
+The Medications page shows the active plan above the administration history and provides a one-tap `Καταχώρηση δόσης τώρα` action that pre-fills the existing medication-entry form. Doctor View and the 48-hour clinical report also show the active plan separately from doses actually logged.
