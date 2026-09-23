@@ -902,3 +902,15 @@ latest real Audit Log timestamp.
 This backfill can only show prior activity for users/actions that were actually
 recorded in the existing Audit Log. Days with no historical audit evidence remain
 empty rather than being fabricated.
+
+
+## Stale meal reminder cleanup
+The current fixed meal schedule remains:
+`00:30 · 03:30 · 06:30 · 09:30 · 12:30 · 15:30 · 18:30 · 21:30`
+
+Push notifications remain 12 minutes before each feed:
+`00:18 · 03:18 · 06:18 · 09:18 · 12:18 · 15:18 · 18:18 · 21:18`.
+
+Migration `0027_clear_stale_meal_schedule_reminders.py` removes all previously generated fixed meal reminders once on deploy. The automatic reminder synchronizer now also continuously removes any current/future `meal-schedule:*` reminder whose key does not belong to the active `:30` schedule, preventing reminders left behind by an older timetable from being sent.
+
+The separate user-defined `≤ 50 ml` follow-up reminder remains unchanged.

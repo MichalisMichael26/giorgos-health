@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 
 from django.utils import timezone
 
@@ -66,7 +66,27 @@ def sync_fixed_meal_schedule_reminders(now=None):
     # Remove the old finish-based dynamic reminder if it still exists.
     HealthReminder.objects.filter(source_key="meal-next:dynamic").delete()
 
-    # Keep the reminder table tidy without touching manual reminders.
+    # Build the only valid fixed-schedule keys for today and tomorrow.
+    # Any other current/future `meal-schedule:*` row is stale from an older
+    # feeding timetable and must never be eligible for push delivery.
+    schedule_days = (today, today + timedelta(days=1))
+    expected_source_keys = {
+        _meal_schedule_source_key(day, feed_time)
+        for day in schedule_days
+        for feed_time in FIXED_FEED_TIMES
+    }
+
+    start_today = _aware(today, time.min)
+    HealthReminder.objects.filter(
+        auto_generated=True,
+        reminder_type="meal",
+        source_key__startswith="meal-schedule:",
+        due_at__gte=start_today,
+    ).exclude(
+        source_key__in=expected_source_keys,
+    ).delete()
+
+    # Keep old reminder rows tidy without touching manual reminders.
     HealthReminder.objects.filter(
         auto_generated=True,
         reminder_type="meal",
@@ -76,7 +96,7 @@ def sync_fixed_meal_schedule_reminders(now=None):
 
     created_or_updated = 0
 
-    for day in (today, today + timedelta(days=1)):
+    for day in schedule_days:
         for feed_time in FIXED_FEED_TIMES:
             due_at = _aware(day, feed_time)
             source_key = _meal_schedule_source_key(day, feed_time)
