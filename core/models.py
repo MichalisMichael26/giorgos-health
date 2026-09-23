@@ -114,6 +114,7 @@ class GrowthMeasurement(models.Model):
     head_cm = models.DecimalField(
         "Περίμετρος κεφαλής (cm)", max_digits=6, decimal_places=2, blank=True, null=True
     )
+    measured_by = models.CharField("Μετρήθηκε από", max_length=180, blank=True)
     notes = models.TextField("Σημειώσεις", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -123,6 +124,22 @@ class GrowthMeasurement(models.Model):
     @property
     def weekday_name(self):
         return greek_weekday(self.date)
+
+    @property
+    def bmi(self):
+        if self.weight_kg is None or self.length_cm in (None, 0):
+            return None
+        meters = float(self.length_cm) / 100
+        if not meters:
+            return None
+        return round(float(self.weight_kg) / (meters * meters), 1)
+
+    @property
+    def age_week_number(self):
+        birth_date = date(2026, 6, 27)
+        if not self.date or self.date < birth_date:
+            return None
+        return ((self.date - birth_date).days // 7) + 1
 
     def __str__(self):
         return str(self.date)

@@ -276,6 +276,14 @@
             <span>Περίμετρος κεφαλής</span>
             <strong>{% if latest_growth and latest_growth.head_cm %}{{ latest_growth.head_cm }} cm{% else %}—{% endif %}</strong>
         </div>
+        <div class="card">
+            <span>BMI</span>
+            <strong>{% if latest_growth and latest_growth.bmi != None %}{{ latest_growth.bmi }} kg/m²{% else %}—{% endif %}</strong>
+        </div>
+        <div class="card">
+            <span>Μετρήθηκε από</span>
+            <strong>{% if latest_growth and latest_growth.measured_by %}{{ latest_growth.measured_by }}{% else %}—{% endif %}</strong>
+        </div>
     </section>
 
     <section class="summary-grid">

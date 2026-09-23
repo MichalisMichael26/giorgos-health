@@ -164,7 +164,7 @@ class GlucoseReadingForm(forms.ModelForm):
 class GrowthMeasurementForm(forms.ModelForm):
     class Meta:
         model = GrowthMeasurement
-        fields = ["date", "weight_kg", "length_cm", "head_cm", "notes"]
+        fields = ["date", "weight_kg", "length_cm", "head_cm", "measured_by", "notes"]
         widgets = {
             "date": DateInput(),
             "notes": forms.Textarea(attrs={"rows": 3}),

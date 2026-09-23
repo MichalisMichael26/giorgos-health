@@ -762,3 +762,20 @@ Only the dashboard comparison was restored to the previous behaviour:
 - actual start/finish times, consumed ml, delta and comments remain visible.
 
 The comparison is independent from the fixed reminder schedule.
+
+
+## Historical growth data — Jul/Aug 2026
+Migration `0021_growth_history_and_measured_by.py` imports these confirmed growth measurements:
+
+- 27/08/2026 — 5.32 kg · 59 cm · head 39.2 cm · measured by ΣΑΒΒΑΣ ΣΑΒΒΑ / SAVVAS SAVVA
+- 11/08/2026 — 4.85 kg · 58 cm · head 38.3 cm · measured by ΣΑΒΒΑΣ ΣΑΒΒΑ / SAVVAS SAVVA
+- 28/07/2026 — 4.21 kg · 56 cm · head 37.4 cm · measured by ΣΑΒΒΑΣ ΣΑΒΒΑ / SAVVAS SAVVA
+- 22/07/2026 — 3.83 kg · 54 cm · head 36.8 cm · measured by ΣΑΒΒΑΣ ΣΑΒΒΑ / SAVVAS SAVVA
+- 15/07/2026 — 3.63 kg · 52 cm · head 36.0 cm · no clinician/provider recorded
+
+The Growth page now also shows:
+- age week number derived from DOB 27/06/2026;
+- BMI calculated automatically from weight and length;
+- measured-by/provider when present.
+
+For 15/07/2026 the provider field is intentionally blank.

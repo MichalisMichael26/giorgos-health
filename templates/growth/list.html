@@ -15,22 +15,25 @@
 <div class="panel table-wrap">
 <table class="responsive-table">
 <thead>
-<tr><th>Ημερομηνία</th><th>Βάρος</th><th>Μήκος</th><th>Κεφάλι</th><th></th></tr>
+<tr><th>Ημερομηνία</th><th>Ηλικία</th><th>Βάρος</th><th>Μήκος</th><th>Κεφάλι</th><th>BMI</th><th>Μετρήθηκε από</th><th></th></tr>
 </thead>
 <tbody>
 {% for item in measurements %}
 <tr>
     <td data-label="Ημερομηνία">{{ item.date|date:"d/m/Y" }}</td>
+    <td data-label="Ηλικία">{% if item.age_week_number %}{{ item.age_week_number }} εβδομάδων{% else %}—{% endif %}</td>
     <td data-label="Βάρος">{% if item.weight_kg %}{{ item.weight_kg }} kg{% else %}—{% endif %}</td>
     <td data-label="Μήκος">{% if item.length_cm %}{{ item.length_cm }} cm{% else %}—{% endif %}</td>
     <td data-label="Κεφάλι">{% if item.head_cm %}{{ item.head_cm }} cm{% else %}—{% endif %}</td>
+    <td data-label="BMI">{% if item.bmi != None %}{{ item.bmi }} kg/m²{% else %}—{% endif %}</td>
+    <td data-label="Μετρήθηκε από">{% if item.measured_by %}{{ item.measured_by }}{% else %}—{% endif %}</td>
     <td data-label="Ενέργειες" class="row-actions">
         <a class="mini-action" href="{% url 'growth_edit' item.pk %}">Edit</a>
         <a class="mini-action danger-link" href="{% url 'growth_delete' item.pk %}">Delete</a>
     </td>
 </tr>
 {% empty %}
-<tr><td colspan="5">Δεν υπάρχουν μετρήσεις.</td></tr>
+<tr><td colspan="8">Δεν υπάρχουν μετρήσεις.</td></tr>
 {% endfor %}
 </tbody>
 </table>
