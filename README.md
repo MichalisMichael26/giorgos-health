@@ -3,7 +3,7 @@
 Private responsive Django app for family health tracking.
 
 ## Included
-- Fixed feeding schedule: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00
+- Fixed feeding schedule: 00:30, 03:30, 06:30, 09:30, 12:30, 15:30, 18:30, 21:30
 - Scheduled and actual feeding time
 - Offered / consumed ml
 - Formula and supplement fields
@@ -408,7 +408,7 @@ No push endpoint or subscription encryption key is returned to the browser.
 The app now creates/synchronizes these rules automatically:
 
 1. **Fixed feeding schedule** — push 12 minutes before:
-   `00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00`.
+   `00:30, 03:30, 06:30, 09:30, 12:30, 15:30, 18:30, 21:30`.
    Meal duration / finish time does not move the next scheduled feed.
    The repetitive schedule rows are kept out of the main reminder-card list to avoid clutter.
 
@@ -601,14 +601,14 @@ The flag appears in:
 ## Fixed pediatrician-directed 3-hour feeding schedule
 The current feeding schedule is fixed by clock time:
 
-`00:00 · 03:00 · 06:00 · 09:00 · 12:00 · 15:00 · 18:00 · 21:00`
+`00:30 · 03:30 · 06:30 · 09:30 · 12:30 · 15:30 · 18:30 · 21:30`
 
 Current logic:
 - the next feed is determined only by the fixed clock schedule;
 - meal duration and `finished_time` do **not** shift the next feed;
 - `finished_time` remains available as a useful record only;
 - automatic meal push notifications are sent **12 minutes before** each slot:
-  `23:48 · 02:48 · 05:48 · 08:48 · 11:48 · 14:48 · 17:48 · 20:48`;
+  `00:18 · 03:18 · 06:18 · 09:18 · 12:18 · 15:18 · 18:18 · 21:18`;
 - dashboard countdown always points to the next fixed slot;
 - yesterday-vs-today meal comparison is again aligned by the same scheduled clock slot;
 - migration `0020` clears reminder rows from the superseded dynamic schedule;
@@ -734,12 +734,12 @@ The three-status display is a literal ingredient-text check and does not claim t
 ## Current fixed 3-hour schedule — pediatrician instruction
 Current active meal times:
 
-`00:00 · 03:00 · 06:00 · 09:00 · 12:00 · 15:00 · 18:00 · 21:00`
+`00:30 · 03:30 · 06:30 · 09:30 · 12:30 · 15:30 · 18:30 · 21:30`
 
 Automatic push lead time: **12 minutes before**.
 
 Corresponding notification clock times:
-`23:48 · 02:48 · 05:48 · 08:48 · 11:48 · 14:48 · 17:48 · 20:48`.
+`00:18 · 03:18 · 06:18 · 09:18 · 12:18 · 15:18 · 18:18 · 21:18`.
 
 The next feed does not move when a feed takes longer to finish. `finished_time`
 remains a record only. The dashboard countdown, automatic reminders, new-meal
@@ -752,7 +752,7 @@ meal reminders so the scheduler can rebuild them with the new times.
 
 ## Meal comparison restored
 The fixed pediatrician-directed feeding schedule remains:
-`00:00 · 03:00 · 06:00 · 09:00 · 12:00 · 15:00 · 18:00 · 21:00`
+`00:30 · 03:30 · 06:30 · 09:30 · 12:30 · 15:30 · 18:30 · 21:30`
 with automatic notifications 12 minutes before.
 
 Only the dashboard comparison was restored to the previous behaviour:
@@ -779,3 +779,22 @@ The Growth page now also shows:
 - measured-by/provider when present.
 
 For 15/07/2026 the provider field is intentionally blank.
+
+
+## Current :30 feeding schedule and 23/09 labs
+Current pediatrician-directed fixed feeding schedule:
+
+`00:30 · 03:30 · 06:30 · 09:30 · 12:30 · 15:30 · 18:30 · 21:30`
+
+Automatic meal push notifications remain **12 minutes before**:
+`00:18 · 03:18 · 06:18 · 09:18 · 12:18 · 15:18 · 18:18 · 21:18`.
+
+The dashboard meal comparison remains chronological by meal sequence (#1 vs #1,
+#2 vs #2, etc.) and is independent of the fixed reminder schedule.
+
+Migration `0022_shift_feeds_to_half_hour_and_seed_2309_labs.py`:
+- removes automatic meal-schedule reminder rows from the previous `:00` schedule;
+- imports the 23/09/2026 chemistry panel from `LabTestResults40927148.pdf`;
+- imports the 23/09/2026 CBC from `LabTestResults40926045.pdf`.
+
+Existing blood-gas values from 12/09 and 14/09 remain seeded by migration `0011`.

@@ -55,7 +55,7 @@ def sync_fixed_meal_schedule_reminders(now=None):
     Create fixed meal reminders for today and tomorrow.
 
     Current pediatrician-directed schedule:
-    00:00 / 03:00 / 06:00 / 09:00 / 12:00 / 15:00 / 18:00 / 21:00
+    00:30 / 03:30 / 06:30 / 09:30 / 12:30 / 15:30 / 18:30 / 21:30
 
     Meal duration and finished_time do not affect the next scheduled feed.
     """

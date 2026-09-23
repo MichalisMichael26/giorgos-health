@@ -6,14 +6,14 @@ from .models import MealEntry
 
 
 FIXED_FEED_TIMES = [
-    time(0, 0),
-    time(3, 0),
-    time(6, 0),
-    time(9, 0),
-    time(12, 0),
-    time(15, 0),
-    time(18, 0),
-    time(21, 0),
+    time(0, 30),
+    time(3, 30),
+    time(6, 30),
+    time(9, 30),
+    time(12, 30),
+    time(15, 30),
+    time(18, 30),
+    time(21, 30),
 ]
 
 # Backwards-compatible alias used in a few views/templates.
@@ -114,8 +114,8 @@ def suggested_meal_datetime(now=None):
     For a new meal form, prefer the most recent fixed slot for up to 90 minutes
     if it has not been logged yet. Otherwise suggest the next fixed slot.
 
-    Example: at 15:20 an unlogged 15:00 meal opens as 15:00, while the dashboard
-    countdown still points to 18:00.
+    Example: at 15:45 an unlogged 15:30 meal opens as 15:30, while the dashboard
+    countdown still points to 18:30.
     """
     now = now or timezone.now()
     local_now = timezone.localtime(now)
