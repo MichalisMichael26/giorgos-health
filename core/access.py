@@ -24,6 +24,7 @@ UNSAFE_VIEW_NAMES = {
     "appointment_edit",
     "appointment_delete",
     "child_profile_edit",
+    "feeding_schedule_settings",
     "document_create",
     "document_edit",
     "document_delete",

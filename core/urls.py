@@ -7,6 +7,11 @@ urlpatterns = [
     path("health/", views.more, name="health_hub"),
     path("health/allergies/", views.allergies_view, name="allergies_view"),
     path("profile/", views.child_profile_edit, name="child_profile_edit"),
+    path(
+        "feeding-schedule/settings/",
+        views.feeding_schedule_settings,
+        name="feeding_schedule_settings",
+    ),
     path("analytics/", views.analytics, name="analytics"),
 
     path("history/", views.history, name="history"),

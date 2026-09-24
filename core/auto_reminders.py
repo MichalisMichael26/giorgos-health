@@ -2,14 +2,13 @@ from datetime import datetime, time, timedelta
 
 from django.utils import timezone
 
-from .feeding_timing import FIXED_FEED_TIMES, meal_finished_datetime, meal_start_datetime
+from .feeding_timing import current_feed_times, meal_finished_datetime, meal_notify_minutes_before, meal_start_datetime
 from .models import HealthReminder, MealEntry, MedicalAppointment, MedicationEntry, MedicationPlan
 
 
 LOW_MEAL_THRESHOLD_ML = 50
 LOW_MEAL_FOLLOWUP_MINUTES = 60
 APPOINTMENT_NOTIFY_MINUTES_BEFORE = 24 * 60
-MEAL_NOTIFY_MINUTES_BEFORE = 12
 
 
 def _aware(local_date, local_time):
@@ -52,16 +51,16 @@ def _meal_schedule_source_key(day, feed_time):
 
 def sync_fixed_meal_schedule_reminders(now=None):
     """
-    Create fixed meal reminders for today and tomorrow.
-
-    Current pediatrician-directed schedule:
-    00:30 / 03:30 / 06:30 / 09:30 / 12:30 / 15:30 / 18:30 / 21:30
+    Create meal reminders for today and tomorrow from the current editable
+    fixed-clock feeding schedule.
 
     Meal duration and finished_time do not affect the next scheduled feed.
     """
     now = now or timezone.now()
     local_now = timezone.localtime(now)
     today = local_now.date()
+    feed_times = current_feed_times()
+    notify_minutes_before = meal_notify_minutes_before()
 
     # Remove the old finish-based dynamic reminder if it still exists.
     HealthReminder.objects.filter(source_key="meal-next:dynamic").delete()
@@ -73,7 +72,7 @@ def sync_fixed_meal_schedule_reminders(now=None):
     expected_source_keys = {
         _meal_schedule_source_key(day, feed_time)
         for day in schedule_days
-        for feed_time in FIXED_FEED_TIMES
+        for feed_time in feed_times
     }
 
     start_today = _aware(today, time.min)
@@ -97,7 +96,7 @@ def sync_fixed_meal_schedule_reminders(now=None):
     created_or_updated = 0
 
     for day in schedule_days:
-        for feed_time in FIXED_FEED_TIMES:
+        for feed_time in feed_times:
             due_at = _aware(day, feed_time)
             source_key = _meal_schedule_source_key(day, feed_time)
 
@@ -115,11 +114,11 @@ def sync_fixed_meal_schedule_reminders(now=None):
                     "title": f"Γεύμα · {feed_time.strftime('%H:%M')}",
                     "due_at": due_at,
                     "notes": (
-                        "Αυτόματη υπενθύμιση σταθερού 3ώρου. "
+                        "Αυτόματη υπενθύμιση τρέχοντος σταθερού ωραρίου. "
                         "Η διάρκεια του προηγούμενου γεύματος δεν αλλάζει την επόμενη ώρα. "
-                        f"Push {MEAL_NOTIFY_MINUTES_BEFORE} λεπτά πριν."
+                        f"Push {notify_minutes_before} λεπτά πριν."
                     ),
-                    "notify_minutes_before": MEAL_NOTIFY_MINUTES_BEFORE,
+                    "notify_minutes_before": notify_minutes_before,
                     "repeat_if_incomplete_minutes": 0,
                     "active": True,
                     "completed": completed,
@@ -135,7 +134,7 @@ def sync_low_meal_reminder(meal):
     User-defined separate follow-up rule:
     if consumed amount is 50 ml or less, create a follow-up reminder 1 hour
     after the meal finish time when available. This does NOT change the fixed
-    3-hour feeding schedule.
+    configured feeding schedule.
     """
     source_key = f"low-meal:{meal.pk}"
 
@@ -159,7 +158,7 @@ def sync_low_meal_reminder(meal):
                 f"Αυτόματη υπενθύμιση βάσει του κανόνα ≤ {LOW_MEAL_THRESHOLD_ML} ml. "
                 f"Το καταχωρημένο γεύμα ήταν {meal.consumed_ml} ml. "
                 f"Υπενθύμιση {LOW_MEAL_FOLLOWUP_MINUTES} λεπτά μετά την ολοκλήρωση. "
-                "Δεν μετακινεί το σταθερό 3ωρο."
+                "Δεν μετακινεί το σταθερό πρόγραμμα γευμάτων."
             ),
             "notify_minutes_before": 0,
             "repeat_if_incomplete_minutes": 0,

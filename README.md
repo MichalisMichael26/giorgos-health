@@ -914,3 +914,42 @@ Push notifications remain 12 minutes before each feed:
 Migration `0027_clear_stale_meal_schedule_reminders.py` removes all previously generated fixed meal reminders once on deploy. The automatic reminder synchronizer now also continuously removes any current/future `meal-schedule:*` reminder whose key does not belong to the active `:30` schedule, preventing reminders left behind by an older timetable from being sent.
 
 The separate user-defined `≤ 50 ml` follow-up reminder remains unchanged.
+
+
+## Editable feeding schedule — current 07:30 anchor
+The feeding schedule is no longer hard-coded in templates or reminder logic.
+
+Current saved defaults after migration `0028_editable_feeding_schedule.py`:
+- anchor/start time: **07:30**
+- interval: **180 minutes / 3 hours**
+- push notification lead: **12 minutes before**
+
+The resulting daily clock schedule is:
+`01:30 · 04:30 · 07:30 · 10:30 · 13:30 · 16:30 · 19:30 · 22:30`
+
+The corresponding push times are:
+`01:18 · 04:18 · 07:18 · 10:18 · 13:18 · 16:18 · 19:18 · 22:18`
+
+A parent/admin can now change:
+- feeding schedule start time;
+- feeding interval;
+- notification lead time;
+from `/feeding-schedule/settings/`.
+
+Saving the settings immediately synchronizes generated meal reminders and removes
+stale reminders from the previous schedule. Doctor read-only accounts cannot
+modify these settings.
+
+The feeding interval UI offers repeating 24-hour interval choices that preserve
+a consistent clock schedule across midnight.
+
+## Access Log device classification
+New live access rows now show an explicit device category derived from the stored
+user-agent:
+- `📱 Κινητό`
+- `📱 Tablet`
+- `💻 Υπολογιστής`
+
+The raw browser/device user-agent remains visible for detail. Historical
+Audit-Log backfill rows may show `—` for device because older audit activity did
+not record a user-agent.

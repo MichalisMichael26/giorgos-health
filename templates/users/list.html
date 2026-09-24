@@ -31,6 +31,9 @@
     {% if row.profile.last_seen_path %}
     <small class="muted">Τελευταία σελίδα: {{ row.profile.last_seen_path }}</small>
     {% endif %}
+    {% if row.latest_access %}
+    <small class="muted">Συσκευή: {{ row.latest_access.device_label }}</small>
+    {% endif %}
 
     <div class="user-access-actions">
         <a class="btn secondary" href="{% url 'user_access_edit' row.user.pk %}">Ρυθμίσεις</a>

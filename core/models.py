@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, time
 import uuid
 from django.contrib.auth.models import User
 from django.db import models
@@ -292,10 +292,20 @@ class ChildProfile(models.Model):
         blank=True,
         help_text="Πηγή/ημερομηνία οδηγίας μεταβολικής ομάδας ή παιδιάτρου.",
     )
+    feeding_schedule_start_time = models.TimeField(
+        "Ώρα εκκίνησης προγράμματος γευμάτων",
+        default=time(7, 30),
+        help_text="Η βασική ώρα από την οποία δημιουργείται το σταθερό ημερήσιο πρόγραμμα.",
+    )
     feeding_interval_minutes = models.PositiveSmallIntegerField(
-        "Διάστημα επόμενου γεύματος από το τέλος (λεπτά)",
+        "Διάστημα μεταξύ γευμάτων (λεπτά)",
         default=180,
-        help_text="Το επόμενο γεύμα υπολογίζεται από την ώρα ολοκλήρωσης του προηγούμενου.",
+        help_text="Χρησιμοποιείται για το σταθερό ωράριο γευμάτων και δεν εξαρτάται από τη διάρκεια του προηγούμενου γεύματος.",
+    )
+    meal_notify_minutes_before = models.PositiveSmallIntegerField(
+        "Ειδοποίηση γεύματος (λεπτά πριν)",
+        default=12,
+        help_text="Πόσα λεπτά πριν από κάθε προγραμματισμένο γεύμα θα έρχεται push notification.",
     )
     maxijul_plan_active = models.BooleanField(
         "Τρέχον πλάνο με Maxijul",
@@ -795,6 +805,26 @@ class UserAccessLog(models.Model):
             models.Index(fields=["user", "-login_at"], name="gh_access_user_login"),
             models.Index(fields=["-last_seen_at"], name="gh_access_last_seen"),
         ]
+
+    @property
+    def device_type(self):
+        ua = (self.user_agent or "").casefold()
+        if not ua:
+            return "unknown"
+        if "ipad" in ua or "tablet" in ua or ("android" in ua and "mobile" not in ua):
+            return "tablet"
+        if "iphone" in ua or "ipod" in ua or "mobile" in ua or "android" in ua:
+            return "mobile"
+        return "desktop"
+
+    @property
+    def device_label(self):
+        return {
+            "mobile": "📱 Κινητό",
+            "tablet": "📱 Tablet",
+            "desktop": "💻 Υπολογιστής",
+            "unknown": "—",
+        }.get(self.device_type, "—")
 
     def __str__(self):
         return f"{self.user.username} - {self.login_at:%d/%m/%Y %H:%M}"

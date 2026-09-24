@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Ρυθμίσεις ωραρίου γευμάτων{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>🕒 Ρυθμίσεις ωραρίου γευμάτων</h1>
+        <p class="muted">Άλλαξε το σταθερό πρόγραμμα και τις push ειδοποιήσεις χωρίς αλλαγή κώδικα.</p>
+    </div>
+    <a class="btn secondary" href="{% url 'dashboard' %}">← Αρχική</a>
+</div>
+
+<section class="panel feeding-schedule-settings-panel">
+    <form method="post" class="feeding-schedule-settings-form" id="feeding-schedule-settings-form">
+        {% csrf_token %}
+        <div class="feeding-setting-grid">
+            <label>
+                <span>{{ form.feeding_schedule_start_time.label }}</span>
+                {{ form.feeding_schedule_start_time }}
+                {% if form.feeding_schedule_start_time.errors %}<small class="field-error">{{ form.feeding_schedule_start_time.errors|striptags }}</small>{% endif %}
+                <small>Παράδειγμα: 07:30.</small>
+            </label>
+
+            <label>
+                <span>{{ form.feeding_interval_minutes.label }}</span>
+                {{ form.feeding_interval_minutes }}
+                {% if form.feeding_interval_minutes.errors %}<small class="field-error">{{ form.feeding_interval_minutes.errors|striptags }}</small>{% endif %}
+                <small>{{ form.feeding_interval_minutes.help_text }}</small>
+            </label>
+
+            <label>
+                <span>{{ form.meal_notify_minutes_before.label }}</span>
+                {{ form.meal_notify_minutes_before }}
+                {% if form.meal_notify_minutes_before.errors %}<small class="field-error">{{ form.meal_notify_minutes_before.errors|striptags }}</small>{% endif %}
+                <small>0 = ειδοποίηση ακριβώς στην ώρα του γεύματος.</small>
+            </label>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="feeding-schedule-save-row">
+            <button class="btn primary" type="submit">✓ Αποθήκευση & ενημέρωση reminders</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel feeding-schedule-preview-panel">
+    <div class="panel-head">
+        <div>
+            <h2>Τρέχον ενεργό πρόγραμμα</h2>
+            <p class="muted">
+                Κάθε {{ interval_minutes }} λεπτά · notification {{ notify_minutes_before }}′ πριν.
+            </p>
+        </div>
+    </div>
+    <div class="schedule-grid fixed-feed-schedule">
+        {% for feed_time in schedule_times %}
+            <div class="schedule-time">{{ feed_time|time:"H:i" }}</div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel feeding-schedule-note">
+    <strong>ℹ️ Πώς λειτουργεί</strong>
+    <p class="muted">
+        Η ώρα ολοκλήρωσης ενός γεύματος δεν μετακινεί το επόμενο. Με την αποθήκευση,
+        τα παλιά αυτόματα meal reminders καθαρίζονται και δημιουργούνται ξανά με το νέο ωράριο.
+        Το ιστορικό των ήδη καταχωρημένων γευμάτων δεν αλλάζει.
+    </p>
+</section>
+{% endblock %}

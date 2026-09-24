@@ -287,6 +287,56 @@ class MedicalAppointmentForm(forms.ModelForm):
 
 
 
+
+
+class FeedingScheduleForm(forms.ModelForm):
+    feeding_interval_minutes = forms.TypedChoiceField(
+        label="Διάστημα μεταξύ γευμάτων",
+        coerce=int,
+        choices=[
+            (60, "1 ώρα"),
+            (90, "1 ώρα 30 λεπτά"),
+            (120, "2 ώρες"),
+            (180, "3 ώρες"),
+            (240, "4 ώρες"),
+            (360, "6 ώρες"),
+            (480, "8 ώρες"),
+            (720, "12 ώρες"),
+        ],
+        help_text="Το διάστημα πρέπει να επαναλαμβάνεται ομοιόμορφα μέσα στο 24ωρο.",
+    )
+
+    class Meta:
+        model = ChildProfile
+        fields = [
+            "feeding_schedule_start_time",
+            "feeding_interval_minutes",
+            "meal_notify_minutes_before",
+        ]
+        widgets = {
+            "feeding_schedule_start_time": TimeInput(format="%H:%M"),
+            "meal_notify_minutes_before": forms.NumberInput(
+                attrs={"min": "0", "max": "180", "step": "1", "inputmode": "numeric"}
+            ),
+        }
+
+    def clean_meal_notify_minutes_before(self):
+        value = int(self.cleaned_data.get("meal_notify_minutes_before") or 0)
+        if value < 0 or value > 180:
+            raise forms.ValidationError("Βάλε τιμή από 0 έως 180 λεπτά.")
+        return value
+
+    def clean(self):
+        cleaned = super().clean()
+        interval = cleaned.get("feeding_interval_minutes")
+        notify = cleaned.get("meal_notify_minutes_before")
+        if interval and notify is not None and notify >= interval:
+            self.add_error(
+                "meal_notify_minutes_before",
+                "Η ειδοποίηση πρέπει να είναι λιγότερα λεπτά πριν από το διάστημα μεταξύ δύο γευμάτων.",
+            )
+        return cleaned
+
 class ChildProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

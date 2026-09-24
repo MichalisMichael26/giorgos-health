@@ -49,7 +49,8 @@
             <th>Έξοδος</th>
             <th>Τύπος</th>
             <th>Τελευταία σελίδα</th>
-            <th>Συσκευή / browser</th>
+            <th>Τύπος συσκευής</th>
+            <th>Browser / device</th>
         </tr>
     </thead>
     <tbody>
@@ -78,10 +79,11 @@
                 {% if item.entry_source == "audit_backfill" %}<small>Πραγματικά δεδομένα από παλιότερες ενέργειες</small>{% endif %}
             </td>
             <td data-label="Σελίδα">{{ item.last_path|default:"—" }}</td>
-            <td data-label="Συσκευή"><span title="{{ item.user_agent }}">{{ item.user_agent|default:"—"|truncatechars:90 }}</span></td>
+            <td data-label="Τύπος συσκευής"><strong>{{ item.device_label }}</strong></td>
+            <td data-label="Browser / device"><span title="{{ item.user_agent }}">{{ item.user_agent|default:"—"|truncatechars:90 }}</span></td>
         </tr>
     {% empty %}
-        <tr><td colspan="7">Δεν υπάρχουν καταγραφές πρόσβασης.</td></tr>
+        <tr><td colspan="8">Δεν υπάρχουν καταγραφές πρόσβασης.</td></tr>
     {% endfor %}
     </tbody>
 </table>

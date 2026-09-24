@@ -80,6 +80,7 @@
     <div class="health-card-grid">
         <a href="{% url 'analytics' %}" class="health-menu-card"><span>📊</span><div><strong>Γραφήματα</strong><small>7 / 30 / 90 ημέρες / πάντα</small></div></a>
         <a href="{% url 'feeding_performance' %}" class="health-menu-card"><span>🍼</span><div><strong>Feeding Performance</strong><small>Μ.ό., ποσοστό κατανάλωσης και γεύματα</small></div></a>
+        {% if not is_readonly_doctor %}<a href="{% url 'feeding_schedule_settings' %}" class="health-menu-card"><span>🕒</span><div><strong>Ωράριο γευμάτων</strong><small>Ώρα εκκίνησης, διάστημα και push ειδοποιήσεις</small></div></a>{% endif %}
         <a href="{% url 'child_profile_edit' %}" class="health-menu-card"><span>👶</span><div><strong>Στοιχεία & στόχοι σίτισης</strong><small>Με Maxijul / χωρίς Maxijul</small></div></a>
         <a href="{% url 'reviewed_products' %}" class="health-menu-card"><span>✅</span><div><strong>Ελεγμένα προϊόντα</strong><small>Επιβεβαιωμένα, αποφυγή, χρειάζονται έλεγχο</small></div></a>
         <a href="{% url 'safety_rule_list' %}" class="health-menu-card"><span>⚙️</span><div><strong>Κανόνες ελέγχου</strong><small>Περιορισμοί για τρόφιμα / φάρμακα</small></div></a>

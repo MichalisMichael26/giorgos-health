@@ -23,8 +23,9 @@ from django.utils import timezone
 
 from .access import user_role
 from .feeding_timing import (
-    FIXED_FEED_TIMES,
+    current_feed_times,
     meal_finished_datetime,
+    meal_notify_minutes_before,
 )
 from .advanced_views import _matching_safety_rules, feeding_stats, get_profile
 from .restriction_checks import baseline_restriction_checks
@@ -701,8 +702,8 @@ def reminder_list(request):
             "now": now,
             "push_device_count": push_device_count,
             "next_auto_notifications": next_auto_notifications,
-            "fixed_meal_times": [value.strftime("%H:%M") for value in FIXED_FEED_TIMES],
-            "meal_notify_minutes_before": 12,
+            "fixed_meal_times": [value.strftime("%H:%M") for value in current_feed_times()],
+            "meal_notify_minutes_before": meal_notify_minutes_before(),
             "medication_reminder_plans": MedicationPlan.objects.filter(
                 active=True,
                 reminder_enabled=True,

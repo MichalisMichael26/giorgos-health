@@ -15,10 +15,12 @@ from django.utils import timezone
 from .access import user_role
 
 from .feeding_timing import (
-    FIXED_FEED_TIMES,
+    current_feed_times,
     latest_started_meal,
+    meal_notify_minutes_before,
     meal_start_datetime,
     next_fixed_meal_due,
+    schedule_settings,
     suggested_meal_datetime,
 )
 
@@ -29,6 +31,7 @@ from .forms import (
     MedicationEntryForm,
     MedicalAppointmentForm,
     ChildProfileForm,
+    FeedingScheduleForm,
     PersistentAuthenticationForm,
 )
 from .models import (
@@ -65,8 +68,6 @@ class PersistentLoginView(LoginView):
             self.request.session.set_expiry(0)
         return response
 
-
-SCHEDULED_TIMES = FIXED_FEED_TIMES
 
 
 def get_child_profile():
@@ -340,14 +341,17 @@ def meal_timing_context(now_local):
     next_due = next_fixed_meal_due(now)
     last_meal, last_started_at = latest_started_meal(now)
 
+    schedule = schedule_settings()
     return {
         "next_meal_dt": next_due,
         "next_meal_iso": next_due.isoformat(),
         "last_meal": last_meal,
         "last_meal_dt": last_started_at,
         "last_meal_iso": last_started_at.isoformat() if last_started_at else "",
-        "fixed_feed_times": FIXED_FEED_TIMES,
-        "meal_notify_minutes_before": 12,
+        "fixed_feed_times": schedule["times"],
+        "feeding_interval_minutes": schedule["interval_minutes"],
+        "feeding_schedule_start_time": schedule["start_time"],
+        "meal_notify_minutes_before": schedule["notify_minutes_before"],
     }
 
 
@@ -640,7 +644,7 @@ def dashboard(request):
         "consumed_total": consumed_total,
         "meal_comparison_rows": meal_comparison_rows,
         "yesterday": yesterday,
-        "reference_schedule": FIXED_FEED_TIMES,
+        "reference_schedule": current_feed_times(profile),
         "previous_days": previous_days[:3],
         "reminder_appointments": reminder_appointments,
         "upcoming_appointments": upcoming_appointments,
@@ -662,6 +666,44 @@ def child_profile_edit(request):
         request,
         "profile/edit.html",
         {"form": form, "profile": profile},
+    )
+
+
+@login_required
+def feeding_schedule_settings(request):
+    profile = get_child_profile()
+
+    if user_role(request.user) == "doctor_readonly":
+        return redirect("doctor_view")
+
+    form = FeedingScheduleForm(request.POST or None, instance=profile)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+
+        # Rebuild generated reminders immediately so old schedule rows cannot
+        # survive until the background scheduler's next cycle.
+        from .auto_reminders import sync_fixed_meal_schedule_reminders
+        sync_fixed_meal_schedule_reminders()
+
+        messages.success(
+            request,
+            "Το πρόγραμμα γευμάτων και οι ειδοποιήσεις ενημερώθηκαν.",
+        )
+        return redirect("feeding_schedule_settings")
+
+    preview = schedule_settings(profile)
+
+    return render(
+        request,
+        "feeding/schedule_settings.html",
+        {
+            "form": form,
+            "profile": profile,
+            "schedule_times": preview["times"],
+            "interval_minutes": preview["interval_minutes"],
+            "notify_minutes_before": preview["notify_minutes_before"],
+        },
     )
 
 
@@ -1186,6 +1228,9 @@ def _rolling_48h_clinical_data():
         "glucose_max": glucose_max,
         "wet_diapers": wet_diapers,
         "stool_diapers": stool_diapers,
+        "feeding_schedule_times": current_feed_times(profile),
+        "feeding_interval_minutes": schedule_settings(profile)["interval_minutes"],
+        "meal_notify_minutes_before": meal_notify_minutes_before(profile),
     }
 
 
@@ -1417,7 +1462,7 @@ def meal_create(request):
         item.save()
         messages.success(
             request,
-            "Το γεύμα αποθηκεύτηκε. Το επόμενο γεύμα παραμένει στη σταθερή ώρα του 3ώρου.",
+            "Το γεύμα αποθηκεύτηκε. Το επόμενο γεύμα παραμένει στη σταθερή προγραμματισμένη ώρα.",
         )
         return redirect("meal_list")
     return render(request, "form.html", {"form": form, "title": "Νέο γεύμα"})
@@ -1433,7 +1478,7 @@ def meal_edit(request, pk):
         form.save()
         messages.success(
             request,
-            "Το γεύμα ενημερώθηκε. Η ώρα ολοκλήρωσης είναι μόνο καταγραφή και δεν μετακινεί το σταθερό 3ωρο.",
+            "Το γεύμα ενημερώθηκε. Η ώρα ολοκλήρωσης είναι μόνο καταγραφή και δεν μετακινεί το σταθερό πρόγραμμα γευμάτων.",
         )
         return redirect("meal_list")
     return render(request, "form.html", {"form": form, "title": "Επεξεργασία γεύματος"})

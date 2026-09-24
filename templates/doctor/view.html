@@ -12,7 +12,9 @@
 <section class="doctor-section">
     <h2>🕒 Χρονισμός γευμάτων</h2>
     <p>
-        Οδηγία παιδιάτρου · σταθερό 3ωρο: <strong>00:30 · 03:30 · 06:30 · 09:30 · 12:30 · 15:30 · 18:30 · 21:30</strong>.
+        Τρέχον σταθερό πρόγραμμα:
+<strong>{% for feed_time in feeding_schedule_times %}{{ feed_time|time:"H:i" }}{% if not forloop.last %} · {% endif %}{% endfor %}</strong>
+· κάθε {{ feeding_interval_minutes }}′ · ειδοποίηση {{ meal_notify_minutes_before }}′ πριν.
         Η διάρκεια του γεύματος δεν μετακινεί την επόμενη προγραμματισμένη ώρα.
     </p>
 </section>

@@ -7291,3 +7291,61 @@ html.night .access-history-only {
     background: #293249;
     color: #c1c9e5;
 }
+
+
+/* =========================================================
+   EDITABLE FEEDING SCHEDULE
+   ========================================================= */
+
+.feeding-schedule-settings-form {
+    display: grid;
+    gap: 16px;
+}
+
+.feeding-setting-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.feeding-setting-grid label {
+    display: grid;
+    gap: 6px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255,255,255,.68);
+}
+
+.feeding-setting-grid label > span {
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.feeding-setting-grid small {
+    color: var(--muted);
+    line-height: 1.35;
+}
+
+.feeding-schedule-save-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.feeding-schedule-preview-panel {
+    margin-top: 12px;
+}
+
+html.night .feeding-setting-grid label {
+    background: rgba(255,255,255,.04);
+}
+
+@media (max-width: 760px) {
+    .feeding-setting-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .feeding-schedule-save-row .btn {
+        width: 100%;
+    }
+}

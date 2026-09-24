@@ -29,6 +29,7 @@ from .advanced_forms import (
 from .mega_forms import DiaperWithPhotoForm, SymptomWithPhotoForm, ScannedProductForm
 
 from .restriction_checks import baseline_restriction_checks
+from .feeding_timing import current_feed_times, meal_notify_minutes_before, feeding_interval_minutes
 from .models import (
     AuditLog,
     ChildProfile,
@@ -580,6 +581,9 @@ def doctor_view(request):
         "glucose_max_7": max(glucose_values) if glucose_values else None,
         "medications_today": MedicationEntry.objects.filter(date=today).order_by("time"),
         "current_medication_plans": MedicationPlan.objects.filter(active=True).order_by("name"),
+        "feeding_schedule_times": current_feed_times(profile),
+        "feeding_interval_minutes": feeding_interval_minutes(profile),
+        "meal_notify_minutes_before": meal_notify_minutes_before(profile),
         "symptoms_7": SymptomEntry.objects.filter(date__range=(last7, today)).order_by("-date", "-time")[:12],
         "upcoming_appointments": MedicalAppointment.objects.filter(status="scheduled", date__gte=today).order_by("date", "time")[:5],
         "vaccines": VaccineEntry.objects.order_by("-date")[:8],

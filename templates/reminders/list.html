@@ -7,7 +7,10 @@
         <p class="muted">Γεύμα, φάρμακο, εμβόλιο, μέτρηση ή εξέταση — οι ώρες ορίζονται από εσάς.</p>
     </div>
     {% if not is_readonly_doctor %}
-    <a class="btn primary" href="{% url 'reminder_create' %}">+ Νέα υπενθύμιση</a>
+    <div class="page-actions">
+        <a class="btn secondary" href="{% url 'feeding_schedule_settings' %}">🕒 Ρυθμίσεις γευμάτων</a>
+        <a class="btn primary" href="{% url 'reminder_create' %}">+ Νέα υπενθύμιση</a>
+    </div>
     {% endif %}
 </div>
 
@@ -58,7 +61,7 @@
             <span>🍼</span>
             <div>
                 <strong>≤ 50 ml · επανέλεγχος σε 1 ώρα</strong>
-                <small>Ξεχωριστός κανόνας: δημιουργείται όταν καταχωρηθεί γεύμα 50 ml ή λιγότερο. Δεν αλλάζει το σταθερό 3ωρο.</small>
+                <small>Ξεχωριστός κανόνας: δημιουργείται όταν καταχωρηθεί γεύμα 50 ml ή λιγότερο. Δεν αλλάζει το σταθερό πρόγραμμα γευμάτων.</small>
             </div>
         </div>
     </div>

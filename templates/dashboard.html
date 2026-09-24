@@ -485,9 +485,12 @@
 <section class="panel feeding-rule-panel">
     <div class="panel-head">
         <div>
-            <h2>🕒 Σταθερό πρόγραμμα 3ώρου</h2>
-            <p class="muted">Οδηγία παιδιάτρου · η επόμενη ώρα δεν αλλάζει ανάλογα με το πόσο διαρκεί το γεύμα.</p>
+            <h2>🕒 Σταθερό πρόγραμμα γευμάτων</h2>
+            <p class="muted">Η επόμενη ώρα δεν αλλάζει ανάλογα με το πόσο διαρκεί το γεύμα.</p>
         </div>
+        {% if not is_readonly_doctor %}
+        <a href="{% url 'feeding_schedule_settings' %}">⚙️ Αλλαγή ωραρίου</a>
+        {% endif %}
     </div>
     <div class="schedule-grid fixed-feed-schedule">
         {% for feed_time in fixed_feed_times %}
@@ -495,8 +498,10 @@
         {% endfor %}
     </div>
     <div class="feeding-rule-card">
-        <strong>00:30 · 03:30 · 06:30 · 09:30 · 12:30 · 15:30 · 18:30 · 21:30</strong>
-        <small>Αυτόματη push ειδοποίηση 12 λεπτά πριν από κάθε γεύμα.</small>
+        <strong>
+            {% for feed_time in fixed_feed_times %}{{ feed_time|time:"H:i" }}{% if not forloop.last %} · {% endif %}{% endfor %}
+        </strong>
+        <small>Κάθε {{ feeding_interval_minutes }} λεπτά · push {{ meal_notify_minutes_before }} λεπτά πριν.</small>
     </div>
 </section>
 

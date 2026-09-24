@@ -334,7 +334,9 @@
                 <span>Τρέχον πλάνο σίτισης</span>
                 <strong class="preline">{% if profile.current_feeding_plan %}{{ profile.current_feeding_plan }}{% else %}Δεν έχει καταχωρηθεί κείμενο πλάνου.{% endif %}</strong>
                 <div style="margin-top:7px; color:var(--muted)">
-                    Πρόγραμμα γευμάτων (οδηγία παιδιάτρου): <strong>00:30 · 03:30 · 06:30 · 09:30 · 12:30 · 15:30 · 18:30 · 21:30</strong>
+                    Πρόγραμμα γευμάτων:
+<strong>{% for feed_time in feeding_schedule_times %}{{ feed_time|time:"H:i" }}{% if not forloop.last %} · {% endif %}{% endfor %}</strong>
+· κάθε {{ feeding_interval_minutes }}′ · notification {{ meal_notify_minutes_before }}′ πριν
                     <br>
                     Η διάρκεια του γεύματος δεν μετακινεί την επόμενη προγραμματισμένη ώρα.
                     <br>

@@ -1,25 +1,100 @@
 from datetime import datetime, time, timedelta
 
+from django.db import OperationalError, ProgrammingError
 from django.utils import timezone
 
-from .models import MealEntry
+from .models import ChildProfile, MealEntry
 
 
-FIXED_FEED_TIMES = [
-    time(0, 30),
-    time(3, 30),
-    time(6, 30),
-    time(9, 30),
-    time(12, 30),
-    time(15, 30),
-    time(18, 30),
-    time(21, 30),
-]
+DEFAULT_FEEDING_START_TIME = time(7, 30)
+DEFAULT_FEEDING_INTERVAL_MINUTES = 180
+DEFAULT_MEAL_NOTIFY_MINUTES_BEFORE = 12
 
-# Backwards-compatible alias used in a few views/templates.
+
+def build_feed_times(start_time=DEFAULT_FEEDING_START_TIME, interval_minutes=DEFAULT_FEEDING_INTERVAL_MINUTES):
+    """
+    Build a repeating 24-hour fixed-clock schedule.
+
+    The interval must divide 24 hours exactly so that the same clock schedule
+    repeats every day without a hidden shorter/longer gap at midnight.
+    """
+    start_time = start_time or DEFAULT_FEEDING_START_TIME
+    try:
+        interval_minutes = int(interval_minutes or DEFAULT_FEEDING_INTERVAL_MINUTES)
+    except (TypeError, ValueError):
+        interval_minutes = DEFAULT_FEEDING_INTERVAL_MINUTES
+
+    if interval_minutes <= 0 or 1440 % interval_minutes != 0:
+        interval_minutes = DEFAULT_FEEDING_INTERVAL_MINUTES
+
+    start_minutes = start_time.hour * 60 + start_time.minute
+    slots = 1440 // interval_minutes
+
+    values = []
+    for index in range(slots):
+        minute_of_day = (start_minutes + index * interval_minutes) % 1440
+        values.append(time(minute_of_day // 60, minute_of_day % 60))
+
+    # Day views/reminders need chronological clock order, regardless of the
+    # configured anchor time.
+    return sorted(values)
+
+
+# Backwards-compatible defaults. Runtime scheduling uses current_feed_times().
+FIXED_FEED_TIMES = build_feed_times()
 REFERENCE_FEED_TIMES = FIXED_FEED_TIMES
 
-DEFAULT_FEEDING_INTERVAL_MINUTES = 180
+
+def _profile_or_none(profile=None):
+    if profile is not None:
+        return profile
+    try:
+        return ChildProfile.objects.first()
+    except (OperationalError, ProgrammingError):
+        return None
+
+
+def feeding_interval_minutes(profile=None):
+    profile = _profile_or_none(profile)
+    try:
+        value = int(getattr(profile, "feeding_interval_minutes", 0) or 0)
+    except (TypeError, ValueError):
+        value = 0
+
+    if value <= 0 or 1440 % value != 0:
+        return DEFAULT_FEEDING_INTERVAL_MINUTES
+    return value
+
+
+def feeding_schedule_start_time(profile=None):
+    profile = _profile_or_none(profile)
+    value = getattr(profile, "feeding_schedule_start_time", None)
+    return value or DEFAULT_FEEDING_START_TIME
+
+
+def meal_notify_minutes_before(profile=None):
+    profile = _profile_or_none(profile)
+    try:
+        value = int(getattr(profile, "meal_notify_minutes_before", DEFAULT_MEAL_NOTIFY_MINUTES_BEFORE))
+    except (TypeError, ValueError):
+        value = DEFAULT_MEAL_NOTIFY_MINUTES_BEFORE
+    return max(0, min(value, 180))
+
+
+def current_feed_times(profile=None):
+    return build_feed_times(
+        feeding_schedule_start_time(profile),
+        feeding_interval_minutes(profile),
+    )
+
+
+def schedule_settings(profile=None):
+    return {
+        "start_time": feeding_schedule_start_time(profile),
+        "interval_minutes": feeding_interval_minutes(profile),
+        "notify_minutes_before": meal_notify_minutes_before(profile),
+        "times": current_feed_times(profile),
+    }
 
 
 def _aware(local_date, local_time):
@@ -45,12 +120,6 @@ def meal_finished_datetime(meal):
         finish_date = finish_date + timedelta(days=1)
 
     return _aware(finish_date, meal.finished_time)
-
-
-def feeding_interval_minutes(profile=None):
-    # The current pediatrician-directed schedule is fixed every 3 hours.
-    # Kept for backwards compatibility with older code/data.
-    return DEFAULT_FEEDING_INTERVAL_MINUTES
 
 
 def format_interval(minutes):
@@ -96,33 +165,32 @@ def latest_finished_meal(now=None):
     return meal, finished_at
 
 
-def next_fixed_meal_due(now=None):
+def next_fixed_meal_due(now=None, profile=None):
     now = now or timezone.now()
     local_now = timezone.localtime(now)
     day = local_now.date()
+    feed_times = current_feed_times(profile)
 
-    for feed_time in FIXED_FEED_TIMES:
+    for feed_time in feed_times:
         candidate = _aware(day, feed_time)
         if candidate >= local_now:
             return candidate
 
-    return _aware(day + timedelta(days=1), FIXED_FEED_TIMES[0])
+    return _aware(day + timedelta(days=1), feed_times[0])
 
 
-def suggested_meal_datetime(now=None):
+def suggested_meal_datetime(now=None, profile=None):
     """
-    For a new meal form, prefer the most recent fixed slot for up to 90 minutes
-    if it has not been logged yet. Otherwise suggest the next fixed slot.
-
-    Example: at 15:45 an unlogged 15:30 meal opens as 15:30, while the dashboard
-    countdown still points to 18:30.
+    For a new meal form, prefer the most recent configured fixed slot for up to
+    90 minutes if it has not been logged yet. Otherwise suggest the next slot.
     """
     now = now or timezone.now()
     local_now = timezone.localtime(now)
     day = local_now.date()
+    feed_times = current_feed_times(profile)
 
     previous_candidate = None
-    for feed_time in FIXED_FEED_TIMES:
+    for feed_time in feed_times:
         candidate = _aware(day, feed_time)
         if candidate <= local_now:
             previous_candidate = candidate
@@ -130,7 +198,7 @@ def suggested_meal_datetime(now=None):
             break
 
     if previous_candidate is None:
-        previous_candidate = _aware(day - timedelta(days=1), FIXED_FEED_TIMES[-1])
+        previous_candidate = _aware(day - timedelta(days=1), feed_times[-1])
 
     if local_now - previous_candidate <= timedelta(minutes=90):
         local_candidate = timezone.localtime(previous_candidate)
@@ -142,16 +210,16 @@ def suggested_meal_datetime(now=None):
         if not already_logged:
             return previous_candidate
 
-    return next_fixed_meal_due(now)
+    return next_fixed_meal_due(now, profile=profile)
 
 
 def next_meal_due(profile=None, now=None):
     """
-    Backwards-compatible signature. The due time is now determined only by the
-    fixed clock schedule, never by the previous meal's finish time.
+    Backwards-compatible signature. The due time is determined by the editable
+    fixed-clock schedule, never by the previous meal's finish time.
     """
     now = now or timezone.now()
-    due_at = next_fixed_meal_due(now)
+    due_at = next_fixed_meal_due(now, profile=profile)
     last_meal, last_started_at = latest_started_meal(now)
     return due_at, last_meal, last_started_at
 

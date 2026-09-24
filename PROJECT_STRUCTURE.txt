@@ -76,6 +76,8 @@ core/migrations/0023_current_daily_medications.py
 core/migrations/0024_daily_medication_reminders.py
 core/migrations/0025_user_access_log.py
 core/migrations/0026_backfill_access_from_audit_7days.py
+core/migrations/0027_clear_stale_meal_schedule_reminders.py
+core/migrations/0028_editable_feeding_schedule.py
 core/migrations/__init__.py
 core/migrations/__pycache__/0001_initial.cpython-313.pyc
 core/migrations/__pycache__/0002_medications_appointments.cpython-313.pyc
@@ -146,6 +148,7 @@ templates/emergency/card.html
 templates/emergency/public.html
 templates/exports/center.html
 templates/feeding/performance.html
+templates/feeding/schedule_settings.html
 templates/form.html
 templates/glucose/list.html
 templates/growth/list.html
