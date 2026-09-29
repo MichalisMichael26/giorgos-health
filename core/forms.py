@@ -160,6 +160,21 @@ class GlucoseReadingForm(forms.ModelForm):
             "notes": forms.Textarea(attrs={"rows": 3}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def meal_label(meal):
+            meal_time = meal.actual_time or meal.scheduled_time
+            time_text = meal_time.strftime("%H:%M") if meal_time else "—"
+            amount_text = (
+                f"{meal.consumed_ml} ml"
+                if meal.consumed_ml is not None
+                else "— ml"
+            )
+            return f"{meal.date:%d/%m/%Y} · Γεύμα {time_text} · {amount_text}"
+
+        self.fields["related_meal"].label_from_instance = meal_label
+
 
 class GrowthMeasurementForm(forms.ModelForm):
     class Meta:
