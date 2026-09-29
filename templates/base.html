@@ -284,5 +284,25 @@
 </script>
 {% endif %}
 
+{% if is_readonly_doctor and doctor_desktop_session_remaining_seconds %}
+<script>
+(function () {
+    const remainingSeconds = Number("{{ doctor_desktop_session_remaining_seconds|default:0 }}");
+    if (!Number.isFinite(remainingSeconds) || remainingSeconds <= 0) return;
+
+    // Hard 5-minute desktop doctor session. This timer uses the remaining
+    // server-calculated session time, so navigation does not restart the limit.
+    window.setTimeout(function () {
+        const logoutForm = document.querySelector('form[action$="/logout/"]');
+        if (logoutForm) {
+            logoutForm.submit();
+        } else {
+            window.location.href = "{% url 'login' %}";
+        }
+    }, remainingSeconds * 1000);
+})();
+</script>
+{% endif %}
+
 </body>
 </html>
