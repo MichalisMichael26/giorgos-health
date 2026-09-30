@@ -99,7 +99,7 @@ class AccessActivityMiddleware:
 
     def _touch(self, request):
         user = getattr(request, "user", None)
-        if not user or not user.is_authenticated:
+        if not user or not user.is_authenticated or not is_readonly_doctor(user):
             return
 
         path = _safe_path(request)
