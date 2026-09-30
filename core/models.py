@@ -830,6 +830,82 @@ class UserAccessLog(models.Model):
         return f"{self.user.username} - {self.login_at:%d/%m/%Y %H:%M}"
 
 
+class DoctorPageViewLog(models.Model):
+    PAGE_LABELS = {
+        "dashboard": "Αρχική",
+        "doctor_view": "Doctor View",
+        "meal_list": "Γεύματα",
+        "glucose_list": "Γλυκόζη",
+        "diaper_list": "Πάνες",
+        "health_hub": "Υγεία",
+        "more": "Υγεία",
+        "growth_list": "Ανάπτυξη",
+        "growth_percentiles": "Καμπύλες ανάπτυξης",
+        "medication_list": "Φάρμακα / συμπληρώματα",
+        "appointment_list": "Ραντεβού",
+        "document_list": "Έγγραφα",
+        "document_view": "Προβολή εγγράφου",
+        "document_download": "Άνοιγμα / λήψη εγγράφου",
+        "vaccine_list": "Εμβόλια",
+        "symptom_list": "Συμπτώματα",
+        "diaper_detail": "Λεπτομέρειες πάνας",
+        "feeding_performance": "Απόδοση σίτισης",
+        "history": "Ιστορικό",
+        "history_report_preview": "Αναφορά ιστορικού",
+        "history_pdf": "PDF ιστορικού",
+        "report_48h_print": "Κλινική αναφορά 48 ωρών",
+        "report_24h_preview": "Αναφορά 24 ωρών",
+        "report_24h_pdf": "PDF αναφοράς 24 ωρών",
+        "analytics": "Analytics",
+        "allergies_view": "Αλλεργίες",
+        "emergency_card": "Emergency Card",
+        "safety_checker": "Έλεγχος περιορισμών",
+        "product_scanner": "Scanner προϊόντων",
+        "reviewed_products": "Αξιολογημένα προϊόντα",
+        "lab_list": "Εργαστηριακές εξετάσεις",
+        "lab_chart": "Γράφημα εργαστηριακών",
+        "reminder_list": "Υπενθυμίσεις",
+        "doctor_questions": "Ερωτήσεις προς ιατρό",
+        "doctor_visit": "Doctor Visit",
+        "hospital_mode": "Hospital Mode",
+        "global_search": "Αναζήτηση",
+        "daily_summary": "Σημερινή εικόνα",
+        "daily_summary_pdf": "PDF σημερινής εικόνας",
+        "export_center": "Εξαγωγές",
+        "export_excel": "Excel εξαγωγή",
+        "export_zip": "ZIP εξαγωγή",
+        "export_pdf": "PDF εξαγωγή",
+    }
+
+    access_log = models.ForeignKey(
+        UserAccessLog,
+        on_delete=models.CASCADE,
+        related_name="page_views",
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="giorgos_doctor_page_views",
+    )
+    viewed_at = models.DateTimeField("Προβολή στις", auto_now_add=True)
+    path = models.CharField("Σελίδα / path", max_length=240)
+    view_name = models.CharField("View name", max_length=120, blank=True)
+
+    class Meta:
+        ordering = ["viewed_at"]
+        indexes = [
+            models.Index(fields=["access_log", "viewed_at"], name="gh_doctor_view_session"),
+            models.Index(fields=["user", "-viewed_at"], name="gh_doctor_view_user"),
+        ]
+
+    @property
+    def page_label(self):
+        return self.PAGE_LABELS.get(self.view_name, self.path or "—")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.page_label} - {self.viewed_at:%d/%m/%Y %H:%M:%S}"
+
+
 class BackupRun(models.Model):
     STATUS_CHOICES = [
         ("success", "Επιτυχία"),
