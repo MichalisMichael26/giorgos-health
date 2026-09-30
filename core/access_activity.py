@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 
 from .access import is_readonly_doctor
-from .models import UserAccessLog, UserAccessProfile
+from .models import DoctorPageViewLog, UserAccessLog, UserAccessProfile
 
 
 SESSION_LOG_ID = "_gh_access_log_id"
@@ -22,30 +22,25 @@ def _safe_path(request):
     return (getattr(request, "path", "") or "")[:240]
 
 
-def _device_type(user_agent):
-    ua = (user_agent or "").casefold()
-    if not ua:
-        return "unknown"
-    if "ipad" in ua or "tablet" in ua or ("android" in ua and "mobile" not in ua):
-        return "tablet"
-    if "iphone" in ua or "ipod" in ua or "mobile" in ua or "android" in ua:
-        return "mobile"
-    return "desktop"
+def _is_background_path(path):
+    return (
+        path == "/service-worker.js"
+        or path.startswith("/push/")
+        or path.startswith("/static/")
+        or path.startswith("/native/")
+    )
 
 
 class AccessActivityMiddleware:
     """
-    Access tracking + doctor session control.
+    Doctor-only access tracking + hard session control.
 
-    - A real login is created by the Django user_logged_in signal.
-    - If a user already had a persistent session when this feature was deployed,
-      the first observed authenticated request creates an "existing_session"
-      access-log row.
-    - last_seen is written at most once every 5 minutes to avoid unnecessary
-      database writes on every page request.
-    - Every read-only doctor account has a hard 5-minute session limit on
-      desktop, mobile and tablet. After that the doctor is logged out and must
-      authenticate again, creating a new UserAccessLog login entry.
+    - Every doctor login creates a UserAccessLog row.
+    - Doctor accounts have a hard 5-minute session limit on desktop, mobile,
+      and tablet. After that they must authenticate again.
+    - Each real page opened by a doctor is recorded in DoctorPageViewLog with
+      timestamp, URL path and Django view name.
+    - Background/service-worker/push requests are intentionally excluded.
     """
 
     def __init__(self, get_response):
@@ -57,7 +52,9 @@ class AccessActivityMiddleware:
             return timeout_response
 
         self._touch(request)
-        return self.get_response(request)
+        response = self.get_response(request)
+        self._record_page_view(request, response)
+        return response
 
     def _enforce_doctor_session_limit(self, request):
         user = getattr(request, "user", None)
@@ -80,9 +77,6 @@ class AccessActivityMiddleware:
         elapsed = max(now_ts - started_ts, 0)
         remaining = max(DOCTOR_SESSION_SECONDS - elapsed, 0)
 
-        # Expose the server-calculated remaining time to templates so the
-        # browser can automatically submit logout on desktop, mobile or tablet
-        # even if the doctor stays on the same page without another request.
         request.doctor_session_remaining_seconds = remaining
 
         if elapsed >= DOCTOR_SESSION_SECONDS:
@@ -91,16 +85,39 @@ class AccessActivityMiddleware:
 
         return None
 
+    def _get_or_create_access_log(self, request, now, path):
+        user = request.user
+        log_id = request.session.get(SESSION_LOG_ID)
+        log = None
+
+        if log_id:
+            log = UserAccessLog.objects.filter(
+                pk=log_id,
+                user=user,
+                logout_at__isnull=True,
+            ).first()
+
+        if log is None:
+            log = UserAccessLog.objects.create(
+                user=user,
+                login_at=now,
+                last_seen_at=now,
+                entry_source="existing_session",
+                user_agent=_user_agent(request),
+                first_path=path,
+                last_path=path,
+            )
+            request.session[SESSION_LOG_ID] = log.pk
+
+        return log
+
     def _touch(self, request):
         user = getattr(request, "user", None)
         if not user or not user.is_authenticated or not is_readonly_doctor(user):
             return
 
         path = _safe_path(request)
-
-        # Service worker / push background traffic should not make a user appear
-        # active in the app.
-        if path == "/service-worker.js" or path.startswith("/push/"):
+        if _is_background_path(path):
             return
 
         now = timezone.now()
@@ -122,34 +139,56 @@ class AccessActivityMiddleware:
                 last_seen_user_agent=_user_agent(request),
             )
 
-            log_id = request.session.get(SESSION_LOG_ID)
-            log = None
-            if log_id:
-                log = UserAccessLog.objects.filter(
-                    pk=log_id,
-                    user=user,
-                    logout_at__isnull=True,
-                ).first()
-
-            if log is None:
-                log = UserAccessLog.objects.create(
-                    user=user,
-                    login_at=now,
-                    last_seen_at=now,
-                    entry_source="existing_session",
-                    user_agent=_user_agent(request),
-                    first_path=path,
-                    last_path=path,
-                )
-                request.session[SESSION_LOG_ID] = log.pk
-            else:
-                UserAccessLog.objects.filter(pk=log.pk).update(
-                    last_seen_at=now,
-                    last_path=path,
-                )
-
+            log = self._get_or_create_access_log(request, now, path)
+            UserAccessLog.objects.filter(pk=log.pk).update(
+                last_seen_at=now,
+                last_path=path,
+            )
             request.session[SESSION_LAST_WRITE] = now_ts
         except (OperationalError, ProgrammingError):
-            # During deploy/migrations the new tracking tables/columns may not
-            # exist for a brief moment. Access to the app must still work.
+            return
+
+    def _record_page_view(self, request, response):
+        user = getattr(request, "user", None)
+        if not user or not user.is_authenticated or not is_readonly_doctor(user):
+            return
+
+        if request.method != "GET":
+            return
+
+        path = _safe_path(request)
+        if _is_background_path(path):
+            return
+
+        status_code = getattr(response, "status_code", 500)
+        if status_code >= 400:
+            return
+
+        try:
+            now = timezone.now()
+            log = self._get_or_create_access_log(request, now, path)
+            match = getattr(request, "resolver_match", None)
+            view_name = ((match.url_name if match else "") or "")[:120]
+
+            DoctorPageViewLog.objects.create(
+                access_log=log,
+                user=user,
+                path=path,
+                view_name=view_name,
+            )
+
+            UserAccessLog.objects.filter(pk=log.pk).update(
+                last_seen_at=now,
+                last_path=path,
+            )
+
+            profile, _ = UserAccessProfile.objects.get_or_create(user=user)
+            UserAccessProfile.objects.filter(pk=profile.pk).update(
+                last_seen_at=now,
+                last_seen_path=path,
+                last_seen_user_agent=_user_agent(request),
+            )
+        except (OperationalError, ProgrammingError):
+            # During the deploy that introduces the page-view table, requests
+            # must continue to work before/while migrations finish.
             return
