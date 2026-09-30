@@ -1169,6 +1169,7 @@ def user_access_log(request):
     logs = (
         UserAccessLog.objects
         .select_related("user", "user__access_profile")
+        .prefetch_related("page_views")
         .filter(doctor_filter)
         .order_by("-login_at")
     )
