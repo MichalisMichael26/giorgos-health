@@ -48,6 +48,7 @@
             <th>Last seen</th>
             <th>Έξοδος</th>
             <th>Τύπος</th>
+            <th>Τι είδε</th>
             <th>Τελευταία σελίδα</th>
             <th>Τύπος συσκευής</th>
             <th>Browser / device</th>
@@ -78,12 +79,28 @@
                 {{ item.get_entry_source_display }}
                 {% if item.entry_source == "audit_backfill" %}<small>Πραγματικά δεδομένα από παλιότερες ενέργειες</small>{% endif %}
             </td>
+            <td data-label="Τι είδε">
+                {% with page_views=item.page_views.all %}
+                    {% if page_views %}
+                        <div class="doctor-view-history">
+                        {% for page in page_views %}
+                            <div class="doctor-view-history-item">
+                                <strong>{{ page.viewed_at|date:"H:i:s" }} · {{ page.page_label }}</strong>
+                                <small>{{ page.path }}</small>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="muted">—</span>
+                    {% endif %}
+                {% endwith %}
+            </td>
             <td data-label="Σελίδα">{{ item.last_path|default:"—" }}</td>
             <td data-label="Τύπος συσκευής"><strong>{{ item.device_label }}</strong></td>
             <td data-label="Browser / device"><span title="{{ item.user_agent }}">{{ item.user_agent|default:"—"|truncatechars:90 }}</span></td>
         </tr>
     {% empty %}
-        <tr><td colspan="8">Δεν υπάρχουν καταγραφές πρόσβασης.</td></tr>
+        <tr><td colspan="9">Δεν υπάρχουν καταγραφές πρόσβασης.</td></tr>
     {% endfor %}
     </tbody>
 </table>
@@ -104,8 +121,9 @@
 <section class="panel access-log-note">
     <strong>ℹ️ Τι σημαίνει “last seen”;</strong>
     <p class="muted">
-        Ενημερώνεται το πολύ μία φορά ανά 5 λεπτά όσο ο χρήστης χρησιμοποιεί το app.
-        Για τις προηγούμενες 7 ημέρες, όπου υπάρχουν πραγματικές ενέργειες στο παλιό Audit Log,
+        Για κάθε νέα συνεδρία ιατρού καταγράφεται η ώρα εισόδου/εξόδου και οι πραγματικές σελίδες
+        που άνοιξε, με ώρα και path. Το ιστορικό «Τι είδε» αφορά νέες προβολές από την ενεργοποίηση
+        αυτής της λειτουργίας και μετά. Για τις προηγούμενες 7 ημέρες, όπου υπάρχουν πραγματικές ενέργειες στο παλιό Audit Log,
         δημιουργείται ένδειξη «Ιστορική δραστηριότητα από Audit Log» με την πρώτη και τελευταία
         πραγματική ενέργεια της ημέρας. Αυτές οι γραμμές δεν παρουσιάζονται ως login/logout, επειδή
         εκείνες οι ώρες δεν καταγράφονταν τότε. Αν ο χρήστης είχε ήδη ενεργή συνεδρία πριν ενεργοποιηθεί
