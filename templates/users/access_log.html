@@ -4,7 +4,7 @@
 <div class="page-head">
     <div>
         <h1>🕒 User Access Log</h1>
-        <p class="muted">Μόνο για admin · login, logout και τελευταία δραστηριότητα.</p>
+        <p class="muted">Μόνο για admin · εμφανίζονται αποκλειστικά οι είσοδοι των ιατρών.</p>
     </div>
     <a class="btn secondary" href="{% url 'user_access_list' %}">← Χρήστες</a>
 </div>
@@ -22,7 +22,7 @@
         <label>
             <span>Χρήστης</span>
             <select name="user">
-                <option value="">Όλοι</option>
+                <option value="">Όλοι οι ιατροί</option>
                 {% for account in users %}
                 <option value="{{ account.pk }}" {% if selected_user == account.pk|stringformat:"s" %}selected{% endif %}>
                     {% if account.access_profile.display_name %}{{ account.access_profile.display_name }} · {% endif %}@{{ account.username }}
