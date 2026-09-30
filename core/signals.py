@@ -7,6 +7,7 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
+from .access import is_readonly_doctor
 from .audit import get_current_user
 from .models import (
     AuditLog,
@@ -179,6 +180,9 @@ def sync_medication_plan_after_plan_change(sender, instance, **kwargs):
 
 @receiver(user_logged_in)
 def record_user_login(sender, request, user, **kwargs):
+    if not is_readonly_doctor(user):
+        return
+
     now = timezone.now()
     path = ((getattr(request, "path", "") or "")[:240] if request else "")
     user_agent = (
@@ -214,7 +218,7 @@ def record_user_login(sender, request, user, **kwargs):
 
 @receiver(user_logged_out)
 def record_user_logout(sender, request, user, **kwargs):
-    if user is None:
+    if user is None or not is_readonly_doctor(user):
         return
 
     now = timezone.now()
