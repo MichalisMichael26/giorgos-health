@@ -21,7 +21,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from .access import user_role
+from .access import configured_doctor_usernames, user_role
 from .feeding_timing import (
     current_feed_times,
     meal_finished_datetime,
@@ -1160,10 +1160,16 @@ def user_access_log(request):
     if period not in {"today", "7", "30", "all"}:
         period = "7"
 
+    doctor_usernames = configured_doctor_usernames()
+    doctor_filter = (
+        Q(user__access_profile__role="doctor_readonly")
+        | Q(user__username__in=doctor_usernames)
+    )
+
     logs = (
         UserAccessLog.objects
         .select_related("user", "user__access_profile")
-        .all()
+        .filter(doctor_filter)
         .order_by("-login_at")
     )
 
@@ -1205,7 +1211,11 @@ def user_access_log(request):
 
     users = (
         User.objects.select_related("access_profile")
-        .all()
+        .filter(
+            Q(access_profile__role="doctor_readonly")
+            | Q(username__in=doctor_usernames)
+        )
+        .distinct()
         .order_by("username")
     )
 
