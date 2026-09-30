@@ -206,6 +206,7 @@ def record_user_login(sender, request, user, **kwargs):
         if request is not None:
             request.session["_gh_access_log_id"] = log.pk
             request.session["_gh_access_last_seen_write"] = int(now.timestamp())
+            request.session["_gh_doctor_started_at"] = int(now.timestamp())
 
         profile, _ = UserAccessProfile.objects.get_or_create(user=user)
         UserAccessProfile.objects.filter(pk=profile.pk).update(
