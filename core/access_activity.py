@@ -9,9 +9,9 @@ from .models import UserAccessLog, UserAccessProfile
 
 SESSION_LOG_ID = "_gh_access_log_id"
 SESSION_LAST_WRITE = "_gh_access_last_seen_write"
-SESSION_DOCTOR_DESKTOP_STARTED_AT = "_gh_doctor_desktop_started_at"
+SESSION_DOCTOR_STARTED_AT = "_gh_doctor_started_at"
 WRITE_INTERVAL_SECONDS = 5 * 60
-DOCTOR_DESKTOP_SESSION_SECONDS = 5 * 60
+DOCTOR_SESSION_SECONDS = 5 * 60
 
 
 def _user_agent(request):
@@ -35,7 +35,7 @@ def _device_type(user_agent):
 
 class AccessActivityMiddleware:
     """
-    Access tracking + doctor desktop session control.
+    Access tracking + doctor session control.
 
     - A real login is created by the Django user_logged_in signal.
     - If a user already had a persistent session when this feature was deployed,
@@ -43,55 +43,49 @@ class AccessActivityMiddleware:
       access-log row.
     - last_seen is written at most once every 5 minutes to avoid unnecessary
       database writes on every page request.
-    - Read-only doctor accounts on a desktop computer have a hard 5-minute
-      session limit. After that they are logged out and must authenticate again,
-      creating a new UserAccessLog login entry.
+    - Every read-only doctor account has a hard 5-minute session limit on
+      desktop, mobile and tablet. After that the doctor is logged out and must
+      authenticate again, creating a new UserAccessLog login entry.
     """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        timeout_response = self._enforce_doctor_desktop_session_limit(request)
+        timeout_response = self._enforce_doctor_session_limit(request)
         if timeout_response is not None:
             return timeout_response
 
         self._touch(request)
         return self.get_response(request)
 
-    def _enforce_doctor_desktop_session_limit(self, request):
+    def _enforce_doctor_session_limit(self, request):
         user = getattr(request, "user", None)
         if not user or not user.is_authenticated or not is_readonly_doctor(user):
-            return None
-
-        # The 5-minute limit is intentionally desktop-only. Doctor sessions
-        # from mobile/tablet keep the existing behaviour.
-        if _device_type(_user_agent(request)) != "desktop":
-            request.session.pop(SESSION_DOCTOR_DESKTOP_STARTED_AT, None)
             return None
 
         now_ts = int(timezone.now().timestamp())
 
         try:
             started_ts = int(
-                request.session.get(SESSION_DOCTOR_DESKTOP_STARTED_AT, 0) or 0
+                request.session.get(SESSION_DOCTOR_STARTED_AT, 0) or 0
             )
         except (TypeError, ValueError):
             started_ts = 0
 
         if not started_ts:
             started_ts = now_ts
-            request.session[SESSION_DOCTOR_DESKTOP_STARTED_AT] = started_ts
+            request.session[SESSION_DOCTOR_STARTED_AT] = started_ts
 
         elapsed = max(now_ts - started_ts, 0)
-        remaining = max(DOCTOR_DESKTOP_SESSION_SECONDS - elapsed, 0)
+        remaining = max(DOCTOR_SESSION_SECONDS - elapsed, 0)
 
         # Expose the server-calculated remaining time to templates so the
-        # browser can automatically submit logout even if the doctor stays
-        # on the same page without another request.
-        request.doctor_desktop_session_remaining_seconds = remaining
+        # browser can automatically submit logout on desktop, mobile or tablet
+        # even if the doctor stays on the same page without another request.
+        request.doctor_session_remaining_seconds = remaining
 
-        if elapsed >= DOCTOR_DESKTOP_SESSION_SECONDS:
+        if elapsed >= DOCTOR_SESSION_SECONDS:
             logout(request)
             return redirect("login")
 
