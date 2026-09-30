@@ -27,6 +27,7 @@ def _tracked_sender(sender):
         "PushSubscription",
         "PushDeliveryLog",
         "UserAccessLog",
+        "DoctorPageViewLog",
     }
     return (
         getattr(sender, "_meta", None)
