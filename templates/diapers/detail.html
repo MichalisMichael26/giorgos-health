@@ -1,18 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Πάνα · {{ item.date|date:"d/m/Y" }}{% endblock %}
 {% block content %}
-<div class="page-head">
-    <div>
-        <h1>👶 Προβολή πάνας</h1>
-        <p class="muted">{{ item.date|date:"d/m/Y" }} · {{ item.time|time:"H:i" }}</p>
+<section class="module-hero module-hero--diaper">
+    <div class="module-hero-main">
+        <span class="module-hero-icon" aria-hidden="true">👶</span>
+        <div>
+            <h1>Προβολή πάνας</h1>
+            <p>📅 {{ item.date|date:"d/m/Y" }} · 🕒 {{ item.time|time:"H:i" }}</p>
+        </div>
     </div>
     <div class="page-actions">
         <a class="btn secondary" href="{% url 'diaper_list' %}">← Πίσω</a>
-        {% if not is_readonly_doctor %}<a class="btn primary" href="{% url 'diaper_edit' item.pk %}">Edit</a>{% endif %}
+        {% if not is_readonly_doctor %}<a class="btn primary" href="{% url 'diaper_edit' item.pk %}">✏️ Επεξεργασία</a>{% endif %}
     </div>
-</div>
+</section>
 
-<section class="panel diaper-detail-panel">
+<section class="panel diaper-detail-panel module-panel">
     <div class="diaper-detail-grid">
         <div><span>Τύπος</span><strong>{{ item.get_kind_display }}</strong></div>
         <div><span>Χρώμα</span><strong>{{ item.stool_color|default:"—" }}</strong></div>
