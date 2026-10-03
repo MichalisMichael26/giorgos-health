@@ -303,3 +303,57 @@ html.night .symptom-notes{
     background:#352f49;
     color:#dfd5f1;
 }
+
+
+/* ===== Privacy controls v1 ===== */
+.print-owner-only {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 11px;
+    border:1px solid #ecd9ad;
+    border-radius:12px;
+    background:#fff8e9;
+    color:#745a26;
+    font-size:11px;
+    font-weight:850;
+}
+.capture-watermark {
+    position:fixed;
+    right:12px;
+    bottom:calc(96px + env(safe-area-inset-bottom));
+    z-index:9998;
+    pointer-events:none;
+    user-select:none;
+    padding:6px 9px;
+    border:1px solid rgba(255,255,255,.45);
+    border-radius:999px;
+    background:rgba(29,48,77,.58);
+    color:#fff;
+    font-size:9px;
+    font-weight:850;
+    letter-spacing:.035em;
+    opacity:.62;
+    backdrop-filter:blur(5px);
+}
+@media (min-width:861px) {
+    .capture-watermark { bottom:14px; }
+}
+@media print {
+    body.privacy-restricted > * {
+        display:none !important;
+    }
+    body.privacy-restricted::before {
+        content:"Εκτύπωση μη διαθέσιμη — μόνο ο ιδιοκτήτης του Giorgos Health μπορεί να εκτυπώσει.";
+        display:block !important;
+        padding:30mm 15mm;
+        color:#203451;
+        font:700 16pt Arial,sans-serif;
+    }
+}
+html.night .print-owner-only {
+    background:#473b24;
+    border-color:#695632;
+    color:#f4dfad;
+}
+/* ===== End privacy controls v1 ===== */
