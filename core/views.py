@@ -7,12 +7,12 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .access import user_role
+from .access import is_owner_user, user_role
 
 from .feeding_timing import (
     current_feed_times,
@@ -912,6 +912,8 @@ def _pdf_styles():
 
 @login_required
 def history_pdf(request):
+    if not is_owner_user(request.user):
+        return HttpResponseForbidden("Η λήψη/εκτύπωση PDF επιτρέπεται μόνο στον ιδιοκτήτη του Giorgos Health.")
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
     from xml.sax.saxutils import escape
@@ -1284,6 +1286,8 @@ def history_report_preview(request):
 
 @login_required
 def report_24h_pdf(request):
+    if not is_owner_user(request.user):
+        return HttpResponseForbidden("Η λήψη/εκτύπωση PDF επιτρέπεται μόνο στον ιδιοκτήτη του Giorgos Health.")
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
     from xml.sax.saxutils import escape
