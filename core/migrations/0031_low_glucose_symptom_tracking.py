@@ -69,4 +69,3 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(backfill_low_glucose_symptoms, migrations.RunPython.noop),
     ]
-}
