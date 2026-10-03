@@ -154,12 +154,6 @@ def sync_low_glucose_symptom_entry(sender, instance, **kwargs):
             "other": "unknown",
         }
         relation = relation_map.get(instance.context, "unknown")
-        auto_note = (
-            f"Αυτόματη καταχώρηση από μέτρηση γλυκόζης "
-            f"{value.quantize(Decimal('1'))} mg/dL (<60). "
-            "Συμπληρώστε εδώ τα συμπτώματα/παρατηρήσεις που υπήρχαν εκείνη τη στιγμή."
-        )
-
         if existing is None:
             SymptomEntry.objects.create(
                 date=instance.date,
@@ -167,7 +161,7 @@ def sync_low_glucose_symptom_entry(sender, instance, **kwargs):
                 symptom=LOW_GLUCOSE_PLACEHOLDER,
                 severity="mild",
                 relation_to_feed=relation,
-                notes=auto_note,
+                notes="",
                 source_glucose=instance,
                 auto_generated=True,
                 details_completed=False,
@@ -189,9 +183,6 @@ def sync_low_glucose_symptom_entry(sender, instance, **kwargs):
             if existing.relation_to_feed != relation:
                 existing.relation_to_feed = relation
                 changed_fields.append("relation_to_feed")
-            if existing.notes != auto_note:
-                existing.notes = auto_note
-                changed_fields.append("notes")
             if existing.created_by_id is None and instance.created_by_id:
                 existing.created_by = instance.created_by
                 changed_fields.append("created_by")
