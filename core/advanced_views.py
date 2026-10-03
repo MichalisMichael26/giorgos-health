@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Avg, Sum, BooleanField, Case, Value, When
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -28,6 +28,7 @@ from .advanced_forms import (
 )
 from .mega_forms import DiaperWithPhotoForm, SymptomWithPhotoForm, ScannedProductForm
 
+from .access import is_owner_user
 from .restriction_checks import baseline_restriction_checks
 from .feeding_timing import current_feed_times, meal_notify_minutes_before, feeding_interval_minutes
 from .models import (
@@ -891,6 +892,8 @@ def build_excel_bytes():
 
 @login_required
 def export_center(request):
+    if not is_owner_user(request.user):
+        return HttpResponseForbidden("Backup / Export επιτρέπεται μόνο στον ιδιοκτήτη του Giorgos Health.")
     return render(
         request,
         "exports/center.html",
@@ -913,6 +916,8 @@ def export_center(request):
 
 @login_required
 def export_excel(request):
+    if not is_owner_user(request.user):
+        return HttpResponseForbidden("Backup / Export επιτρέπεται μόνο στον ιδιοκτήτη του Giorgos Health.")
     response = HttpResponse(
         build_excel_bytes(),
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -923,6 +928,8 @@ def export_excel(request):
 
 @login_required
 def export_zip(request):
+    if not is_owner_user(request.user):
+        return HttpResponseForbidden("Backup / Export επιτρέπεται μόνο στον ιδιοκτήτη του Giorgos Health.")
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
         all_data = {}
@@ -961,6 +968,8 @@ def export_zip(request):
 
 @login_required
 def export_pdf(request):
+    if not is_owner_user(request.user):
+        return HttpResponseForbidden("Backup / Export επιτρέπεται μόνο στον ιδιοκτήτη του Giorgos Health.")
     from xml.sax.saxutils import escape
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
