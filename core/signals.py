@@ -12,10 +12,12 @@ from .audit import get_current_user
 from .models import (
     AuditLog,
     HealthReminder,
+    GlucoseReading,
     MealEntry,
     MedicationEntry,
     MedicationPlan,
     MedicalAppointment,
+    SymptomEntry,
     UserAccessLog,
     UserAccessProfile,
 )
@@ -125,6 +127,82 @@ def audit_post_delete(sender, instance, **kwargs):
     changes = {key: {"old": value, "new": None} for key, value in before.items()}
     _write_log("delete", instance, changes)
 
+
+
+LOW_GLUCOSE_SYMPTOM_THRESHOLD = Decimal("60")
+LOW_GLUCOSE_PLACEHOLDER = "Χαμηλή γλυκόζη – συμπληρώστε συμπτώματα"
+
+
+@receiver(post_save, sender=GlucoseReading)
+def sync_low_glucose_symptom_entry(sender, instance, **kwargs):
+    """
+    Any glucose reading below the app threshold (60 mg/dL) is mirrored into
+    Symptoms so the family can complete what they observed. User-completed
+    symptom details are never overwritten by later glucose edits.
+    """
+    try:
+        value = Decimal(instance.value)
+    except (TypeError, ValueError):
+        return
+
+    existing = SymptomEntry.objects.filter(source_glucose=instance).first()
+
+    if value < LOW_GLUCOSE_SYMPTOM_THRESHOLD:
+        relation_map = {
+            "pre_feed": "before_feed",
+            "post_feed": "after_feed",
+            "other": "unknown",
+        }
+        relation = relation_map.get(instance.context, "unknown")
+        auto_note = (
+            f"Αυτόματη καταχώρηση από μέτρηση γλυκόζης "
+            f"{value.quantize(Decimal('1'))} mg/dL (<60). "
+            "Συμπληρώστε εδώ τα συμπτώματα/παρατηρήσεις που υπήρχαν εκείνη τη στιγμή."
+        )
+
+        if existing is None:
+            SymptomEntry.objects.create(
+                date=instance.date,
+                time=instance.time,
+                symptom=LOW_GLUCOSE_PLACEHOLDER,
+                severity="mild",
+                relation_to_feed=relation,
+                notes=auto_note,
+                source_glucose=instance,
+                auto_generated=True,
+                details_completed=False,
+                created_by=instance.created_by,
+            )
+            return
+
+        changed_fields = []
+        if existing.date != instance.date:
+            existing.date = instance.date
+            changed_fields.append("date")
+        if existing.time != instance.time:
+            existing.time = instance.time
+            changed_fields.append("time")
+        if not existing.details_completed:
+            if existing.symptom != LOW_GLUCOSE_PLACEHOLDER:
+                existing.symptom = LOW_GLUCOSE_PLACEHOLDER
+                changed_fields.append("symptom")
+            if existing.relation_to_feed != relation:
+                existing.relation_to_feed = relation
+                changed_fields.append("relation_to_feed")
+            if existing.notes != auto_note:
+                existing.notes = auto_note
+                changed_fields.append("notes")
+            if existing.created_by_id is None and instance.created_by_id:
+                existing.created_by = instance.created_by
+                changed_fields.append("created_by")
+        if changed_fields:
+            existing.save(update_fields=changed_fields + ["updated_at"])
+        return
+
+    # If a reading was corrected to 60 or above, remove only an untouched
+    # automatic placeholder. Never delete symptom details the family completed.
+    if existing and existing.auto_generated and not existing.details_completed:
+        existing.delete()
 
 
 @receiver(post_save, sender=MealEntry)
