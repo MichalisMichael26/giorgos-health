@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
 
-from .access import is_readonly_doctor
+from .access import is_owner_user, is_readonly_doctor
 from .auto_reminders import sync_all_automatic_reminders
 from .models import HealthReminder
 
@@ -22,6 +22,7 @@ def native_alarm_schedule(request):
             {
                 "enabled": False,
                 "reason": "doctor_readonly",
+                "allow_screen_capture": False,
                 "items": [],
             }
         )
@@ -66,6 +67,7 @@ def native_alarm_schedule(request):
     return JsonResponse(
         {
             "enabled": True,
+            "allow_screen_capture": is_owner_user(request.user),
             "server_time": now.isoformat(),
             "items": items,
         }
