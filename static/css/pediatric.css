@@ -1,0 +1,67 @@
+/* Giorgos Health — unified pediatric modules */
+.module-page{--module-navy:#17355f;--module-muted:#70819d}
+.module-hero{position:relative;overflow:hidden;min-height:116px;margin-bottom:16px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:18px;border:1px solid rgba(205,221,240,.88);border-radius:26px;box-shadow:0 14px 34px rgba(55,84,137,.10)}
+.module-hero::after{position:absolute;right:22px;bottom:-9px;font-size:64px;opacity:.88;pointer-events:none;filter:drop-shadow(0 8px 14px rgba(65,87,122,.10))}
+.module-hero--glucose{background:linear-gradient(120deg,#fff1f6,#fff9f4);border-color:rgba(244,199,215,.8)}
+.module-hero--glucose::after{content:"🧸"}
+.module-hero--meal{background:linear-gradient(120deg,#eef8ff,#fffaf0)}
+.module-hero--meal::after{content:"☁️"}
+.module-hero--diaper{background:linear-gradient(120deg,#eef7ff,#f5f0ff)}
+.module-hero--diaper::after{content:"🧸"}
+.module-hero--symptom{background:linear-gradient(120deg,#f1f7ff,#fff4f7)}
+.module-hero--symptom::after{content:"⭐";bottom:18px;font-size:42px}
+.module-hero-main{position:relative;z-index:1;display:flex;align-items:center;gap:14px;min-width:0}
+.module-hero-icon{width:68px;height:68px;flex:0 0 68px;display:grid;place-items:center;border-radius:22px;background:rgba(255,255,255,.76);box-shadow:inset 0 0 0 1px rgba(166,191,226,.25);font-size:35px}
+.module-hero h1{margin:0 0 5px;color:var(--module-navy);font-size:clamp(25px,4vw,34px)}
+.module-hero p{margin:0;color:var(--module-muted);font-weight:650}
+.module-hero .btn{position:relative;z-index:2;margin-right:74px;white-space:nowrap}
+.module-panel{border-radius:24px;background:rgba(255,255,255,.95)}
+.module-subvalue{display:block;margin-top:3px;color:#7c8ca5;font-size:11px;font-weight:700}
+.module-chip,.meal-amount,.diaper-kind,.diarrhea-chip,.low-glucose-source,.pending-completion-badge,.low-glucose-badge{display:inline-flex;align-items:center;gap:5px;width:fit-content;max-width:100%;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:850;line-height:1.2}
+.module-chip--blue{background:#eaf4ff;color:#31577f}.module-chip--mint{background:#e7f8ef;color:#2f7157}.module-chip--lilac{background:#f0eaff;color:#684f8e}.module-chip--peach{background:#fff0df;color:#8a5c2a}
+.meal-amount{white-space:nowrap}.meal-amount--offered{background:#eef6ff;color:#315a89}.meal-amount--remaining{background:#fff3e8;color:#8a5c32}.meal-amount--consumed{background:#e8f8ef;color:#2f7658;font-size:13px}
+.diaper-kind--wet{background:#e8f5ff;color:#2b628b}.diaper-kind--stool{background:#fff3dd;color:#825f27}.diaper-kind--both{background:#efeaff;color:#654f89}
+.diarrhea-chip{background:#fff0f0;color:#b53846;border:1px solid #ffd2d7}
+.module-view{color:#596c8a;background:#f4f7fb}.module-edit{color:#2e68d8;background:#edf5ff;border-color:#bfd5ff}.module-delete{color:#d53e58;background:#fff2f5;border-color:#ffc7d1}
+.module-empty{padding:22px;text-align:center;color:#74839a;font-weight:800}
+.glucose-low-row{border-color:rgba(230,74,94,.38)!important}
+.glucose-value-wrap{display:inline-flex!important;flex-flow:row nowrap!important;align-items:baseline!important;gap:7px;width:max-content;max-width:100%;white-space:nowrap!important;word-break:keep-all!important}
+.glucose-value,.glucose-unit{display:inline-block!important;white-space:nowrap!important;word-break:keep-all!important}
+.glucose-value-wrap.is-low{background:#fff0f3!important;box-shadow:inset 0 0 0 1px rgba(220,60,84,.16)!important}
+.glucose-value-wrap.is-low .glucose-value{color:#c92f4d}
+.low-glucose-badge{margin-left:7px;background:#fff0f2;color:#b72f48;border:1px solid #ffd0d8}
+.low-glucose-symptom-info{display:flex;align-items:flex-start;gap:12px;margin:0 0 16px;padding:15px 16px;border:1px solid #ffd0da;border-radius:18px;background:linear-gradient(135deg,#fff5f7,#fffaf4);box-shadow:0 8px 22px rgba(109,77,94,.07)}
+.low-glucose-symptom-info-icon{display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;border-radius:14px;background:#ffe7ed;font-size:22px}
+.low-glucose-symptom-info strong{color:#8c2f49}.low-glucose-symptom-info p{margin:4px 0 0;color:#6f7f96;line-height:1.45}
+.low-glucose-source{background:#fff0f3;color:#b32f49}.pending-completion-badge{margin-top:5px;background:#fff7db;color:#7b5e1e;border:1px solid #f5df98}.pending-low-symptom{border-color:#f0d58a!important}
+.pediatric-entry-form{position:relative;overflow:hidden;border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(250,253,255,.97))}
+.pediatric-entry-form::before{content:"★";position:absolute;right:18px;top:12px;color:rgba(244,198,72,.45);font-size:19px}
+.pediatric-form-heading{display:flex;align-items:center;gap:13px;margin-bottom:17px;padding-bottom:14px;border-bottom:1px solid #edf1f6}
+.pediatric-form-icon{display:grid;place-items:center;width:56px;height:56px;flex:0 0 56px;border-radius:18px;background:#eef6ff;font-size:29px}
+.glucose-form-card .pediatric-form-icon{background:#ffe9ef}.meal-form-card .pediatric-form-icon{background:#eaf6ff}.diaper-form-card .pediatric-form-icon{background:#efeaff}.symptom-form-card .pediatric-form-icon{background:#fff0e8}
+.pediatric-form-heading h1{margin:0 0 3px;font-size:26px}.pediatric-form-subtitle{margin:0;font-size:12px;line-height:1.4}
+.pediatric-entry-form form>p{margin:0 0 10px;padding:12px 13px;border:1px solid #e7edf5;border-radius:16px;background:rgba(250,252,255,.88)}
+.pediatric-entry-form form>p>label{display:block;margin-bottom:6px;color:#50627d;font-size:12px;font-weight:900}
+.pediatric-entry-form label[for="id_date"]::before{content:"📅 "}
+.pediatric-entry-form label[for="id_time"]::before,.pediatric-entry-form label[for="id_scheduled_time"]::before,.pediatric-entry-form label[for="id_actual_time"]::before,.pediatric-entry-form label[for="id_finished_time"]::before{content:"🕒 "}
+.pediatric-entry-form label[for="id_value"]::before{content:"🩸 "}.pediatric-entry-form label[for="id_context"]::before,.pediatric-entry-form label[for="id_relation_to_feed"]::before{content:"🍽️ "}.pediatric-entry-form label[for="id_related_meal"]::before{content:"🍼 "}
+.pediatric-entry-form label[for="id_offered_ml"]::before,.pediatric-entry-form label[for="id_consumed_ml"]::before,.pediatric-entry-form label[for="id_remaining_ml"]::before{content:"🥛 "}
+.pediatric-entry-form label[for="id_formula"]::before{content:"🍼 "}.pediatric-entry-form label[for="id_supplement"]::before{content:"🥄 "}.pediatric-entry-form label[for="id_kind"]::before{content:"👶 "}
+.pediatric-entry-form label[for="id_stool_color"]::before{content:"🎨 "}.pediatric-entry-form label[for="id_stool_consistency"]::before{content:"🫧 "}.pediatric-entry-form label[for="id_possible_diarrhea"]::before{content:"🚨 "}
+.pediatric-entry-form label[for="id_symptom"]::before{content:"🌡️ "}.pediatric-entry-form label[for="id_severity"]::before{content:"📊 "}.pediatric-entry-form label[for="id_notes"]::before{content:"💬 "}.pediatric-entry-form label[for="id_photo"]::before{content:"📷 "}
+.pediatric-entry-form .actions{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}.pediatric-entry-form .actions .btn{min-height:48px}
+.pediatric-delete-card{text-align:center;border-radius:24px;background:linear-gradient(180deg,#fff,#fff8fa)}.delete-card-icon{display:grid;place-items:center;width:68px;height:68px;margin:0 auto 12px;border-radius:22px;background:#fff0f3;font-size:34px}
+.delete-card-warning{margin:14px 0;padding:10px 12px;border-radius:14px;background:#fff5df;color:#795e25;font-size:12px;font-weight:800}.delete-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:720px){
+.module-hero{min-height:105px;padding:16px;border-radius:22px}.module-hero-icon{width:56px;height:56px;flex-basis:56px;border-radius:18px;font-size:29px}.module-hero h1{font-size:25px}.module-hero p{max-width:210px;font-size:12px;line-height:1.35}.module-hero .btn{display:none}.module-hero::after{right:8px;font-size:48px;opacity:.72}
+.module-panel{padding:0;border:0;background:transparent;box-shadow:none}.module-table tr{position:relative;margin-bottom:15px!important;padding:14px 13px!important;border:1px solid #dce7f3!important;border-radius:22px!important;background:linear-gradient(180deg,#fff,#fbfdff)!important;box-shadow:0 12px 28px rgba(52,78,124,.09)!important}
+.module-table td{min-height:46px;padding:8px 4px!important;grid-template-columns:minmax(126px,44%) minmax(0,1fr)!important;align-items:center;border-bottom:1px dashed #edf1f6!important;text-align:right;font-size:13px}.module-table td::before{text-align:left;color:#74849d!important;font-size:11.5px!important;font-weight:900!important}
+.module-table .row-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;padding-top:10px!important;border-bottom:0!important}.diaper-table .row-actions{grid-template-columns:1fr!important}.module-table .row-actions .mini-action{width:100%;min-height:44px;border-radius:14px}
+.meal-table td[data-label="Ημερομηνία"]::before{content:"📅 Ημερομηνία"}.meal-table td[data-label="Προγραμματισμένη"]::before{content:"⏰ Προγραμματισμένη"}.meal-table td[data-label="Έναρξη"]::before{content:"▶️ Έναρξη"}.meal-table td[data-label="Τέλος"]::before{content:"✅ Τέλος"}.meal-table td[data-label="Προσφέρθηκαν"]::before{content:"🍼 Προσφέρθηκαν"}.meal-table td[data-label="Έμεινε"]::before{content:"📉 Έμεινε"}.meal-table td[data-label="Ήπιε"]::before{content:"😋 Ήπιε"}.meal-table td[data-label="Formula"]::before{content:"🥛 Formula"}.meal-table td[data-label="Maxijul"]::before{content:"🥄 Maxijul"}.meal-table td[data-label="Σχόλιο"]::before{content:"💬 Σχόλιο"}
+.diaper-table td[data-label="Ημ/νία"]::before{content:"📅 Ημερομηνία"}.diaper-table td[data-label="Ώρα"]::before{content:"🕒 Ώρα"}.diaper-table td[data-label="Τύπος"]::before{content:"👶 Τύπος"}.diaper-table td[data-label="Χρώμα"]::before{content:"🎨 Χρώμα"}.diaper-table td[data-label="Σύσταση"]::before{content:"🫧 Σύσταση"}.diaper-table td[data-label="Διάρροια"]::before{content:"🚨 Διάρροια"}.diaper-table td[data-label="Σχόλιο"]::before{content:"💬 Σχόλιο"}.diaper-table td[data-label="Φωτο"]::before{content:"📷 Φωτο"}
+.symptom-table td[data-label="Ημ/νία"]::before{content:"📅 Ημερομηνία"}.symptom-table td[data-label="Ώρα"]::before{content:"🕒 Ώρα"}.symptom-table td[data-label="Σύμπτωμα"]::before{content:"🌡️ Σύμπτωμα"}.symptom-table td[data-label="Ένταση"]::before{content:"📊 Ένταση"}.symptom-table td[data-label="Σχέση"]::before{content:"🍽️ Σχέση"}.symptom-table td[data-label="Πηγή"]::before{content:"🩸 Πηγή"}.symptom-table td[data-label="Φωτο"]::before{content:"📷 Φωτο"}
+.pediatric-entry-form{padding:15px;border-radius:22px}.pediatric-entry-form .actions,.delete-card-actions{grid-template-columns:1fr}.low-glucose-symptom-info{padding:13px;border-radius:16px}
+}
+html.night .module-hero{border-color:#3a4a61;background:linear-gradient(120deg,#202c3e,#252d3c)}html.night .module-hero h1{color:#eef5ff}html.night .module-hero p{color:#a9b7ca}
+html.night .module-chip--blue{background:#253d57;color:#d6e9fa}html.night .module-chip--mint{background:#234237;color:#d3f0e1}html.night .module-chip--lilac{background:#392f51;color:#e0d6f5}html.night .module-chip--peach{background:#493829;color:#f0d9be}
+html.night .pediatric-entry-form form>p{background:rgba(255,255,255,.035);border-color:#39495f}html.night .low-glucose-symptom-info{background:#3b2a31;border-color:#66404c}
