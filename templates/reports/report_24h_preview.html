@@ -6,8 +6,12 @@
     <div class="report-toolbar no-print">
         <a class="btn secondary" href="{% url 'dashboard' %}">← Επιστροφή</a>
         <div class="report-toolbar-actions">
+            {% if can_print_export %}
             <button class="btn secondary" type="button" onclick="window.print()">🖨️ Εκτύπωση</button>
             <a class="btn primary" href="{% url 'report_24h_pdf' %}">⬇ Λήψη PDF</a>
+            {% else %}
+            <span class="print-owner-only">🔒 Εκτύπωση / PDF μόνο από τον ιδιοκτήτη</span>
+            {% endif %}
         </div>
     </div>
 
