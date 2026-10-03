@@ -59,7 +59,7 @@
 .module-table .row-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;padding-top:10px!important;border-bottom:0!important}.diaper-table .row-actions{grid-template-columns:1fr!important}.module-table .row-actions .mini-action{width:100%;min-height:44px;border-radius:14px}
 .meal-table td[data-label="Ημερομηνία"]::before{content:"📅 Ημερομηνία"}.meal-table td[data-label="Προγραμματισμένη"]::before{content:"⏰ Προγραμματισμένη"}.meal-table td[data-label="Έναρξη"]::before{content:"▶️ Έναρξη"}.meal-table td[data-label="Τέλος"]::before{content:"✅ Τέλος"}.meal-table td[data-label="Προσφέρθηκαν"]::before{content:"🍼 Προσφέρθηκαν"}.meal-table td[data-label="Έμεινε"]::before{content:"📉 Έμεινε"}.meal-table td[data-label="Ήπιε"]::before{content:"😋 Ήπιε"}.meal-table td[data-label="Formula"]::before{content:"🥛 Formula"}.meal-table td[data-label="Maxijul"]::before{content:"🥄 Maxijul"}.meal-table td[data-label="Σχόλιο"]::before{content:"💬 Σχόλιο"}
 .diaper-table td[data-label="Ημ/νία"]::before{content:"📅 Ημερομηνία"}.diaper-table td[data-label="Ώρα"]::before{content:"🕒 Ώρα"}.diaper-table td[data-label="Τύπος"]::before{content:"👶 Τύπος"}.diaper-table td[data-label="Χρώμα"]::before{content:"🎨 Χρώμα"}.diaper-table td[data-label="Σύσταση"]::before{content:"🫧 Σύσταση"}.diaper-table td[data-label="Διάρροια"]::before{content:"🚨 Διάρροια"}.diaper-table td[data-label="Σχόλιο"]::before{content:"💬 Σχόλιο"}.diaper-table td[data-label="Φωτο"]::before{content:"📷 Φωτο"}
-.symptom-table td[data-label="Ημ/νία"]::before{content:"📅 Ημερομηνία"}.symptom-table td[data-label="Ώρα"]::before{content:"🕒 Ώρα"}.symptom-table td[data-label="Σύμπτωμα"]::before{content:"🌡️ Σύμπτωμα"}.symptom-table td[data-label="Ένταση"]::before{content:"📊 Ένταση"}.symptom-table td[data-label="Σχέση"]::before{content:"🍽️ Σχέση"}.symptom-table td[data-label="Πηγή"]::before{content:"🩸 Πηγή"}.symptom-table td[data-label="Φωτο"]::before{content:"📷 Φωτο"}
+.symptom-table td[data-label="Ημ/νία"]::before{content:"📅 Ημερομηνία"}.symptom-table td[data-label="Ώρα"]::before{content:"🕒 Ώρα"}.symptom-table td[data-label="Σύμπτωμα"]::before{content:"🌡️ Σύμπτωμα"}.symptom-table td[data-label="Ένταση"]::before{content:"📊 Ένταση"}.symptom-table td[data-label="Σχέση"]::before{content:"🍽️ Σχέση"}.symptom-table td[data-label="Σημειώσεις"]::before{content:"💬 Σημειώσεις"}.symptom-table td[data-label="Πηγή"]::before{content:"🩸 Πηγή"}.symptom-table td[data-label="Φωτο"]::before{content:"📷 Φωτο"}
 .pediatric-entry-form{padding:15px;border-radius:22px}.pediatric-entry-form .actions,.delete-card-actions{grid-template-columns:1fr}.low-glucose-symptom-info{padding:13px;border-radius:16px}
 }
 html.night .module-hero{border-color:#3a4a61;background:linear-gradient(120deg,#202c3e,#252d3c)}html.night .module-hero h1{color:#eef5ff}html.night .module-hero p{color:#a9b7ca}
@@ -285,3 +285,21 @@ html.night .quick-add-options a {
     color:#e7eef8;
 }
 /* ===== End pediatric navigation v4 ===== */
+
+
+.symptom-notes{
+    display:inline-block;
+    max-width:360px;
+    padding:7px 10px;
+    border-radius:12px;
+    background:#f5f1ff;
+    color:#665681;
+    font-size:12px;
+    font-weight:750;
+    line-height:1.4;
+    white-space:normal;
+}
+html.night .symptom-notes{
+    background:#352f49;
+    color:#dfd5f1;
+}
