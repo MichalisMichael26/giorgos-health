@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="form-card">
-    <h1>{{ title }}</h1>
+<div class="form-card pediatric-entry-form" id="entry-form-card">
+    <div class="pediatric-form-heading">
+        <span class="pediatric-form-icon" id="pediatric-form-icon">✨</span>
+        <div>
+            <h1>{{ title }}</h1>
+            <p class="muted pediatric-form-subtitle" id="pediatric-form-subtitle">Συμπλήρωσε τα στοιχεία της καταχώρησης.</p>
+        </div>
+    </div>
     <div id="weekday-preview" class="weekday-preview" hidden>
         <span>Ημέρα:</span>
         <strong id="weekday-preview-value"></strong>
@@ -11,14 +17,38 @@
         {% csrf_token %}
         {{ form.as_p }}
         <div class="actions">
-            <button class="btn primary" type="submit">Αποθήκευση</button>
-            <a class="btn secondary" href="javascript:history.back()">Ακύρωση</a>
+            <button class="btn primary" type="submit">💾 Αποθήκευση</button>
+            <a class="btn secondary" href="javascript:history.back()">↩️ Ακύρωση</a>
         </div>
     </form>
 </div>
 
 <script>
 (function () {
+    const formCard = document.getElementById("entry-form-card");
+    const formIcon = document.getElementById("pediatric-form-icon");
+    const formSubtitle = document.getElementById("pediatric-form-subtitle");
+
+    if (formCard) {
+        if (document.getElementById("id_value")) {
+            formCard.classList.add("glucose-form-card");
+            if (formIcon) formIcon.textContent = "🩸";
+            if (formSubtitle) formSubtitle.textContent = "Καταγραφή μέτρησης γλυκόζης με ώρα, σχέση με γεύμα και σημειώσεις.";
+        } else if (document.getElementById("id_offered_ml")) {
+            formCard.classList.add("meal-form-card");
+            if (formIcon) formIcon.textContent = "🍼";
+            if (formSubtitle) formSubtitle.textContent = "Καταγραφή ώρας, ποσότητας και στοιχείων του γεύματος.";
+        } else if (document.getElementById("id_kind")) {
+            formCard.classList.add("diaper-form-card");
+            if (formIcon) formIcon.textContent = "👶";
+            if (formSubtitle) formSubtitle.textContent = "Καταγραφή πάνας, κένωσης και σχετικών παρατηρήσεων.";
+        } else if (document.getElementById("id_symptom")) {
+            formCard.classList.add("symptom-form-card");
+            if (formIcon) formIcon.textContent = "🌡️";
+            if (formSubtitle) formSubtitle.textContent = "Συμπλήρωσε τι παρατηρήθηκε στο επεισόδιο.";
+        }
+    }
+
     const sameBox = document.getElementById("id_same_as_scheduled");
     const scheduled = document.getElementById("id_scheduled_time");
     const actual = document.getElementById("id_actual_time");
