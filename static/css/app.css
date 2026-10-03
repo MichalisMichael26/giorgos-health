@@ -7349,3 +7349,579 @@ html.night .feeding-setting-grid label {
         width: 100%;
     }
 }
+
+/* ===== Giorgos Health 2026 Pediatric Premium Theme ===== */
+:root {
+    --gh-navy: #15345d;
+    --gh-blue: #5c8ff7;
+    --gh-sky: #dff1ff;
+    --gh-pink: #ffe7ef;
+    --gh-mint: #e7f8ef;
+    --gh-yellow: #fff4c8;
+    --gh-peach: #fff0e3;
+    --gh-lilac: #f1eaff;
+    --gh-card-border: rgba(206, 222, 242, .78);
+    --gh-soft-shadow: 0 14px 34px rgba(55, 84, 137, .11);
+    --gh-deep-shadow: 0 18px 46px rgba(55, 84, 137, .16);
+}
+
+body.kids-bg {
+    background:
+        radial-gradient(circle at 9% 7%, rgba(198, 229, 255, .72) 0 9%, transparent 25%),
+        radial-gradient(circle at 92% 18%, rgba(255, 220, 233, .58) 0 8%, transparent 25%),
+        radial-gradient(circle at 78% 70%, rgba(255, 244, 200, .45) 0 7%, transparent 22%),
+        linear-gradient(180deg, #f8fbff 0%, #fffafd 53%, #f8fbff 100%);
+    color: #213550;
+}
+
+body.kids-bg::before,
+body.kids-bg::after {
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+    opacity: .28;
+    filter: saturate(.8);
+}
+body.kids-bg::before {
+    content: "★";
+    left: 4vw;
+    top: 18vh;
+    color: #f5c84c;
+    font-size: 22px;
+    transform: rotate(-12deg);
+}
+body.kids-bg::after {
+    content: "☁";
+    right: 4vw;
+    top: 28vh;
+    color: #b9dcff;
+    font-size: 36px;
+}
+
+.topbar {
+    position: sticky;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 18% -25%, rgba(190, 225, 255, .78), transparent 30%),
+        radial-gradient(circle at 84% -35%, rgba(255, 225, 236, .72), transparent 30%),
+        rgba(255, 255, 255, .93);
+    border-bottom: 1px solid rgba(204, 220, 241, .86);
+    box-shadow: 0 8px 28px rgba(47, 75, 123, .08);
+}
+.topbar::before,
+.topbar::after {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+    opacity: .72;
+}
+.topbar::before {
+    content: "✦";
+    left: 24%;
+    top: 8px;
+    color: #f4c95a;
+    font-size: 15px;
+}
+.topbar::after {
+    content: "☁";
+    right: 19%;
+    bottom: -10px;
+    color: #d9edff;
+    font-size: 43px;
+}
+.topbar > * {
+    position: relative;
+    z-index: 1;
+}
+
+.brand-logo {
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.95);
+    box-shadow:
+        0 0 0 1px rgba(129, 188, 244, .55),
+        0 8px 24px rgba(69, 104, 165, .17);
+}
+.brand-title {
+    color: #17386c;
+    font-weight: 900;
+    letter-spacing: -.035em;
+}
+.brand-subtitle {
+    color: #7689a7;
+    font-weight: 700;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.theme-toggle,
+.logout-button {
+    border: 1px solid rgba(205, 219, 239, .9);
+    border-radius: 16px;
+    background: rgba(255,255,255,.9);
+    box-shadow: 0 6px 18px rgba(55, 80, 130, .08);
+}
+.theme-toggle {
+    color: #244876;
+}
+.logout-button {
+    color: #244876;
+}
+
+.container {
+    margin-top: 18px;
+}
+
+.panel,
+.card,
+.form-card,
+.history-day,
+.chart-card,
+.overview-card,
+.more-card,
+.appointment-card {
+    border: 1px solid var(--gh-card-border);
+    box-shadow: var(--gh-soft-shadow);
+}
+
+.btn {
+    border-radius: 14px;
+    font-weight: 850;
+}
+.btn.primary {
+    background: linear-gradient(135deg, #6a96f7, #4e7dea);
+    box-shadow: 0 9px 21px rgba(78, 125, 234, .22);
+}
+.btn.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px rgba(78, 125, 234, .28);
+}
+
+input,
+select,
+textarea {
+    border-radius: 14px;
+    border-color: #dbe6f3;
+    background: rgba(255,255,255,.96);
+}
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #86aef6;
+    box-shadow: 0 0 0 4px rgba(92,143,247,.12);
+}
+
+.mobile-bottom-nav {
+    border-top: 1px solid rgba(211, 223, 240, .9);
+}
+.mobile-bottom-nav a {
+    transition: transform .18s ease, background .18s ease, color .18s ease;
+}
+.mobile-bottom-nav a.is-active {
+    color: #e53761;
+    background: linear-gradient(180deg, rgba(255,235,242,.95), rgba(255,247,250,.96));
+    box-shadow: inset 0 -3px 0 #ef5576;
+}
+.mobile-bottom-nav a.is-active span {
+    transform: translateY(-1px) scale(1.06);
+}
+.mobile-bottom-nav a:active {
+    transform: scale(.97);
+}
+
+.mobile-quick-add {
+    background: linear-gradient(145deg, #6796ff, #3f70e8) !important;
+    box-shadow: 0 12px 28px rgba(55, 97, 205, .3) !important;
+    border: 3px solid rgba(255,255,255,.9) !important;
+}
+
+/* Glucose page */
+.glucose-page {
+    --glucose-blue: #5f8ff2;
+    --glucose-pink: #ee5579;
+}
+.glucose-hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 126px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    border: 1px solid rgba(235, 201, 213, .8);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 89% 19%, rgba(255, 219, 230, .92), transparent 26%),
+        linear-gradient(115deg, #fff3f7 0%, #fff8f2 100%);
+    box-shadow: var(--gh-soft-shadow);
+}
+.glucose-hero::before {
+    content: "★";
+    position: absolute;
+    right: 118px;
+    top: 16px;
+    color: #f6cc62;
+    font-size: 18px;
+    opacity: .85;
+}
+.glucose-hero::after {
+    content: "🧸";
+    position: absolute;
+    right: 22px;
+    bottom: -6px;
+    font-size: 68px;
+    filter: drop-shadow(0 9px 14px rgba(127,92,77,.12));
+}
+.glucose-hero-main {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+}
+.glucose-hero-icon {
+    width: 72px;
+    height: 72px;
+    flex: 0 0 72px;
+    display: grid;
+    place-items: center;
+    border-radius: 24px;
+    background: linear-gradient(145deg, #ffdfe8, #fff5f8);
+    box-shadow: inset 0 0 0 1px rgba(238,85,121,.12);
+    font-size: 37px;
+}
+.glucose-hero h1 {
+    margin: 0 0 4px;
+    color: #17345f;
+    font-size: clamp(25px, 4vw, 34px);
+}
+.glucose-hero p {
+    margin: 0;
+    color: #7183a2;
+    font-weight: 650;
+}
+.glucose-hero .btn {
+    position: relative;
+    z-index: 2;
+    margin-right: 88px;
+    white-space: nowrap;
+}
+
+.glucose-panel {
+    padding: 14px;
+    border-radius: 24px;
+    background: rgba(255,255,255,.94);
+}
+.glucose-table td,
+.glucose-table th {
+    vertical-align: middle;
+}
+.glucose-value-wrap {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+}
+.glucose-value {
+    color: #102f5a;
+    font-size: 24px;
+    font-weight: 950;
+    line-height: 1;
+}
+.glucose-unit {
+    color: #7688a5;
+    font-size: 12px;
+    font-weight: 800;
+}
+.glucose-context-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #eaf4ff;
+    color: #294b76;
+    font-weight: 800;
+}
+.glucose-note {
+    display: inline-block;
+    padding: 7px 10px;
+    border-radius: 12px;
+    background: #f4edff;
+    color: #634d82;
+}
+.glucose-edit {
+    color: #2e68d8;
+    border-color: #b9d2ff;
+    background: #edf5ff;
+}
+.glucose-delete {
+    color: #db3f59;
+    border-color: #ffc7d1;
+    background: #fff3f5;
+}
+
+@media (max-width: 720px) {
+    body.kids-bg {
+        padding-bottom: calc(92px + env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+        min-height: 76px;
+        padding: 8px 10px;
+        border-bottom-left-radius: 18px;
+        border-bottom-right-radius: 18px;
+    }
+    .topbar::before { left: 35%; top: 4px; }
+    .topbar::after { display: none; }
+
+    .brand {
+        gap: 10px;
+    }
+    .brand-logo {
+        width: 50px;
+        height: 50px;
+    }
+    .brand-title {
+        font-size: 20px;
+    }
+    .brand-subtitle {
+        max-width: 180px;
+        font-size: 9.5px;
+    }
+
+    .theme-toggle,
+    .logout-button {
+        width: 48px;
+        height: 48px;
+    }
+
+    .container {
+        width: min(100% - 14px, 1160px);
+        margin-top: 12px;
+    }
+
+    .mobile-bottom-nav {
+        left: 7px;
+        right: 7px;
+        bottom: 7px;
+        min-height: 75px;
+        border: 1px solid rgba(213,224,241,.92);
+        border-radius: 24px;
+        padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
+        box-shadow: 0 -4px 24px rgba(52, 78, 124, .12);
+    }
+    .mobile-bottom-nav a {
+        border-radius: 16px;
+    }
+    .mobile-bottom-nav a span {
+        font-size: 24px;
+    }
+    .mobile-bottom-nav a small {
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .mobile-quick-add {
+        right: 22px !important;
+        bottom: calc(93px + env(safe-area-inset-bottom)) !important;
+        width: 62px !important;
+        height: 62px !important;
+        font-size: 38px !important;
+    }
+
+    .glucose-hero {
+        min-height: 112px;
+        padding: 17px 16px;
+        margin-bottom: 14px;
+        border-radius: 22px;
+    }
+    .glucose-hero::after {
+        right: 9px;
+        font-size: 52px;
+        opacity: .9;
+    }
+    .glucose-hero::before {
+        right: 75px;
+        top: 12px;
+    }
+    .glucose-hero-icon {
+        width: 58px;
+        height: 58px;
+        flex-basis: 58px;
+        border-radius: 19px;
+        font-size: 30px;
+    }
+    .glucose-hero h1 {
+        font-size: 27px;
+    }
+    .glucose-hero p {
+        max-width: 190px;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+    .glucose-hero .btn {
+        display: none;
+    }
+
+    .glucose-panel {
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .glucose-table tr {
+        position: relative;
+        margin-bottom: 16px;
+        padding: 16px 14px !important;
+        border: 1px solid #dbe7f4 !important;
+        border-radius: 24px !important;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,.98), rgba(251,253,255,.98)) !important;
+        box-shadow: 0 13px 30px rgba(50, 78, 129, .10) !important;
+    }
+    .glucose-table tr::before {
+        content: "🩸  Μέτρηση γλυκόζης";
+        display: block;
+        margin: -2px 0 11px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #edf1f7;
+        color: #29476e;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: .01em;
+    }
+
+    .glucose-table td {
+        min-height: 48px;
+        padding: 9px 5px !important;
+        grid-template-columns: minmax(118px, 42%) 1fr !important;
+        align-items: center;
+        border-bottom: 1px dashed #edf1f6 !important;
+        text-align: right;
+        font-size: 14px;
+    }
+    .glucose-table td:last-child {
+        border-bottom: 0 !important;
+    }
+
+    .glucose-table td::before {
+        color: #72839f !important;
+        font-size: 12px !important;
+        font-weight: 850 !important;
+        text-align: left;
+    }
+    .glucose-table td[data-label="Ημέρα"]::before { content: "📅  Ημέρα"; }
+    .glucose-table td[data-label="Ημερομηνία"]::before { content: "🗓️  Ημερομηνία"; }
+    .glucose-table td[data-label="Ώρα"]::before { content: "🕒  Ώρα"; }
+    .glucose-table td[data-label="Τιμή"]::before { content: "🩸  Τιμή γλυκόζης"; }
+    .glucose-table td[data-label="Σχέση"]::before { content: "🍽️  Σχέση"; }
+    .glucose-table td[data-label="Γεύμα"]::before { content: "🍼  Γεύμα"; }
+    .glucose-table td[data-label="Σχόλιο"]::before { content: "💬  Σχόλιο"; }
+    .glucose-table td[data-label="Ενέργειες"]::before { content: ""; display: none; }
+
+    .glucose-table td[data-label="Τιμή"] {
+        margin: 5px 0;
+        padding: 13px 12px !important;
+        border: 0 !important;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #edf7ff, #e9f2ff);
+    }
+    .glucose-value {
+        font-size: 34px;
+    }
+    .glucose-unit {
+        font-size: 12px;
+    }
+    .glucose-context-pill {
+        padding: 7px 12px;
+        font-size: 13px;
+    }
+
+    .glucose-table .row-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 9px !important;
+        margin-top: 9px;
+        padding-top: 10px !important;
+    }
+    .glucose-table .row-actions .mini-action {
+        width: 100%;
+        min-height: 47px;
+        border-radius: 15px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 420px) {
+    .brand-subtitle {
+        display: none;
+    }
+    .brand-title {
+        font-size: 18px;
+    }
+    .theme-toggle,
+    .logout-button {
+        width: 44px;
+        height: 44px;
+    }
+    .glucose-hero p {
+        max-width: 165px;
+    }
+}
+
+html.night body.kids-bg {
+    background:
+        radial-gradient(circle at top left, rgba(72, 104, 161, .28), transparent 30%),
+        radial-gradient(circle at top right, rgba(126, 72, 101, .20), transparent 25%),
+        linear-gradient(180deg, #111a29, #182338);
+}
+html.night .topbar {
+    background: rgba(18, 28, 44, .94);
+}
+html.night .brand-title,
+html.night .glucose-hero h1 {
+    color: #e9f2ff;
+}
+html.night .glucose-hero {
+    border-color: #394961;
+    background:
+        radial-gradient(circle at 89% 19%, rgba(126, 65, 88, .35), transparent 27%),
+        linear-gradient(115deg, #2a2130, #232b3b);
+}
+html.night .glucose-hero p {
+    color: #aab7ca;
+}
+html.night .glucose-panel {
+    background: rgba(28, 39, 57, .92);
+}
+html.night .glucose-context-pill {
+    background: #263d58;
+    color: #d5e7fa;
+}
+html.night .glucose-note {
+    background: #3a2e50;
+    color: #e4d8f8;
+}
+@media (max-width: 720px) {
+    html.night .glucose-panel {
+        background: transparent;
+    }
+    html.night .glucose-table tr {
+        border-color: #35465e !important;
+        background: linear-gradient(180deg, #1f2b3d, #1b2636) !important;
+    }
+    html.night .glucose-table td[data-label="Τιμή"] {
+        background: linear-gradient(135deg, #20394f, #233650);
+    }
+    html.night .glucose-value {
+        color: #eef6ff;
+    }
+}
+/* ===== End Giorgos Health 2026 Pediatric Premium Theme ===== */
