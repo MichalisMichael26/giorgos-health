@@ -472,6 +472,16 @@ class SymptomEntry(models.Model):
     duration_minutes = models.PositiveIntegerField("Διάρκεια (λεπτά)", blank=True, null=True)
     relation_to_feed = models.CharField("Σχέση με γεύμα", max_length=20, choices=RELATION_CHOICES, default="unknown")
     notes = models.TextField("Σημειώσεις", blank=True)
+    source_glucose = models.OneToOneField(
+        GlucoseReading,
+        verbose_name="Συνδεδεμένη μέτρηση γλυκόζης",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="symptom_entry",
+    )
+    auto_generated = models.BooleanField("Αυτόματη καταχώρηση", default=False)
+    details_completed = models.BooleanField("Έγινε συμπλήρωση συμπτωμάτων", default=False)
     photo_name = models.CharField("Όνομα φωτογραφίας", max_length=255, blank=True)
     photo_mime = models.CharField("Τύπος φωτογραφίας", max_length=120, blank=True)
     photo_data = models.BinaryField("Φωτογραφία", blank=True, null=True, editable=False)
