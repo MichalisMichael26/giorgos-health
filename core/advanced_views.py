@@ -317,7 +317,8 @@ def vaccine_delete(request, pk):
 
 @login_required
 def symptom_list(request):
-    return render(request, "symptoms/list.html", {"items": SymptomEntry.objects.all()})
+    items = SymptomEntry.objects.select_related("source_glucose").all()
+    return render(request, "symptoms/list.html", {"items": items, "low_glucose_threshold": 60})
 
 
 @login_required
@@ -343,6 +344,8 @@ def symptom_edit(request, pk):
     form = SymptomWithPhotoForm(request.POST or None, request.FILES or None, instance=item)
     if form.is_valid():
         obj = form.save(commit=False)
+        if obj.source_glucose_id and obj.auto_generated:
+            obj.details_completed = True
         form.save_photo(obj, form.cleaned_data.get("photo"))
         obj.save()
         messages.success(request, "Η καταχώρηση ενημερώθηκε.")
