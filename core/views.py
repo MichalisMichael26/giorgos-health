@@ -356,7 +356,26 @@ def meal_timing_context(now_local):
 
 
 def next_scheduled_datetime(now_local):
-    return suggested_meal_datetime(timezone.now())
+    """
+    Suggest a time for a meal that is being recorded now.
+
+    If the fixed schedule has already rolled over to tomorrow, keep the new
+    entry on the current local day and use the current local time. This avoids
+    late-evening meals being silently saved with tomorrow's date and therefore
+    disappearing from today's comparisons.
+    """
+    if timezone.is_naive(now_local):
+        now_local = timezone.make_aware(now_local, timezone.get_current_timezone())
+    else:
+        now_local = timezone.localtime(now_local)
+
+    suggested = suggested_meal_datetime(now_local)
+    suggested_local = timezone.localtime(suggested)
+
+    if suggested_local.date() > now_local.date():
+        return now_local.replace(second=0, microsecond=0)
+
+    return suggested
 
 
 
@@ -1442,14 +1461,15 @@ def meal_list(request):
 
 @login_required
 def meal_create(request):
-    suggested_dt = next_scheduled_datetime(timezone.localtime())
+    now_local = timezone.localtime()
+    suggested_dt = next_scheduled_datetime(now_local)
     suggested_local = timezone.localtime(suggested_dt)
     suggested_time = suggested_local.time().replace(second=0, microsecond=0)
 
     form = MealEntryForm(
         request.POST or None,
         initial={
-            "date": suggested_local.date(),
+            "date": now_local.date(),
             "scheduled_time": suggested_time,
             "actual_time": suggested_time,
             "same_as_scheduled": True,
