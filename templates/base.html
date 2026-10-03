@@ -54,14 +54,14 @@
     </a>
 
     {% if user.is_authenticated %}
-    <nav class="desktop-nav">
-        <a href="{% url 'dashboard' %}">Αρχική</a>
-        <a href="{% url 'meal_list' %}">Γεύματα</a>
-        <a href="{% url 'glucose_list' %}">Γλυκόζη</a>
-        <a href="{% url 'diaper_list' %}">Πάνες</a>
-        <a href="{% url 'health_hub' %}">Υγεία</a>
-        <a href="{% url 'doctor_view' %}">Doctor View</a>
-        <a href="{% url 'product_scanner' %}" class="nav-checker">📷 Scan</a>
+    <nav class="desktop-nav pediatric-desktop-nav">
+        <a class="nav-home" href="{% url 'dashboard' %}"><span>🏠</span>Αρχική</a>
+        <a class="nav-meals" href="{% url 'meal_list' %}"><span>🍼</span>Γεύματα</a>
+        <a class="nav-glucose" href="{% url 'glucose_list' %}"><span>🩸</span>Γλυκόζη</a>
+        <a class="nav-diapers" href="{% url 'diaper_list' %}"><span>👶</span>Πάνες</a>
+        <a class="nav-health" href="{% url 'health_hub' %}"><span>❤️</span>Υγεία</a>
+        <a class="nav-doctor" href="{% url 'doctor_view' %}"><span>🧑‍⚕️</span>Doctor</a>
+        <a class="nav-scan" href="{% url 'product_scanner' %}"><span>📷</span>Scan</a>
     </nav>
 
     <form class="header-global-search" method="get" action="{% url 'global_search' %}">
@@ -125,24 +125,24 @@
 {% endif %}
 
 {% if user.is_authenticated %}
-<nav class="mobile-bottom-nav" aria-label="Κύρια πλοήγηση">
-    <a href="{% url 'dashboard' %}">
-        <span>🏠</span><small>Αρχική</small>
+<nav class="mobile-bottom-nav pediatric-bottom-nav" aria-label="Κύρια πλοήγηση">
+    <a class="nav-home" href="{% url 'dashboard' %}">
+        <span class="nav-icon">🏠</span><small>Αρχική</small>
     </a>
-    <a href="{% url 'meal_list' %}">
-        <span>🍼</span><small>Γεύματα</small>
+    <a class="nav-meals" href="{% url 'meal_list' %}">
+        <span class="nav-icon">🍼</span><small>Γεύματα</small>
     </a>
-    <a href="{% url 'glucose_list' %}">
-        <span>🩸</span><small>Γλυκόζη</small>
+    <a class="nav-glucose" href="{% url 'glucose_list' %}">
+        <span class="nav-icon">🩸</span><small>Γλυκόζη</small>
     </a>
-    <a href="{% url 'diaper_list' %}">
-        <span>👶</span><small>Πάνες</small>
+    <a class="nav-diapers" href="{% url 'diaper_list' %}">
+        <span class="nav-icon">👶</span><small>Πάνες</small>
     </a>
-    <a href="{% url 'health_hub' %}">
-        <span>❤️</span><small>Υγεία</small>
+    <a class="nav-health" href="{% url 'health_hub' %}">
+        <span class="nav-icon">❤️</span><small>Υγεία</small>
     </a>
-    <a href="{% url 'doctor_view' %}">
-        <span>👨‍⚕️</span><small>Doctor</small>
+    <a class="nav-doctor" href="{% url 'doctor_view' %}">
+        <span class="nav-icon">🧑‍⚕️</span><small>Doctor</small>
     </a>
 </nav>
 {% endif %}
@@ -206,6 +206,12 @@
     const current = window.location.pathname || "/";
     const links = document.querySelectorAll(".desktop-nav a, .mobile-bottom-nav a");
 
+    const healthPrefixes = [
+        "/health/", "/growth/", "/medications/", "/appointments/", "/vaccines/",
+        "/symptoms/", "/labs/", "/documents/", "/reminders/", "/emergency/",
+        "/checker/", "/scanner/"
+    ];
+
     links.forEach(function (link) {
         let path = "/";
         try {
@@ -214,9 +220,15 @@
             return;
         }
 
-        const active = path === "/"
+        let active = path === "/"
             ? current === "/"
             : current === path || current.startsWith(path);
+
+        if (link.classList.contains("nav-health")) {
+            active = healthPrefixes.some(function (prefix) {
+                return current === prefix || current.startsWith(prefix);
+            });
+        }
 
         if (active) {
             link.classList.add("is-active");
