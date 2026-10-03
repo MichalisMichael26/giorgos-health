@@ -23,7 +23,7 @@
 
     <div class="panel table-wrap module-panel">
         <table class="responsive-table module-table symptom-table">
-            <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Σύμπτωμα</th><th>Ένταση</th><th>Σχέση</th><th>Σημειώσεις</th><th>Πηγή</th><th>Φωτο</th><th></th></tr></thead>
+            <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Σύμπτωμα</th><th>Ένταση</th><th>Σχέση</th><th>Ήπιε στο γεύμα</th><th>Σημειώσεις</th><th>Πηγή</th><th>Φωτο</th><th></th></tr></thead>
             <tbody>
             {% for item in items %}
                 <tr class="{% if item.source_glucose_id and not item.details_completed %}pending-low-symptom{% endif %}">
@@ -35,6 +35,17 @@
                     </td>
                     <td data-label="Ένταση">{{ item.get_severity_display }}</td>
                     <td data-label="Σχέση">{{ item.get_relation_to_feed_display }}</td>
+                    <td data-label="Ήπιε στο γεύμα">
+                        {% if item.source_glucose_id and item.source_glucose.related_meal %}
+                            {% if item.source_glucose.related_meal.consumed_ml != None %}
+                                <span class="symptom-meal-amount">🍼 {{ item.source_glucose.related_meal.consumed_ml }} ml</span>
+                            {% else %}
+                                <span class="muted">—</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
                     <td data-label="Σημειώσεις">{% if item.notes %}<span class="symptom-notes">💬 {{ item.notes }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
                     <td data-label="Πηγή">
                         {% if item.source_glucose_id %}
@@ -48,7 +59,7 @@
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="9"><div class="module-empty">🌡️ Δεν υπάρχουν καταχωρήσεις συμπτωμάτων ακόμη.</div></td></tr>
+                <tr><td colspan="10"><div class="module-empty">🌡️ Δεν υπάρχουν καταχωρήσεις συμπτωμάτων ακόμη.</div></td></tr>
             {% endfor %}
             </tbody>
         </table>
