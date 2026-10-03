@@ -7925,3 +7925,138 @@ html.night .glucose-note {
     }
 }
 /* ===== End Giorgos Health 2026 Pediatric Premium Theme ===== */
+
+/* ===== Pediatric UI polish v2 ===== */
+
+/* A little more playful across the whole app, without losing the medical look. */
+.brand-subtitle::after {
+    content: "  ❤️";
+}
+.desktop-nav a::before {
+    margin-right: 5px;
+}
+.desktop-nav a[href*="/meals"]::before { content: "🍼"; }
+.desktop-nav a[href*="/glucose"]::before { content: "🩸"; }
+.desktop-nav a[href*="/diapers"]::before { content: "👶"; }
+.desktop-nav a[href*="/health"]::before { content: "❤️"; }
+.desktop-nav a[href*="/doctor"]::before { content: "👨‍⚕️"; }
+.desktop-nav a[href="/"]::before { content: "🏠"; }
+
+.quick-add-head strong::before { content: "✨ "; }
+
+.panel,
+.card,
+.form-card,
+.history-day,
+.overview-card {
+    position: relative;
+}
+
+/* Soft child-friendly accent on major cards. */
+.panel::after,
+.card::after,
+.form-card::after {
+    content: "✦";
+    position: absolute;
+    right: 14px;
+    top: 10px;
+    color: rgba(244, 194, 74, .32);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+/* Glucose screen: value and unit are one visual unit and can never split. */
+.glucose-value-wrap {
+    display: inline-flex !important;
+    flex-flow: row nowrap !important;
+    align-items: baseline !important;
+    justify-content: flex-end;
+    gap: 7px;
+    width: max-content;
+    max-width: 100%;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+}
+.glucose-value,
+.glucose-unit {
+    display: inline-block !important;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+}
+.glucose-unit {
+    flex: 0 0 auto;
+}
+
+/* Give the important glucose row its own polished pill. */
+.glucose-table td[data-label="Τιμή"] .glucose-value-wrap {
+    padding: 8px 12px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.72);
+    box-shadow: inset 0 0 0 1px rgba(121,160,221,.10);
+}
+
+/* Friendly value-side touches on mobile. */
+@media (max-width: 720px) {
+    .glucose-table td {
+        grid-template-columns: minmax(122px, 44%) minmax(0, 1fr) !important;
+    }
+
+    .glucose-table td > * {
+        min-width: 0;
+    }
+
+    .glucose-table td[data-label="Τιμή"] {
+        grid-template-columns: minmax(122px, 42%) minmax(0, 1fr) !important;
+    }
+
+    .glucose-table td[data-label="Τιμή"] .glucose-value-wrap {
+        justify-self: end;
+        padding: 9px 12px;
+    }
+
+    .glucose-value {
+        font-size: 34px !important;
+        line-height: 1 !important;
+    }
+
+    .glucose-unit {
+        font-size: 12px !important;
+        line-height: 1 !important;
+    }
+
+    .glucose-context-pill::after {
+        content: " 🍽️";
+    }
+
+    .glucose-table tr:nth-child(3n+1)::after,
+    .glucose-table tr:nth-child(3n+2)::after,
+    .glucose-table tr:nth-child(3n)::after {
+        position: absolute;
+        right: 13px;
+        top: 11px;
+        pointer-events: none;
+        font-size: 14px;
+        opacity: .72;
+    }
+    .glucose-table tr:nth-child(3n+1)::after { content: "⭐"; }
+    .glucose-table tr:nth-child(3n+2)::after { content: "☁️"; }
+    .glucose-table tr:nth-child(3n)::after { content: "🌙"; }
+
+    .glucose-edit::before { content: "✏️ "; }
+    .glucose-delete::before { content: "🗑️ "; }
+
+    .mobile-bottom-nav a {
+        overflow: hidden;
+    }
+}
+
+/* Keep dark mode equally clean. */
+html.night .glucose-table td[data-label="Τιμή"] .glucose-value-wrap {
+    background: rgba(255,255,255,.06);
+}
+html.night .panel::after,
+html.night .card::after,
+html.night .form-card::after {
+    color: rgba(255, 224, 124, .26);
+}
+/* ===== End Pediatric UI polish v2 ===== */
