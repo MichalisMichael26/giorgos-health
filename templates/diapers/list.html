@@ -1,34 +1,60 @@
 {% extends "base.html" %}
 {% block title %}Πάνες{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>👶 Πάνες / κενώσεις</h1><p class="muted">Γρήγορη καταγραφή ούρων και κενώσεων.</p></div>{% if not is_readonly_doctor %}<a class="btn primary" href="{% url 'diaper_create' %}">+ Νέα πάνα</a>{% endif %}</div>
-<div class="panel table-wrap"><table class="responsive-table"><thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Τύπος</th><th>Χρώμα</th><th>Σύσταση</th><th>Πιθανή διάρροια</th><th>Φωτο</th><th></th></tr></thead><tbody>
-{% for item in items %}
-<tr>
-<td data-label="Ημ/νία">{{ item.date|date:"d/m/Y" }}</td>
-<td data-label="Ώρα">{{ item.time|time:"H:i" }}</td>
-<td data-label="Τύπος">{{ item.get_kind_display }}</td>
-<td data-label="Χρώμα">{{ item.stool_color|default:"—" }}</td>
-<td data-label="Σύσταση">{{ item.stool_consistency|default:"—" }}</td>
-<td data-label="Πιθανή διάρροια">{% if item.possible_diarrhea %}<strong>⚠️ Ναι</strong>{% else %}—{% endif %}</td>
-<td data-label="Φωτο">{% if item.has_photo %}<a class="mini-action diaper-view-photo" href="{% url 'diaper_detail' item.pk %}">📷 View</a>{% else %}—{% endif %}</td>
-<td data-label="Ενέργειες" class="row-actions">
-<a class="mini-action" href="{% url 'diaper_detail' item.pk %}">View</a>
-{% if not is_readonly_doctor %}<a class="mini-action" href="{% url 'diaper_edit' item.pk %}">Edit</a><a class="mini-action danger-link" href="{% url 'diaper_delete' item.pk %}">Delete</a>{% endif %}
-</td>
-</tr>
-{% empty %}<tr><td colspan="8">Δεν υπάρχουν καταχωρήσεις.</td></tr>{% endfor %}
-</tbody></table></div>
+<div class="diaper-page module-page">
+    <section class="module-hero module-hero--diaper">
+        <div class="module-hero-main">
+            <span class="module-hero-icon" aria-hidden="true">👶</span>
+            <div>
+                <h1>Πάνες / κενώσεις</h1>
+                <p>Γρήγορη και καθαρή καταγραφή ούρων, κενώσεων και παρατηρήσεων</p>
+            </div>
+        </div>
+        {% if not is_readonly_doctor %}<a class="btn primary" href="{% url 'diaper_create' %}">＋ Νέα πάνα</a>{% endif %}
+    </section>
 
-{% if page_obj.has_other_pages %}
-<nav class="compact-pagination" aria-label="Σελίδες πανών">
-    {% if page_obj.has_previous %}
-        <a class="mini-action" href="?page={{ page_obj.previous_page_number }}">← Νεότερες</a>
+    <div class="panel table-wrap module-panel">
+        <table class="responsive-table module-table diaper-table">
+            <thead>
+                <tr><th>Ημ/νία</th><th>Ώρα</th><th>Τύπος</th><th>Χρώμα</th><th>Σύσταση</th><th>Διάρροια</th><th>Σχόλιο</th><th>Φωτο</th><th></th></tr>
+            </thead>
+            <tbody>
+            {% for item in items %}
+                <tr>
+                    <td data-label="Ημ/νία"><strong>{{ item.weekday_name }}</strong><span class="module-subvalue">{{ item.date|date:"d/m/Y" }}</span></td>
+                    <td data-label="Ώρα"><span class="module-chip module-chip--blue">🕒 {{ item.time|time:"H:i" }}</span></td>
+                    <td data-label="Τύπος">
+                        <span class="diaper-kind diaper-kind--{{ item.kind }}">
+                            {% if item.kind == "wet" %}💧{% elif item.kind == "stool" %}💩{% else %}💧💩{% endif %}
+                            {{ item.get_kind_display }}
+                        </span>
+                    </td>
+                    <td data-label="Χρώμα">{{ item.stool_color|default:"—" }}</td>
+                    <td data-label="Σύσταση">{% if item.stool_consistency %}<span class="module-chip module-chip--peach">🫧 {{ item.stool_consistency }}</span>{% else %}—{% endif %}</td>
+                    <td data-label="Διάρροια">{% if item.possible_diarrhea %}<span class="diarrhea-chip">🚨 Πιθανή διάρροια</span>{% else %}<span class="module-chip module-chip--mint">✓ Όχι</span>{% endif %}</td>
+                    <td data-label="Σχόλιο">{% if item.notes %}<span class="entry-comment">💬 {{ item.notes }}</span>{% else %}—{% endif %}</td>
+                    <td data-label="Φωτο">{% if item.has_photo %}<a class="mini-action diaper-view-photo" href="{% url 'diaper_detail' item.pk %}">📷 Προβολή</a>{% else %}—{% endif %}</td>
+                    <td data-label="Ενέργειες" class="row-actions">
+                        <a class="mini-action module-view" href="{% url 'diaper_detail' item.pk %}">👁️ Προβολή</a>
+                        {% if not is_readonly_doctor %}
+                            <a class="mini-action module-edit" href="{% url 'diaper_edit' item.pk %}">✏️ Επεξεργασία</a>
+                            <a class="mini-action danger-link module-delete" href="{% url 'diaper_delete' item.pk %}">🗑️ Διαγραφή</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="9"><div class="module-empty">👶 Δεν υπάρχουν καταγραφές πάνας ακόμη.</div></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="compact-pagination" aria-label="Σελίδες πανών">
+        {% if page_obj.has_previous %}<a class="mini-action" href="?page={{ page_obj.previous_page_number }}">← Νεότερες</a>{% endif %}
+        <span>Σελίδα {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a class="mini-action" href="?page={{ page_obj.next_page_number }}">Παλιότερες →</a>{% endif %}
+    </nav>
     {% endif %}
-    <span>Σελίδα {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}
-        <a class="mini-action" href="?page={{ page_obj.next_page_number }}">Παλιότερες →</a>
-    {% endif %}
-</nav>
-{% endif %}
+</div>
 {% endblock %}
