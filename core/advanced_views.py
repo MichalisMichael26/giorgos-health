@@ -318,7 +318,10 @@ def vaccine_delete(request, pk):
 
 @login_required
 def symptom_list(request):
-    items = SymptomEntry.objects.select_related("source_glucose").all()
+    items = SymptomEntry.objects.select_related(
+        "source_glucose",
+        "source_glucose__related_meal",
+    ).all()
     return render(request, "symptoms/list.html", {"items": items, "low_glucose_threshold": 60})
 
 
