@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="form-card narrow">
+<div class="form-card narrow pediatric-delete-card">
+    <div class="delete-card-icon">🗑️</div>
     <h1>{{ title }}</h1>
     <p>Είσαι σίγουρος ότι θέλεις να διαγραφεί αυτή η καταχώρηση;</p>
-    <form method="post">
+    <div class="delete-card-warning">⚠️ Η ενέργεια αυτή δεν αναιρείται.</div>
+    <form method="post" class="delete-card-actions">
         {% csrf_token %}
-        <button class="btn danger" type="submit">Ναι, διαγραφή</button>
-        <a class="btn secondary" href="javascript:history.back()">Ακύρωση</a>
+        <button class="btn danger" type="submit">🗑️ Ναι, διαγραφή</button>
+        <a class="btn secondary" href="javascript:history.back()">↩️ Άκυρο</a>
     </form>
 </div>
 {% endblock %}
