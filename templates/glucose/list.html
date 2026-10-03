@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Γλυκόζη{% endblock %}
 {% block content %}
-<div class="glucose-page">
-    <section class="glucose-hero">
-        <div class="glucose-hero-main">
-            <span class="glucose-hero-icon" aria-hidden="true">🩸</span>
+<div class="glucose-page module-page">
+    <section class="glucose-hero module-hero module-hero--glucose">
+        <div class="glucose-hero-main module-hero-main">
+            <span class="glucose-hero-icon module-hero-icon" aria-hidden="true">🩸</span>
             <div>
                 <h1>Γλυκόζη</h1>
                 <p>Καταγραφή και παρακολούθηση μετρήσεων γλυκόζης</p>
@@ -13,65 +13,46 @@
         <a class="btn primary" href="{% url 'glucose_create' %}">＋ Νέα μέτρηση</a>
     </section>
 
-    <div class="panel table-wrap glucose-panel">
-        <table class="responsive-table glucose-table">
+    <div class="panel table-wrap glucose-panel module-panel">
+        <table class="responsive-table glucose-table module-table">
             <thead>
                 <tr>
-                    <th>Ημέρα</th>
-                    <th>Ημερομηνία</th>
-                    <th>Ώρα</th>
-                    <th>Τιμή</th>
-                    <th>Σχέση</th>
-                    <th>Γεύμα</th>
-                    <th>Σχόλιο</th>
-                    <th></th>
+                    <th>Ημέρα</th><th>Ημερομηνία</th><th>Ώρα</th><th>Τιμή</th>
+                    <th>Σχέση</th><th>Γεύμα</th><th>Σχόλιο</th><th></th>
                 </tr>
             </thead>
             <tbody>
             {% for item in readings %}
-                <tr>
+                <tr class="{% if item.value < 60 %}glucose-low-row{% endif %}">
                     <td data-label="Ημέρα"><strong>{{ item.weekday_name }}</strong></td>
                     <td data-label="Ημερομηνία">{{ item.date|date:"d/m/Y" }}</td>
                     <td data-label="Ώρα">{{ item.time|time:"H:i" }}</td>
                     <td data-label="Τιμή">
-                        <span class="glucose-value-wrap">
+                        <span class="glucose-value-wrap{% if item.value < 60 %} is-low{% endif %}">
                             <strong class="glucose-value">{{ item.value|floatformat:0 }}</strong>
                             <span class="glucose-unit">mg/dL</span>
                         </span>
+                        {% if item.value < 60 %}
+                            <span class="low-glucose-badge">⚠️ &lt;60</span>
+                        {% endif %}
                     </td>
-                    <td data-label="Σχέση">
-                        <span class="glucose-context-pill">{{ item.get_context_display }}</span>
-                    </td>
+                    <td data-label="Σχέση"><span class="glucose-context-pill">{{ item.get_context_display }}</span></td>
                     <td data-label="Γεύμα">
                         {% if item.related_meal %}
                             {{ item.related_meal.date|date:"d/m" }} ·
-                            {% if item.related_meal.actual_time %}
-                                {{ item.related_meal.actual_time|time:"H:i" }}
-                            {% else %}
-                                {{ item.related_meal.scheduled_time|time:"H:i" }}
-                            {% endif %}
+                            {% if item.related_meal.actual_time %}{{ item.related_meal.actual_time|time:"H:i" }}{% else %}{{ item.related_meal.scheduled_time|time:"H:i" }}{% endif %}
                             {% if item.related_meal.finished_time %}–{{ item.related_meal.finished_time|time:"H:i" }}{% endif %}
                             · <strong>{{ item.related_meal.consumed_ml|default_if_none:"—" }} ml</strong>
-                        {% else %}
-                            —
-                        {% endif %}
+                        {% else %}—{% endif %}
                     </td>
-                    <td data-label="Σχόλιο">
-                        {% if item.notes %}
-                            <span class="glucose-note">💬 {{ item.notes }}</span>
-                        {% else %}
-                            —
-                        {% endif %}
-                    </td>
+                    <td data-label="Σχόλιο">{% if item.notes %}<span class="glucose-note">💬 {{ item.notes }}</span>{% else %}—{% endif %}</td>
                     <td data-label="Ενέργειες" class="row-actions">
                         <a class="mini-action glucose-edit" href="{% url 'glucose_edit' item.pk %}">Επεξεργασία</a>
                         <a class="mini-action danger-link glucose-delete" href="{% url 'glucose_delete' item.pk %}">Διαγραφή</a>
                     </td>
                 </tr>
             {% empty %}
-                <tr>
-                    <td colspan="8">Δεν υπάρχουν μετρήσεις.</td>
-                </tr>
+                <tr><td colspan="8"><div class="module-empty">🩸 Δεν υπάρχουν μετρήσεις ακόμη.</div></td></tr>
             {% endfor %}
             </tbody>
         </table>
