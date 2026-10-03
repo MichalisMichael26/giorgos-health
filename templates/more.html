@@ -65,8 +65,8 @@
     <div class="health-card-grid">
         <a href="{% url 'document_list' %}" class="health-menu-card"><span>📁</span><div><strong>Έγγραφα</strong><small>Εξιτήρια, εξετάσεις, γνωματεύσεις</small></div></a>
         <a href="{% url 'history' %}" class="health-menu-card"><span>📅</span><div><strong>Ιστορικό</strong><small>Όλες οι προηγούμενες ημέρες</small></div></a>
-        <a href="{% url 'report_24h_preview' %}" class="health-menu-card"><span>📄</span><div><strong>24ωρη αναφορά</strong><small>Προβολή και PDF</small></div></a>
-        <a href="{% url 'export_center' %}" class="health-menu-card"><span>💾</span><div><strong>Backup / Export</strong><small>ZIP, Excel και PDF</small></div></a>
+        <a href="{% url 'report_24h_preview' %}" class="health-menu-card"><span>📄</span><div><strong>24ωρη αναφορά</strong><small>{% if can_print_export %}Προβολή και PDF{% else %}Προβολή μόνο{% endif %}</small></div></a>
+        {% if can_print_export %}<a href="{% url 'export_center' %}" class="health-menu-card"><span>💾</span><div><strong>Backup / Export</strong><small>ZIP, Excel και PDF</small></div></a>{% endif %}
     </div>
 </section>
 
