@@ -65,3 +65,223 @@
 html.night .module-hero{border-color:#3a4a61;background:linear-gradient(120deg,#202c3e,#252d3c)}html.night .module-hero h1{color:#eef5ff}html.night .module-hero p{color:#a9b7ca}
 html.night .module-chip--blue{background:#253d57;color:#d6e9fa}html.night .module-chip--mint{background:#234237;color:#d3f0e1}html.night .module-chip--lilac{background:#392f51;color:#e0d6f5}html.night .module-chip--peach{background:#493829;color:#f0d9be}
 html.night .pediatric-entry-form form>p{background:rgba(255,255,255,.035);border-color:#39495f}html.night .low-glucose-symptom-info{background:#3b2a31;border-color:#66404c}
+
+/* ===== Pediatric navigation v4 ===== */
+
+/* Desktop navigation: soft child-friendly pills, same visual language as the cards. */
+.pediatric-desktop-nav {
+    gap: 7px;
+    padding: 6px;
+    border: 1px solid rgba(211,224,241,.88);
+    border-radius: 18px;
+    background: rgba(248,251,255,.82);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+}
+.pediatric-desktop-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 7px 10px;
+    border-radius: 13px;
+    color: #61728d;
+    font-size: 12px;
+    font-weight: 850;
+    transition: transform .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.pediatric-desktop-nav a > span {
+    font-size: 16px;
+    line-height: 1;
+}
+.pediatric-desktop-nav a:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 5px 14px rgba(63,91,139,.08);
+}
+.pediatric-desktop-nav .nav-home.is-active { background:#eaf3ff; color:#315f9e; }
+.pediatric-desktop-nav .nav-meals.is-active { background:#e9f8f1; color:#30715b; }
+.pediatric-desktop-nav .nav-glucose.is-active { background:#fff0f4; color:#c23b59; }
+.pediatric-desktop-nav .nav-diapers.is-active { background:#f0ebff; color:#66518d; }
+.pediatric-desktop-nav .nav-health.is-active { background:#fff0f2; color:#b63a50; }
+.pediatric-desktop-nav .nav-doctor.is-active { background:#eaf6ff; color:#2f668d; }
+.pediatric-desktop-nav .nav-scan.is-active { background:#fff5e7; color:#845b26; }
+
+/* Bottom navigation: each module feels like its own little pediatric tab. */
+@media (max-width: 860px) {
+    body.kids-bg {
+        padding-bottom: calc(100px + env(safe-area-inset-bottom));
+    }
+
+    .pediatric-bottom-nav {
+        left: 7px !important;
+        right: 7px !important;
+        bottom: 7px !important;
+        min-height: 80px !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 2px;
+        padding: 7px 5px calc(7px + env(safe-area-inset-bottom)) !important;
+        border: 1px solid rgba(207,221,240,.94) !important;
+        border-radius: 25px !important;
+        background: rgba(255,255,255,.96) !important;
+        box-shadow: 0 -5px 26px rgba(48,75,123,.13), 0 9px 28px rgba(48,75,123,.09) !important;
+        backdrop-filter: blur(18px);
+    }
+
+    .pediatric-bottom-nav a {
+        position: relative;
+        min-width: 0;
+        min-height: 63px !important;
+        padding: 4px 2px 3px;
+        gap: 3px !important;
+        border-radius: 17px !important;
+        color: #7b899f;
+        background: transparent;
+        box-shadow: none !important;
+        overflow: visible !important;
+        transition: transform .18s ease, background .18s ease, color .18s ease;
+    }
+
+    .pediatric-bottom-nav .nav-icon {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: #f4f7fb;
+        font-size: 20px !important;
+        line-height: 1 !important;
+        box-shadow: inset 0 0 0 1px rgba(206,219,237,.55);
+        transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+
+    .pediatric-bottom-nav a small {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 9px !important;
+        line-height: 1.05;
+        font-weight: 850 !important;
+        letter-spacing: -.01em;
+    }
+
+    .pediatric-bottom-nav a.is-active {
+        transform: translateY(-2px);
+        box-shadow: none !important;
+    }
+    .pediatric-bottom-nav a.is-active::after {
+        content: "";
+        position: absolute;
+        left: 26%;
+        right: 26%;
+        bottom: 1px;
+        height: 3px;
+        border-radius: 999px;
+        background: currentColor;
+        opacity: .8;
+    }
+    .pediatric-bottom-nav a.is-active .nav-icon {
+        transform: translateY(-1px) scale(1.08);
+        box-shadow: 0 6px 15px rgba(57,84,132,.14);
+    }
+
+    .pediatric-bottom-nav .nav-home.is-active { color:#32649f; background:#eef5ff; }
+    .pediatric-bottom-nav .nav-home.is-active .nav-icon { background:#dcecff; }
+
+    .pediatric-bottom-nav .nav-meals.is-active { color:#34735d; background:#effaf5; }
+    .pediatric-bottom-nav .nav-meals.is-active .nav-icon { background:#dcf4e8; }
+
+    .pediatric-bottom-nav .nav-glucose.is-active { color:#c33b59; background:#fff1f5; }
+    .pediatric-bottom-nav .nav-glucose.is-active .nav-icon { background:#ffe1e9; }
+
+    .pediatric-bottom-nav .nav-diapers.is-active { color:#67528d; background:#f4f0ff; }
+    .pediatric-bottom-nav .nav-diapers.is-active .nav-icon { background:#e8dfff; }
+
+    .pediatric-bottom-nav .nav-health.is-active { color:#b63a50; background:#fff1f3; }
+    .pediatric-bottom-nav .nav-health.is-active .nav-icon { background:#ffdee4; }
+
+    .pediatric-bottom-nav .nav-doctor.is-active { color:#326a91; background:#eef8ff; }
+    .pediatric-bottom-nav .nav-doctor.is-active .nav-icon { background:#dcefff; }
+
+    .pediatric-bottom-nav a:active {
+        transform: scale(.96);
+    }
+
+    .mobile-quick-add {
+        right: 18px !important;
+        bottom: calc(99px + env(safe-area-inset-bottom)) !important;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 21px !important;
+        background: linear-gradient(145deg,#74a3ff,#4778eb) !important;
+        border: 3px solid #fff !important;
+        box-shadow: 0 13px 28px rgba(67,105,201,.30) !important;
+        font-size: 34px !important;
+        font-weight: 500;
+    }
+
+    .mobile-search-fab {
+        bottom: calc(105px + env(safe-area-inset-bottom)) !important;
+    }
+
+    .quick-add-sheet {
+        border-top-left-radius: 28px !important;
+        border-top-right-radius: 28px !important;
+        background: linear-gradient(180deg,#fff,#f8fbff) !important;
+    }
+    .quick-add-head strong::before { content:"✨ "; }
+    .quick-add-options a {
+        border-radius: 18px !important;
+        border: 1px solid #e1eaf5 !important;
+        background: #fff !important;
+        box-shadow: 0 7px 17px rgba(59,86,133,.07);
+    }
+    .quick-add-options a:nth-child(1) { background:linear-gradient(180deg,#fff,#f1fbf6) !important; }
+    .quick-add-options a:nth-child(2) { background:linear-gradient(180deg,#fff,#fff3f6) !important; }
+    .quick-add-options a:nth-child(3) { background:linear-gradient(180deg,#fff,#f4f0ff) !important; }
+    .quick-add-options a:nth-child(4) { background:linear-gradient(180deg,#fff,#fff6ed) !important; }
+    .quick-add-options a:nth-child(5) { background:linear-gradient(180deg,#fff,#f2f7ff) !important; }
+    .quick-add-options a:nth-child(6) { background:linear-gradient(180deg,#fff,#eef8ff) !important; }
+    .quick-add-options a span {
+        font-size: 29px !important;
+    }
+}
+
+@media (max-width: 390px) {
+    .pediatric-bottom-nav {
+        left: 4px !important;
+        right: 4px !important;
+        padding-left: 3px !important;
+        padding-right: 3px !important;
+    }
+    .pediatric-bottom-nav .nav-icon {
+        width: 31px;
+        height: 31px;
+        font-size: 18px !important;
+    }
+    .pediatric-bottom-nav a small {
+        font-size: 8.2px !important;
+    }
+}
+
+html.night .pediatric-desktop-nav {
+    background: rgba(24,36,53,.9);
+    border-color: #34465f;
+}
+html.night .pediatric-desktop-nav a { color:#b9c6d9; }
+html.night .pediatric-bottom-nav {
+    background: rgba(18,27,42,.97) !important;
+    border-color:#35475f !important;
+}
+html.night .pediatric-bottom-nav .nav-icon {
+    background:#26364b;
+    border-color:#3a4c65;
+}
+html.night .quick-add-sheet {
+    background: linear-gradient(180deg,#1f2b3d,#182335) !important;
+}
+html.night .quick-add-options a {
+    border-color:#384a62 !important;
+    color:#e7eef8;
+}
+/* ===== End pediatric navigation v4 ===== */
