@@ -2,7 +2,7 @@
 {% block title %}Doctor View{% endblock %}
 {% block content %}
 <div class="doctor-view-page">
-<div class="report-toolbar no-print"><a class="btn secondary" href="{% url 'dashboard' %}">← Επιστροφή</a><div class="report-toolbar-actions"><button class="btn primary" type="button" onclick="window.print()">🖨️ Εκτύπωση</button></div></div>
+<div class="report-toolbar no-print"><a class="btn secondary" href="{% url 'dashboard' %}">← Επιστροφή</a><div class="report-toolbar-actions">{% if can_print_export %}<button class="btn primary" type="button" onclick="window.print()">🖨️ Εκτύπωση</button>{% else %}<span class="print-owner-only">🔒 Εκτύπωση μόνο από τον ιδιοκτήτη</span>{% endif %}</div></div>
 <article class="doctor-sheet">
 <header class="doctor-header"><div><span class="doctor-kicker">GIORGOS HEALTH · DOCTOR VIEW</span><h1>{% if profile %}{{ profile.full_name }}{% else %}Giorgos Panayiotis Michael{% endif %}</h1><p>{% if profile %}DOB {{ profile.birth_date|date:"d/m/Y" }}{% endif %} · Ενημέρωση {{ today|date:"d/m/Y" }}</p></div><div class="doctor-badge">Read-only view</div></header>
 <section class="doctor-summary-grid">
