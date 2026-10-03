@@ -1,8 +1,56 @@
 {% extends "base.html" %}
 {% block title %}Συμπτώματα{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>🌡️ Συμπτώματα / επεισόδια</h1><p class="muted">Καταγραφή επεισοδίων με ώρα, ένταση και σχέση με γεύμα.</p></div><a class="btn primary" href="{% url 'symptom_create' %}">+ Νέο</a></div>
-<div class="panel table-wrap"><table class="responsive-table"><thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Σύμπτωμα</th><th>Ένταση</th><th>Σχέση</th><th>Φωτο</th><th></th></tr></thead><tbody>
-{% for item in items %}<tr><td data-label="Ημ/νία">{{ item.date|date:"d/m/Y" }}</td><td data-label="Ώρα">{{ item.time|time:"H:i" }}</td><td data-label="Σύμπτωμα">{{ item.symptom }}</td><td data-label="Ένταση">{{ item.get_severity_display }}</td><td data-label="Σχέση">{{ item.get_relation_to_feed_display }}</td><td data-label="Φωτο">{% if item.photo_data %}<a href="{% url 'symptom_photo' item.pk %}" target="_blank"><img class="timeline-photo-thumb" src="{% url 'symptom_photo' item.pk %}" alt="Φωτογραφία συμπτώματος"></a>{% else %}—{% endif %}</td><td data-label="Ενέργειες" class="row-actions"><a class="mini-action" href="{% url 'symptom_edit' item.pk %}">Edit</a><a class="mini-action danger-link" href="{% url 'symptom_delete' item.pk %}">Delete</a></td></tr>{% empty %}<tr><td colspan="7">Δεν υπάρχουν καταχωρήσεις.</td></tr>{% endfor %}
-</tbody></table></div>
+<div class="symptom-page module-page">
+    <section class="module-hero module-hero--symptom">
+        <div class="module-hero-main">
+            <span class="module-hero-icon" aria-hidden="true">🌡️</span>
+            <div>
+                <h1>Συμπτώματα / επεισόδια</h1>
+                <p>Καταγραφή επεισοδίων με ώρα, ένταση και σχέση με γεύμα</p>
+            </div>
+        </div>
+        <a class="btn primary" href="{% url 'symptom_create' %}">＋ Νέο</a>
+    </section>
+
+    <div class="low-glucose-symptom-info">
+        <span class="low-glucose-symptom-info-icon">🩸</span>
+        <div>
+            <strong>Αυτόματη σύνδεση με χαμηλή γλυκόζη</strong>
+            <p>Κάθε καταγεγραμμένη τιμή γλυκόζης κάτω από {{ low_glucose_threshold }} mg/dL εμφανίζεται αυτόματα εδώ, ώστε να συμπληρώσετε εσείς τι παρατηρήσατε.</p>
+        </div>
+    </div>
+
+    <div class="panel table-wrap module-panel">
+        <table class="responsive-table module-table symptom-table">
+            <thead><tr><th>Ημ/νία</th><th>Ώρα</th><th>Σύμπτωμα</th><th>Ένταση</th><th>Σχέση</th><th>Πηγή</th><th>Φωτο</th><th></th></tr></thead>
+            <tbody>
+            {% for item in items %}
+                <tr class="{% if item.source_glucose_id and not item.details_completed %}pending-low-symptom{% endif %}">
+                    <td data-label="Ημ/νία"><strong>{{ item.weekday_name }}</strong><span class="module-subvalue">{{ item.date|date:"d/m/Y" }}</span></td>
+                    <td data-label="Ώρα"><span class="module-chip module-chip--blue">🕒 {{ item.time|time:"H:i" }}</span></td>
+                    <td data-label="Σύμπτωμα">
+                        {{ item.symptom }}
+                        {% if item.source_glucose_id and not item.details_completed %}<span class="pending-completion-badge">✍️ Αναμένει συμπλήρωση</span>{% endif %}
+                    </td>
+                    <td data-label="Ένταση">{{ item.get_severity_display }}</td>
+                    <td data-label="Σχέση">{{ item.get_relation_to_feed_display }}</td>
+                    <td data-label="Πηγή">
+                        {% if item.source_glucose_id %}
+                            <span class="low-glucose-source">🩸 {{ item.source_glucose.value|floatformat:0 }} mg/dL</span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td data-label="Φωτο">{% if item.photo_data %}<a href="{% url 'symptom_photo' item.pk %}" target="_blank"><img class="timeline-photo-thumb" src="{% url 'symptom_photo' item.pk %}" alt="Φωτογραφία συμπτώματος"></a>{% else %}—{% endif %}</td>
+                    <td data-label="Ενέργειες" class="row-actions">
+                        <a class="mini-action module-edit" href="{% url 'symptom_edit' item.pk %}">{% if item.source_glucose_id and not item.details_completed %}✍️ Συμπλήρωση{% else %}✏️ Επεξεργασία{% endif %}</a>
+                        <a class="mini-action danger-link module-delete" href="{% url 'symptom_delete' item.pk %}">🗑️ Διαγραφή</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="8"><div class="module-empty">🌡️ Δεν υπάρχουν καταχωρήσεις συμπτωμάτων ακόμη.</div></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
