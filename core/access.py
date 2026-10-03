@@ -62,6 +62,22 @@ UNSAFE_VIEW_NAMES = {
 }
 
 
+
+
+def configured_owner_username():
+    """Primary owner account allowed to print/export sensitive data."""
+    return (os.environ.get("DJANGO_SUPERUSER_USERNAME") or "admin").strip().casefold()
+
+
+def is_owner_user(user):
+    if not user or not user.is_authenticated:
+        return False
+    return (
+        bool(user.is_superuser)
+        and (user.username or "").strip().casefold() == configured_owner_username()
+    )
+
+
 def configured_doctor_usernames():
     usernames = {
         (os.environ.get("DJANGO_DOCTOR_USERNAME") or "drsavvas").strip().casefold(),
