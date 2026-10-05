@@ -375,3 +375,156 @@ html.night .symptom-meal-amount{
     background:#234237;
     color:#d3f0e1;
 }
+
+
+/* ===== Desktop meal cards v1 ===== */
+/* The meal list has many fields. On desktop we render each meal as a compact
+   card grid instead of an 11-column table, so nothing can overflow the screen. */
+@media (min-width: 721px) {
+    .meal-page .module-panel {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
+    }
+
+    .meal-page .meal-table,
+    .meal-page .meal-table tbody {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .meal-page .meal-table thead {
+        display: none;
+    }
+
+    .meal-page .meal-table tbody {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+        gap: 16px;
+    }
+
+    .meal-page .meal-table tr {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0;
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+        padding: 14px;
+        border: 1px solid #dce7f3;
+        border-radius: 22px;
+        background: linear-gradient(180deg,#fff,#fbfdff);
+        box-shadow: 0 10px 26px rgba(52,78,124,.08);
+        overflow: hidden;
+    }
+
+    .meal-page .meal-table td {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 5px;
+        min-width: 0;
+        min-height: 68px;
+        padding: 9px 10px !important;
+        border: 0 !important;
+        border-bottom: 1px dashed #edf1f6 !important;
+        background: transparent !important;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .meal-page .meal-table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 1px;
+        color: #7b8ba3;
+        font-size: 10px;
+        font-weight: 900;
+        line-height: 1.15;
+        text-transform: none;
+    }
+
+    .meal-page .meal-table td[data-label="Ημερομηνία"]::before { content:"📅 Ημερομηνία"; }
+    .meal-page .meal-table td[data-label="Προγραμματισμένη"]::before { content:"⏰ Προγραμματισμένη"; }
+    .meal-page .meal-table td[data-label="Έναρξη"]::before { content:"▶️ Έναρξη"; }
+    .meal-page .meal-table td[data-label="Τέλος"]::before { content:"✅ Τέλος"; }
+    .meal-page .meal-table td[data-label="Προσφέρθηκαν"]::before { content:"🍼 Προσφέρθηκαν"; }
+    .meal-page .meal-table td[data-label="Έμεινε"]::before { content:"📉 Έμεινε"; }
+    .meal-page .meal-table td[data-label="Ήπιε"]::before { content:"😋 Ήπιε"; }
+    .meal-page .meal-table td[data-label="Formula"]::before { content:"🥛 Formula"; }
+    .meal-page .meal-table td[data-label="Maxijul"]::before { content:"🥄 Maxijul"; }
+    .meal-page .meal-table td[data-label="Σχόλιο"]::before { content:"💬 Σχόλιο"; }
+
+    .meal-page .meal-table td[data-label="Σχόλιο"] {
+        grid-column: span 2;
+    }
+
+    .meal-page .meal-table .row-actions {
+        grid-column: 1 / -1;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 9px !important;
+        min-height: auto;
+        padding-top: 12px !important;
+        border-bottom: 0 !important;
+    }
+
+    .meal-page .meal-table .row-actions::before {
+        grid-column: 1 / -1;
+        content: "⚙️ Ενέργειες";
+    }
+
+    .meal-page .meal-table .row-actions .mini-action {
+        width: 100%;
+        min-width: 0;
+        min-height: 42px;
+        margin: 0;
+        border-radius: 13px;
+    }
+
+    .meal-page .meal-table .module-chip,
+    .meal-page .meal-table .meal-amount {
+        max-width: 100%;
+        white-space: nowrap;
+        font-size: 11.5px;
+    }
+
+    .meal-page .meal-table .entry-comment {
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .meal-page .meal-table tr:has(.module-empty) {
+        display: block;
+        grid-column: 1 / -1;
+    }
+
+    .meal-page .meal-table tr:has(.module-empty) td {
+        display: block;
+        min-height: 0;
+        border-bottom: 0 !important;
+    }
+    .meal-page .meal-table tr:has(.module-empty) td::before {
+        display: none;
+    }
+}
+
+@media (min-width: 721px) and (max-width: 1050px) {
+    .meal-page .meal-table tbody {
+        grid-template-columns: 1fr;
+    }
+}
+
+html.night .meal-page .meal-table tr {
+    background: linear-gradient(180deg,#202c3e,#1b2737);
+    border-color:#3a4a61;
+}
+html.night .meal-page .meal-table td {
+    border-bottom-color:#33445a !important;
+}
+/* ===== End desktop meal cards v1 ===== */
