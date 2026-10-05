@@ -82,6 +82,7 @@ def configured_doctor_usernames():
     usernames = {
         (os.environ.get("DJANGO_DOCTOR_USERNAME") or "drsavvas").strip().casefold(),
         (os.environ.get("DJANGO_GRAFAKOU_USERNAME") or "drgrafakou").strip().casefold(),
+        (os.environ.get("DJANGO_TSIAPPA_USERNAME") or "tsiappa").strip().casefold(),
     }
     return {username for username in usernames if username}
 
