@@ -1087,7 +1087,7 @@ def daily_summary_pdf(request):
         Paragraph(f"Γεύματα: {summary['meal_count']} · Σύνολο: {summary['consumed']} ml · Μ.ό.: {summary['avg_meal'] or '—'} ml", styles["body"]),
         Paragraph(
             (
-                f"Maxijul: {summary['maxijul']['total_scoops']:g} scoops · "
+                f"Maxijul: {summary['maxijul']['total_scoops']:g} κουταλιές · "
                 f"≈ {summary['maxijul']['grams']:g} g · "
                 f"≈ {summary['maxijul']['kcal']:g} kcal"
             )
