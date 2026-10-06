@@ -64,7 +64,7 @@ class MealEntryForm(forms.ModelForm):
             "actual_time": "Ώρα έναρξης γεύματος",
             "finished_time": "Ώρα ολοκλήρωσης γεύματος",
             "formula": "Formula (κουταλάκια)",
-            "supplement": "Maxijul (scoops)",
+            "supplement": "Maxijul — 1 κουταλιά = 5 g",
         }
         widgets = {
             "date": DateInput(),
