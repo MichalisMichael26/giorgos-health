@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, time, timedelta
 from pathlib import Path
+import os
 import re
 
 from django.conf import settings
@@ -247,12 +248,8 @@ def maxijul_day_summary(profile, meals):
 
 
 def _normalized_target(minimum, maximum):
-    if minimum is None and maximum is None:
-        return None, None
-
-    target_min = minimum if minimum is not None else maximum
-    target_max = maximum if maximum is not None else minimum
-    return target_min, target_max
+    # Keep one-sided clinical targets one-sided so a minimum remains a minimum.
+    return minimum, maximum
 
 
 def daily_milk_guide(profile, latest_growth, today, meals_today):
@@ -305,8 +302,9 @@ def daily_milk_guide(profile, latest_growth, today, meals_today):
         active_label = "Μικτή ημέρα · δεν εφαρμόζεται αυτόματα ένας στόχος"
 
     progress = None
-    if has_active_target and target_max and target_max > 0:
-        progress = min(round((consumed_today / target_max) * 100), 100)
+    progress_target = target_max if target_max is not None else target_min
+    if has_active_target and progress_target and progress_target > 0:
+        progress = min(round((consumed_today / progress_target) * 100), 100)
 
     return {
         "age": age,
@@ -333,6 +331,7 @@ def daily_milk_guide(profile, latest_growth, today, meals_today):
         "target_max": target_max,
         "consumed_today": consumed_today,
         "progress": progress,
+        "progress_target": progress_target,
     }
 
 
@@ -1473,11 +1472,11 @@ def meal_create(request):
             "scheduled_time": suggested_time,
             "actual_time": suggested_time,
             "same_as_scheduled": True,
-            "offered_ml": 170,
+            "offered_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "170")),
             "remaining_ml": 0,
-            "consumed_ml": 170,
-            "formula": "5",
-            "supplement": "1",
+            "consumed_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "170")),
+            "formula": os.environ.get("GIORGOS_FORMULA_SCOOPS_PER_FEED", "5"),
+            "supplement": os.environ.get("GIORGOS_MAXIJUL_SCOOPS_PER_FEED", "1"),
         },
     )
     if form.is_valid():
