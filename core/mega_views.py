@@ -487,7 +487,7 @@ def reviewed_products(request):
 def _lab_category(test_name):
     name = (test_name or "").casefold()
 
-    if name.startswith("abg ") or name in {"lactate", "abg glucose"}:
+    if name.startswith("abg ") or name.startswith("blood gas ") or name in {"lactate", "abg glucose"}:
         return "Αέρια αίματος"
 
     if name in {
