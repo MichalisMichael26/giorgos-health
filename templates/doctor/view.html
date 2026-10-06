@@ -5,6 +5,12 @@
 <div class="report-toolbar no-print"><a class="btn secondary" href="{% url 'dashboard' %}">← Επιστροφή</a><div class="report-toolbar-actions">{% if can_print_export %}<button class="btn primary" type="button" onclick="window.print()">🖨️ Εκτύπωση</button>{% else %}<span class="print-owner-only">🔒 Εκτύπωση μόνο από τον ιδιοκτήτη</span>{% endif %}</div></div>
 <article class="doctor-sheet">
 <header class="doctor-header"><div><span class="doctor-kicker">GIORGOS HEALTH · DOCTOR VIEW</span><h1>{% if profile %}{{ profile.full_name }}{% else %}Giorgos Panayiotis Michael{% endif %}</h1><p>{% if profile %}DOB {{ profile.birth_date|date:"d/m/Y" }}{% endif %} · Ενημέρωση {{ today|date:"d/m/Y" }}</p></div><div class="doctor-badge">Read-only view</div></header>
+{% if profile and profile.confirmed_diagnosis_display %}
+<section class="diagnosis-gold-banner diagnosis-gold-banner--compact" aria-label="Επιβεβαιωμένη διάγνωση">
+    <span class="diagnosis-gold-icon">🧬</span>
+    <div><span class="diagnosis-gold-label">ΕΠΙΒΕΒΑΙΩΜΕΝΗ ΔΙΑΓΝΩΣΗ</span><strong>{{ profile.confirmed_diagnosis_display }}</strong></div>
+</section>
+{% endif %}
 <section class="doctor-summary-grid">
 <div><span>Σήμερα γεύματα</span><strong>{{ today_stats.meal_count }}</strong></div><div><span>Σήμερα ml</span><strong>{{ today_stats.consumed_ml }}</strong></div><div><span>Σήμερα γλυκόζες</span><strong>{{ today_stats.glucose_count }}</strong></div><div><span>7ημ. μ.ό. γλυκόζης</span><strong>{% if glucose_avg_7 != None %}{{ glucose_avg_7 }}{% else %}—{% endif %}</strong></div>
 </section>
