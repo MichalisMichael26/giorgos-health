@@ -1479,6 +1479,22 @@ def meal_create(request):
             "supplement": os.environ.get("GIORGOS_MAXIJUL_SCOOPS_PER_FEED", "1"),
         },
     )
+
+    try:
+        minimum_feed_ml = int(os.environ.get("GIORGOS_MIN_FEED_ML", "0") or 0)
+    except ValueError:
+        minimum_feed_ml = 0
+    try:
+        topup_after_minutes = int(os.environ.get("GIORGOS_TOPUP_AFTER_MINUTES", "0") or 0)
+    except ValueError:
+        topup_after_minutes = 0
+
+    if minimum_feed_ml:
+        extra = f" Κλινικός στόχος: περίπου ≥{minimum_feed_ml} ml ανά κύριο γεύμα."
+        if topup_after_minutes:
+            extra += f" Αν δεν συμπληρωθεί, νέα προσφορά μετά από {topup_after_minutes} λεπτά για συμπλήρωση."
+        form.fields["consumed_ml"].help_text = (form.fields["consumed_ml"].help_text or "") + extra
+
     if form.is_valid():
         item = form.save(commit=False)
         item.created_by = request.user
