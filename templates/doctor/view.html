@@ -31,6 +31,10 @@
         <strong>
             {% if milk_guide_today.target_min != None and milk_guide_today.target_max != None and milk_guide_today.target_min != milk_guide_today.target_max %}
                 {{ milk_guide_today.target_min }}–{{ milk_guide_today.target_max }} ml / 24ωρο
+            {% elif milk_guide_today.target_min != None and milk_guide_today.target_max == None %}
+                ≥ {{ milk_guide_today.target_min }} ml / 24ωρο
+            {% elif milk_guide_today.target_min == None and milk_guide_today.target_max != None %}
+                ≤ {{ milk_guide_today.target_max }} ml / 24ωρο
             {% elif milk_guide_today.target_min != None %}
                 {{ milk_guide_today.target_min }} ml / 24ωρο
             {% else %}
