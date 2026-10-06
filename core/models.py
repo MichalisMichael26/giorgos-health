@@ -379,6 +379,16 @@ class ChildProfile(models.Model):
         self.birth_date = self.FIXED_BIRTH_DATE
         super().save(*args, **kwargs)
 
+    @property
+    def confirmed_diagnosis_display(self):
+        """Read the confirmed diagnosis from the private current feeding plan."""
+        prefix = "Επιβεβαιωμένη διάγνωση:"
+        for line in (self.current_feeding_plan or "").splitlines():
+            cleaned = line.strip()
+            if cleaned.lower().startswith(prefix.lower()):
+                return cleaned[len(prefix):].strip()
+        return ""
+
     def __str__(self):
         return self.name
 
