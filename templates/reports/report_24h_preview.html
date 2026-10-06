@@ -29,7 +29,7 @@
         <section class="report-summary-grid">
             <div><span>🍼</span><strong>{{ meals|length }}</strong><small>Γεύματα</small></div>
             <div><span>💧</span><strong>{{ total_ml }} ml</strong><small>Σύνολο</small></div>
-            <div><span>➕</span><strong>{{ maxijul_24h.total_scoops|floatformat:"-2" }}</strong><small>Maxijul scoops (εκτ. κατανάλωση) · ≈ {{ maxijul_24h.kcal|floatformat:"-1" }} kcal</small></div>
+            <div><span>➕</span><strong>{{ maxijul_24h.total_κουταλιές|floatformat:"-2" }}</strong><small>Maxijul κουταλιές (εκτ. κατανάλωση) · 1 κουταλιά = 5 g · ≈ {{ maxijul_24h.kcal|floatformat:"-1" }} kcal</small></div>
             <div><span>🩸</span><strong>{{ glucose|length }}</strong><small>Μετρήσεις</small></div>
             <div><span>💊</span><strong>{{ medications|length }}</strong><small>Φάρμακα / συμπληρώματα</small></div>
         </section>
