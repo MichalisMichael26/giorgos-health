@@ -351,15 +351,16 @@
 
         <div class="milk-guide-reference maxijul-summary-card">
             <span class="guide-kicker">Maxijul σήμερα · εκτ. κατανάλωση</span>
-            <strong>{{ milk_guide.maxijul.total_scoops|floatformat:"-2" }} scoops</strong>
+            <strong>{{ milk_guide.maxijul.total_scoops|floatformat:"-2" }} κουταλιές</strong>
             <small>
                 ≈ {{ milk_guide.maxijul.grams|floatformat:"-1" }} g
+                · 1 κουταλιά = 5 g
                 · ≈ {{ milk_guide.maxijul.kcal|floatformat:"-1" }} kcal
                 · ≈ {{ milk_guide.maxijul.carbs_g|floatformat:"-1" }} g υδατ.
             </small>
             <small>
-                Προστέθηκαν {{ milk_guide.maxijul.prepared_scoops|floatformat:"-2" }} scoops στα παρασκευασμένα γεύματα
-                · εκτ. κατανάλωση {{ milk_guide.maxijul.total_scoops|floatformat:"-2" }} scoops
+                Προστέθηκαν {{ milk_guide.maxijul.prepared_scoops|floatformat:"-2" }} κουταλιές στα παρασκευασμένα γεύματα
+                · εκτ. κατανάλωση {{ milk_guide.maxijul.total_scoops|floatformat:"-2" }} κουταλιές
             </small>
             <small>
                 Γεύματα με Maxijul: {{ milk_guide.maxijul.with_maxijul_meals }}
