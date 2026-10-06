@@ -28,7 +28,7 @@ class MealEntry(models.Model):
     consumed_ml = models.PositiveIntegerField("Ήπιε (ml)", blank=True, null=True)
     remaining_ml = models.PositiveIntegerField("Έμεινε (ml)", blank=True, null=True)
     formula = models.CharField("Formula", max_length=120, blank=True)
-    supplement = models.CharField("Maxijul (scoops)", max_length=120, blank=True)
+    supplement = models.CharField("Maxijul (κουταλιές — 1 κουταλιά = 5 g)", max_length=120, blank=True)
     status = models.CharField(
         "Κατάσταση",
         max_length=20,
@@ -313,17 +313,17 @@ class ChildProfile(models.Model):
         help_text="Χρησιμοποιείται μόνο όταν δεν υπάρχουν ακόμη γεύματα για τη σημερινή ημέρα.",
     )
     planned_maxijul_scoops_per_feed = models.DecimalField(
-        "Προγραμματισμένα scoops Maxijul / γεύμα",
+        "Προγραμματισμένες κουταλιές Maxijul / γεύμα",
         max_digits=5,
         decimal_places=2,
         default=1,
     )
     maxijul_scoop_grams = models.DecimalField(
-        "Maxijul — γραμμάρια ανά scoop",
+        "Maxijul — γραμμάρια ανά κουταλιά",
         max_digits=5,
         decimal_places=2,
-        default=4.20,
-        help_text="Ελέγξτε ότι αντιστοιχεί στο scoop που χρησιμοποιείτε.",
+        default=5.00,
+        help_text="1 κουταλιά Maxijul = 5 g στο τρέχον πλάνο.",
     )
     maxijul_kcal_per_100g = models.DecimalField(
         "Maxijul — kcal / 100 g",
