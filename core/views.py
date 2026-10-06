@@ -163,8 +163,8 @@ def weight_based_formula_guide(latest_growth, age_days):
 
 def _numeric_scoops(value):
     """
-    Parse the existing MealEntry.supplement field as Maxijul scoops.
-    It accepts values such as "1", "1.0", "1 scoop" or "1 κουταλιά".
+    Parse the existing MealEntry.supplement field as Maxijul spoon count.
+    It accepts values such as "1", "1.0", "1 spoon" or "1 κουταλιά (5 g)".
     """
     text = str(value or "").strip().replace(",", ".")
     if not text:
@@ -468,7 +468,7 @@ def build_history_days(start_date, end_date):
                     part
                     for part in [
                         f"Formula: {item.formula}" if item.formula else "",
-                        f"Maxijul: {item.supplement} scoop" if item.supplement else "",
+                        f"Maxijul: {item.supplement}" if item.supplement else "",
                         f"Τέλος: {item.finished_time.strftime('%H:%M')}" if item.finished_time else "",
                         f"💬 {item.notes}" if item.notes else "",
                     ]
@@ -1360,7 +1360,7 @@ def report_24h_pdf(request):
             styles["body"],
         ),
         Paragraph(
-            f"Maxijul 24ώρου: {maxijul_24h['total_scoops']:g} scoops · "
+            f"Maxijul 24ώρου: {maxijul_24h['total_scoops']:g} κουταλιές · "
             f"≈ {maxijul_24h['grams']:g} g · ≈ {maxijul_24h['kcal']:g} kcal",
             styles["body"],
         ),
@@ -1476,7 +1476,10 @@ def meal_create(request):
             "remaining_ml": 0,
             "consumed_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "170")),
             "formula": os.environ.get("GIORGOS_FORMULA_SCOOPS_PER_FEED", "5"),
-            "supplement": os.environ.get("GIORGOS_MAXIJUL_SCOOPS_PER_FEED", "1"),
+            "supplement": (
+                f'{os.environ.get("GIORGOS_MAXIJUL_SCOOPS_PER_FEED", "1")} κουταλιά '
+                f'({os.environ.get("GIORGOS_MAXIJUL_SCOOP_GRAMS", "5")} g)'
+            ),
         },
     )
 
