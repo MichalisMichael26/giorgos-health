@@ -16,6 +16,16 @@
     </div>
 </div>
 
+{% if profile and profile.current_feeding_plan %}
+<section class="panel current-clinical-plan-panel">
+    <div class="panel-head">
+        <div><h2>🧬 Επιβεβαιωμένη διάγνωση & τρέχον πλάνο</h2><p class="muted">Τρέχουσα ιατρική/διατροφική οδηγία</p></div>
+        <a href="{% url 'emergency_card' %}">Emergency Card</a>
+    </div>
+    <p class="preline">{{ profile.current_feeding_plan }}</p>
+</section>
+{% endif %}
+
 <section class="today-overview">
     <div class="overview-card soft-blue">
         <span class="overview-icon">🍼</span>
@@ -261,6 +271,10 @@
             <strong>
                 {% if milk_guide.target_min != None and milk_guide.target_max != None and milk_guide.target_min != milk_guide.target_max %}
                     {{ milk_guide.target_min }}–{{ milk_guide.target_max }} ml / 24ωρο
+                {% elif milk_guide.target_min != None and milk_guide.target_max == None %}
+                    ≥ {{ milk_guide.target_min }} ml / 24ωρο
+                {% elif milk_guide.target_min == None and milk_guide.target_max != None %}
+                    ≤ {{ milk_guide.target_max }} ml / 24ωρο
                 {% elif milk_guide.target_min != None %}
                     {{ milk_guide.target_min }} ml / 24ωρο
                 {% else %}
@@ -283,6 +297,10 @@
                 {% if milk_guide.has_with_maxijul_target %}
                     {% if milk_guide.with_maxijul_min != None and milk_guide.with_maxijul_max != None and milk_guide.with_maxijul_min != milk_guide.with_maxijul_max %}
                         {{ milk_guide.with_maxijul_min }}–{{ milk_guide.with_maxijul_max }} ml
+                    {% elif milk_guide.with_maxijul_min != None and milk_guide.with_maxijul_max == None %}
+                        ≥ {{ milk_guide.with_maxijul_min }} ml
+                    {% elif milk_guide.with_maxijul_min == None and milk_guide.with_maxijul_max != None %}
+                        ≤ {{ milk_guide.with_maxijul_max }} ml
                     {% elif milk_guide.with_maxijul_min != None %}
                         {{ milk_guide.with_maxijul_min }} ml
                     {% else %}
@@ -319,7 +337,7 @@
             <span class="guide-kicker">Σήμερα μέχρι τώρα</span>
             <strong>{{ consumed_total }} ml</strong>
 
-            {% if milk_guide.has_active_target and milk_guide.target_max %}
+            {% if milk_guide.has_active_target and milk_guide.progress != None %}
             <div class="milk-progress" aria-label="Πρόοδος εξατομικευμένου ημερήσιου στόχου">
                 <div style="width: {{ milk_guide.progress }}%;"></div>
             </div>
