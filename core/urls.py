@@ -5,6 +5,7 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("more/", views.more, name="more"),
     path("health/", views.more, name="health_hub"),
+    path("health/maxijul-calculator/", views.maxijul_calculator, name="maxijul_calculator"),
     path("health/allergies/", views.allergies_view, name="allergies_view"),
     path("profile/", views.child_profile_edit, name="child_profile_edit"),
     path(
