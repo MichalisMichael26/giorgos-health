@@ -304,8 +304,8 @@
         </div>
         <div class="metric">
             <span>Maxijul · εκτ.</span>
-            <strong>{{ maxijul_48h.total_scoops|floatformat:"-2" }}</strong>
-            <small>scoops · ≈ {{ maxijul_48h.kcal|floatformat:"-1" }} kcal</small>
+            <strong>{{ maxijul_48h.total_κουταλιές|floatformat:"-2" }}</strong>
+            <small>κουταλιές · 1 κουταλιά = 5 g · ≈ {{ maxijul_48h.kcal|floatformat:"-1" }} kcal</small>
         </div>
         <div class="metric">
             <span>Γλυκόζες</span>
@@ -351,7 +351,7 @@
                     Η διάρκεια του γεύματος δεν μετακινεί την επόμενη προγραμματισμένη ώρα.
                     <br>
                     Ρύθμιση Maxijul: {% if profile.maxijul_plan_active %}ενεργή{% else %}μη ενεργή{% endif %}
-                    · {{ profile.planned_maxijul_scoops_per_feed|floatformat:"-2" }} scoop/γεύμα
+                    · {{ profile.planned_maxijul_κουταλιές_per_feed|floatformat:"-2" }} κουταλιά/γεύμα
                     <br>
                     Στόχος με Maxijul:
                     {% if profile.target_with_maxijul_min_ml != None and profile.target_with_maxijul_max_ml != None %}
@@ -416,7 +416,7 @@
 
     <section class="section allow-break">
         <h2>🍼 Γεύματα τελευταίων 48 ωρών</h2>
-        <p class="section-note">Οι θερμίδες Maxijul είναι εκτίμηση βάσει των καταχωρημένων scoops και της ποσότητας που καταναλώθηκε.</p>
+        <p class="section-note">Οι θερμίδες Maxijul είναι εκτίμηση βάσει των καταχωρημένων κουταλιές και της ποσότητας που καταναλώθηκε.</p>
         {% if meals %}
         <div class="table-wrap">
             <table>
