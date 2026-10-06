@@ -16,6 +16,16 @@
     </div>
 </div>
 
+{% if profile and profile.confirmed_diagnosis_display %}
+<section class="diagnosis-gold-banner" aria-label="Επιβεβαιωμένη διάγνωση">
+    <span class="diagnosis-gold-icon">🧬</span>
+    <div>
+        <span class="diagnosis-gold-label">ΕΠΙΒΕΒΑΙΩΜΕΝΗ ΔΙΑΓΝΩΣΗ</span>
+        <strong>{{ profile.confirmed_diagnosis_display }}</strong>
+    </div>
+</section>
+{% endif %}
+
 {% if profile and profile.current_feeding_plan %}
 <section class="panel current-clinical-plan-panel">
     <div class="panel-head">
