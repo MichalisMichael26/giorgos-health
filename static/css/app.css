@@ -8060,3 +8060,41 @@ html.night .form-card::after {
     color: rgba(255, 224, 124, .26);
 }
 /* ===== End Pediatric UI polish v2 ===== */
+
+/* Confirmed diagnosis banner */
+.diagnosis-gold-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 17px 20px;
+    margin: 0 0 18px;
+    border: 1px solid rgba(194, 147, 50, .55);
+    border-radius: 18px;
+    background: linear-gradient(135deg, #17191d, #242018);
+    box-shadow: 0 10px 24px rgba(90, 66, 17, .16);
+}
+.diagnosis-gold-icon { font-size: 30px; line-height: 1; }
+.diagnosis-gold-banner > div { display: grid; gap: 3px; }
+.diagnosis-gold-label {
+    color: #d6ad55;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .09em;
+}
+.diagnosis-gold-banner strong {
+    color: #f0c96c;
+    font-size: clamp(18px, 2.4vw, 24px);
+    font-weight: 900;
+    line-height: 1.25;
+}
+.diagnosis-gold-banner--compact { margin: 18px 0 0; }
+.diagnosis-gold-banner--emergency {
+    margin: 0;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+}
+@media (max-width: 640px) {
+    .diagnosis-gold-banner { align-items: flex-start; padding: 15px 16px; }
+    .diagnosis-gold-icon { font-size: 26px; }
+}
