@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Maxijul Calculator{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>🥄 Maxijul Calculator <span style="font-size:.55em;vertical-align:middle;">🔒 Μόνο για εσένα</span></h1>
+        <p class="muted">Αναλογική εκτίμηση με βάση την τελευταία επιβεβαιωμένη οδηγία της διαιτολόγου.</p>
+    </div>
+    <a class="btn" href="{% url 'health_hub' %}">← Υγεία</a>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:start;">
+    <section class="card" style="padding:20px;">
+        <h2 style="margin-top:0;">⚖️ Βάρος</h2>
+        {% if latest_growth %}
+        <p class="muted" style="margin-top:0;">
+            Τελευταία καταχώρηση:
+            <strong>{{ latest_growth.weight_kg }} kg</strong>
+            · {{ latest_growth.date|date:"d/m/Y" }}
+        </p>
+        {% endif %}
+
+        <form method="get" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
+            <label style="flex:1;min-width:180px;">
+                <span style="display:block;font-weight:700;margin-bottom:6px;">Βάρος Γιώργου (kg)</span>
+                <input
+                    type="number"
+                    name="weight"
+                    min="1"
+                    max="30"
+                    step="0.001"
+                    value="{% if weight_kg %}{{ weight_kg|stringformat:'.3f' }}{% endif %}"
+                    inputmode="decimal"
+                    style="width:100%;"
+                    required
+                >
+            </label>
+            <button class="btn primary" type="submit">Υπολογισμός</button>
+        </form>
+
+        {% if error %}
+        <div class="message" style="margin-top:14px;">{{ error }}</div>
+        {% endif %}
+    </section>
+
+    <section class="card" style="padding:20px;">
+        <h2 style="margin-top:0;">📌 Επιβεβαιωμένο σημείο αναφοράς</h2>
+        <div style="font-size:1.05rem;line-height:1.7;">
+            <div><strong>{{ reference_weight_kg|stringformat:".3f" }} kg</strong> → <strong>{{ reference_grams_per_feed|stringformat:".1f" }} g Maxijul / γεύμα</strong></div>
+            <div class="muted">1 κουταλιά Maxijul = {{ scoop_grams|stringformat:".1f" }} g</div>
+        </div>
+    </section>
+</div>
+
+{% if proportional_grams is not None %}
+<section class="card" style="padding:22px;margin-top:16px;border:2px solid rgba(212,175,55,.5);">
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+        <div style="font-size:2.2rem;">🥄</div>
+        <div>
+            <div class="muted">Αναλογική εκτίμηση για {{ weight_kg|stringformat:".3f" }} kg</div>
+            <div style="font-size:2rem;font-weight:900;line-height:1.15;">
+                {{ proportional_grams|stringformat:".2f" }} g Maxijul / γεύμα
+            </div>
+            <div style="font-size:1.05rem;margin-top:5px;">
+                ≈ {{ proportional_scoops|stringformat:".2f" }} κουταλιές των {{ scoop_grams|stringformat:".1f" }} g
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top:16px;padding:14px 16px;border-radius:14px;background:rgba(255,193,7,.12);">
+        <strong>⚠️ Σημαντικό:</strong>
+        Η τιμή είναι <strong>μαθηματική αναλογική εκτίμηση</strong> από το επιβεβαιωμένο σημείο
+        {{ reference_weight_kg|stringformat:".3f" }} kg → {{ reference_grams_per_feed|stringformat:".1f" }} g.
+        Το βάρος από μόνο του δεν αρκεί για νέα ιατρική δοσολογία. Μην αλλάζεις την πραγματική παρασκευή
+        χωρίς επιβεβαίωση από τη διαιτολόγο ή τη μεταβολική ομάδα.
+    </div>
+</section>
+
+<section class="card" style="padding:18px;margin-top:16px;">
+    <h3 style="margin-top:0;">🧮 Πώς βγαίνει</h3>
+    <p style="margin-bottom:0;">
+        {{ reference_grams_per_feed|stringformat:".1f" }} g ÷ {{ reference_weight_kg|stringformat:".3f" }} kg
+        = <strong>{{ grams_per_kg_per_feed|stringformat:".4f" }} g/kg ανά γεύμα</strong>.
+        Το app πολλαπλασιάζει αυτή την αναλογία με το βάρος που έβαλες.
+    </p>
+</section>
+{% endif %}
+{% endblock %}
