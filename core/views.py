@@ -731,6 +731,94 @@ def more(request):
 
 
 @login_required
+def maxijul_calculator(request):
+    """
+    Owner-only reference calculator based on the latest clinician-confirmed
+    Maxijul plan. It intentionally does not change feeding records or doses.
+    """
+    if not is_owner_user(request.user):
+        return HttpResponseForbidden(
+            "Ο υπολογιστής Maxijul είναι διαθέσιμος μόνο στον ιδιοκτήτη του Giorgos Health."
+        )
+
+    latest_growth = (
+        GrowthMeasurement.objects.exclude(weight_kg__isnull=True)
+        .order_by("-date", "-created_at")
+        .first()
+    )
+    profile = get_child_profile()
+
+    try:
+        reference_weight_kg = float(
+            os.environ.get("GIORGOS_MAXIJUL_REFERENCE_WEIGHT_KG", "6.465")
+        )
+    except (TypeError, ValueError):
+        reference_weight_kg = 6.465
+
+    try:
+        reference_grams_per_feed = float(
+            os.environ.get("GIORGOS_MAXIJUL_REFERENCE_GRAMS_PER_FEED", "5")
+        )
+    except (TypeError, ValueError):
+        reference_grams_per_feed = 5.0
+
+    try:
+        scoop_grams = float(os.environ.get("GIORGOS_MAXIJUL_SCOOP_GRAMS", "5"))
+    except (TypeError, ValueError):
+        scoop_grams = 5.0
+
+    reference_weight_kg = reference_weight_kg if reference_weight_kg > 0 else 6.465
+    reference_grams_per_feed = (
+        reference_grams_per_feed if reference_grams_per_feed > 0 else 5.0
+    )
+    scoop_grams = scoop_grams if scoop_grams > 0 else 5.0
+
+    raw_weight = (request.GET.get("weight") or "").strip().replace(",", ".")
+    error = ""
+
+    if raw_weight:
+        try:
+            weight_kg = float(raw_weight)
+        except ValueError:
+            weight_kg = None
+            error = "Γράψε έγκυρο βάρος σε κιλά, π.χ. 6.465."
+    elif latest_growth and latest_growth.weight_kg is not None:
+        weight_kg = float(latest_growth.weight_kg)
+    else:
+        weight_kg = reference_weight_kg
+
+    if weight_kg is not None and not (1.0 <= weight_kg <= 30.0):
+        error = "Το βάρος πρέπει να είναι μεταξύ 1 και 30 kg."
+        weight_kg = None
+
+    grams_per_kg_per_feed = reference_grams_per_feed / reference_weight_kg
+
+    if weight_kg is not None:
+        proportional_grams = round(weight_kg * grams_per_kg_per_feed, 2)
+        proportional_scoops = round(proportional_grams / scoop_grams, 2)
+    else:
+        proportional_grams = None
+        proportional_scoops = None
+
+    return render(
+        request,
+        "maxijul/calculator.html",
+        {
+            "profile": profile,
+            "latest_growth": latest_growth,
+            "weight_kg": weight_kg,
+            "error": error,
+            "reference_weight_kg": reference_weight_kg,
+            "reference_grams_per_feed": reference_grams_per_feed,
+            "grams_per_kg_per_feed": round(grams_per_kg_per_feed, 4),
+            "proportional_grams": proportional_grams,
+            "proportional_scoops": proportional_scoops,
+            "scoop_grams": scoop_grams,
+        },
+    )
+
+
+@login_required
 def allergies_view(request):
     profile = get_child_profile()
     active_rules = SafetyRule.objects.filter(active=True).order_by("guidance", "term")
