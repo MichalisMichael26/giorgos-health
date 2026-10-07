@@ -3,8 +3,10 @@ set -o errexit
 
 pip install -r requirements.txt
 
+python tools/render_template_patches.py
 python manage.py collectstatic --no-input
 python manage.py migrate
+python manage.py seed_private_document
 
 python manage.py shell -c "
 import os
