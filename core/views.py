@@ -42,6 +42,7 @@ from .models import (
     MedicationEntry,
     MedicationPlan,
     MedicalAppointment,
+    MedicalDocument,
     ChildProfile,
     VaccineEntry,
     SymptomEntry,
@@ -658,6 +659,9 @@ def dashboard(request):
         "latest_glucose": GlucoseReading.objects.first(),
         "latest_growth": latest_growth,
         "profile": profile,
+        "featured_diagnosis_document": MedicalDocument.objects.filter(
+            notes__icontains="[featured-diagnosis]"
+        ).order_by("-date", "-created_at").first(),
         "milk_guide": milk_guide,
         "consumed_total": consumed_total,
         "meal_comparison_rows": meal_comparison_rows,
