@@ -660,7 +660,7 @@ def dashboard(request):
         "latest_growth": latest_growth,
         "profile": profile,
         "featured_diagnosis_document": MedicalDocument.objects.filter(
-            notes__icontains="[featured-diagnosis]"
+            title__icontains="GSD Ia"
         ).order_by("-date", "-created_at").first(),
         "milk_guide": milk_guide,
         "consumed_total": consumed_total,
