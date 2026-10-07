@@ -1564,9 +1564,9 @@ def meal_create(request):
             "scheduled_time": suggested_time,
             "actual_time": suggested_time,
             "same_as_scheduled": True,
-            "offered_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "170")),
+            "offered_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "205")),
             "remaining_ml": 0,
-            "consumed_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "170")),
+            "consumed_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "205")),
             "formula": os.environ.get("GIORGOS_FORMULA_SCOOPS_PER_FEED", "5"),
             "supplement": (
                 f'{os.environ.get("GIORGOS_MAXIJUL_SCOOPS_PER_FEED", "1")} κουταλιά '
