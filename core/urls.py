@@ -56,6 +56,7 @@ urlpatterns = [
     path("documents/", advanced_views.document_list, name="document_list"),
     path("documents/new/", advanced_views.document_create, name="document_create"),
     path("documents/<int:pk>/edit/", advanced_views.document_edit, name="document_edit"),
+    path("documents/<int:pk>/preview/", advanced_views.document_preview, name="document_preview"),
     path("documents/<int:pk>/view/", advanced_views.document_view, name="document_view"),
     path("documents/<int:pk>/download/", advanced_views.document_download, name="document_download"),
     path("documents/<int:pk>/delete/", advanced_views.document_delete, name="document_delete"),
