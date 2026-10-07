@@ -82,3 +82,15 @@ for config in doctor_configs:
         print(f'Doctor account {username} was not created because no password is configured')
 "
 
+
+python manage.py shell -c "
+import os
+from core.models import ChildProfile
+
+feeding_plan = (os.environ.get('GIORGOS_FEEDING_PLAN') or '').strip()
+if feeding_plan:
+    updated = ChildProfile.objects.all().update(current_feeding_plan=feeding_plan)
+    print(f'Child profile feeding plan synced from environment for {updated} record(s)')
+else:
+    print('GIORGOS_FEEDING_PLAN is not set; feeding plan left unchanged')
+"
