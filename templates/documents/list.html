@@ -18,7 +18,7 @@
         <p>{{ item.original_filename }} · {{ item.file_size|filesizeformat }}</p>
         {% if item.notes %}<small>{{ item.notes }}</small>{% endif %}
         <div class="row-actions">
-            <a class="mini-action" href="{% url 'document_view' item.pk %}">Προβολή</a>
+            <a class="mini-action" href="{% url 'document_preview' item.pk %}">👁️ Preview</a>
             <a class="mini-action" href="{% url 'document_download' item.pk %}">Λήψη</a>
             <a class="mini-action" href="{% url 'document_edit' item.pk %}">Edit</a>
             <a class="mini-action danger-link" href="{% url 'document_delete' item.pk %}">Delete</a>
