@@ -211,6 +211,12 @@ def _document_response(item, inline):
 
 
 @login_required
+def document_preview(request, pk):
+    item = get_object_or_404(MedicalDocument, pk=pk)
+    return render(request, "documents/preview.html", {"item": item})
+
+
+@login_required
 def document_view(request, pk):
     return _document_response(get_object_or_404(MedicalDocument, pk=pk), True)
 
@@ -594,6 +600,9 @@ def doctor_view(request):
         "symptoms_7": SymptomEntry.objects.filter(date__range=(last7, today)).order_by("-date", "-time")[:12],
         "upcoming_appointments": MedicalAppointment.objects.filter(status="scheduled", date__gte=today).order_by("date", "time")[:5],
         "vaccines": VaccineEntry.objects.order_by("-date")[:8],
+        "featured_diagnosis_document": MedicalDocument.objects.filter(
+            notes__icontains="[featured-diagnosis]"
+        ).order_by("-date", "-created_at").first(),
     }
     return render(request, "doctor/view.html", context)
 
