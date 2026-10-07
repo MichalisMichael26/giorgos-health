@@ -601,7 +601,7 @@ def doctor_view(request):
         "upcoming_appointments": MedicalAppointment.objects.filter(status="scheduled", date__gte=today).order_by("date", "time")[:5],
         "vaccines": VaccineEntry.objects.order_by("-date")[:8],
         "featured_diagnosis_document": MedicalDocument.objects.filter(
-            notes__icontains="[featured-diagnosis]"
+            title__icontains="GSD Ia"
         ).order_by("-date", "-created_at").first(),
     }
     return render(request, "doctor/view.html", context)
