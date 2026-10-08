@@ -4,7 +4,8 @@
 <style>
 .sick-plan{max-width:1060px;margin:auto;--sick-border:rgba(112,132,151,.3)}
 .sick-plan .sick-bar{display:flex;gap:12px;justify-content:space-between;align-items:start;flex-wrap:wrap}
-.sick-plan .sick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:13px;margin:16px 0}
+.sick-plan .sick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,475px),1fr));gap:13px;margin:16px 0}
+.sick-plan .sick-grid>*{min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
 .sick-plan .sick-card{border:1px solid var(--sick-border);background:var(--card-bg,rgba(255,255,255,.85));border-radius:18px;padding:19px;margin:13px 0}
 .sick-plan .sick-grid>.sick-card{margin:0}
 .sick-plan .sick-card h2{font-size:1.18rem;line-height:1.35;margin:0 0 11px}
@@ -16,6 +17,13 @@
 .sick-plan .sick-facts{width:100%;border-collapse:collapse}
 .sick-plan .sick-facts th,.sick-plan .sick-facts td{padding:9px 11px;border-bottom:1px solid var(--sick-border);text-align:left;vertical-align:top;overflow-wrap:anywhere}
 .sick-plan .sick-facts th{width:42%;font-weight:750}
+.sick-plan .sick-patient-details{margin:0;display:grid;gap:0;min-width:0}
+.sick-plan .sick-patient-row{display:grid;grid-template-columns:minmax(0,39%) minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--sick-border);align-items:start;min-width:0}
+.sick-plan .sick-patient-row:last-child{border-bottom:0}
+.sick-plan .sick-patient-row dt{font-weight:750;margin:0;overflow-wrap:anywhere}
+.sick-plan .sick-patient-row dd{margin:0;min-width:0;overflow-wrap:anywhere;word-break:normal;white-space:normal;line-height:1.5}
+.sick-plan .sick-patient-row .sick-data-detail{display:block;font-size:.88rem;opacity:.8;margin-top:2px}
+@media(max-width:520px){.sick-plan .sick-patient-row{grid-template-columns:minmax(0,1fr);gap:3px;padding:9px 0}.sick-plan .sick-patient-row dt{font-size:.87rem;opacity:.85}}
 .sick-plan .sick-status{background:#b54b4b;color:white;font-weight:900;padding:9px 12px;border-radius:10px;display:inline-block;line-height:1.4}
 .sick-plan .sick-muted{opacity:.78}
 .sick-plan .sick-pre{white-space:pre-line;overflow-wrap:anywhere;line-height:1.6}
@@ -68,16 +76,16 @@ html.night .sick-plan .sick-warning{background:#463c2a}
   <div class="sick-grid">
     <section class="sick-card">
       <h2>👶 Στοιχεία Γιώργου από το app</h2>
-      <table class="sick-facts">
-        <tr><th>Παιδί</th><td>{{ profile.full_name|default:"Δεν καταχωρίστηκε" }}</td></tr>
-        <tr><th>Γέννηση</th><td>{{ profile.birth_date|date:"d/m/Y" }}</td></tr>
-        <tr><th>Διάγνωση</th><td><strong>Γλυκογονίαση Τύπου 1α (GSD Ia)</strong></td></tr>
-        <tr><th>Τελευταίο βάρος</th><td>{% if latest_weight %}<strong>{{ latest_weight.weight_kg }} kg</strong> · {{ latest_weight.date|date:"d/m/Y" }}{% else %}Δεν υπάρχει μέτρηση{% endif %}</td></tr>
-        <tr><th>Τελευταία γλυκόζη</th><td>{% if latest_glucose %}{{ latest_glucose.value }} mg/dL · {{ latest_glucose.date|date:"d/m/Y" }} {{ latest_glucose.time|time:"H:i" }}{% else %}Δεν υπάρχει μέτρηση{% endif %}</td></tr>
-        <tr><th>Μεταβολική ιατρός</th><td>Δρ Όλγα Γραφάκου</td></tr>
-        <tr><th>Παιδίατρος</th><td>Δρ Σάββας Σάββα</td></tr>
-        <tr><th>Διαιτολόγος</th><td>Georgia Chappa — Clinical Paediatric Dietitian</td></tr>
-      </table>
+      <dl class="sick-patient-details">
+        <div class="sick-patient-row"><dt>Παιδί</dt><dd>{{ profile.full_name|default:"Δεν καταχωρίστηκε" }}</dd></div>
+        <div class="sick-patient-row"><dt>Γέννηση</dt><dd>{{ profile.birth_date|date:"d/m/Y" }}</dd></div>
+        <div class="sick-patient-row"><dt>Διάγνωση</dt><dd><strong>Γλυκογονίαση Τύπου 1α (GSD Ia)</strong></dd></div>
+        <div class="sick-patient-row"><dt>Τελευταίο βάρος</dt><dd>{% if latest_weight %}<strong>{{ latest_weight.weight_kg }} kg</strong><span class="sick-data-detail">{{ latest_weight.date|date:"d/m/Y" }}</span>{% else %}Δεν υπάρχει μέτρηση{% endif %}</dd></div>
+        <div class="sick-patient-row"><dt>Τελευταία γλυκόζη</dt><dd>{% if latest_glucose %}<strong>{{ latest_glucose.value }} mg/dL</strong><span class="sick-data-detail">{{ latest_glucose.date|date:"d/m/Y" }} · {{ latest_glucose.time|time:"H:i" }}</span>{% else %}Δεν υπάρχει μέτρηση{% endif %}</dd></div>
+        <div class="sick-patient-row"><dt>Μεταβολική ιατρός</dt><dd>Δρ Όλγα Γραφάκου</dd></div>
+        <div class="sick-patient-row"><dt>Παιδίατρος</dt><dd>Δρ Σάββας Σάββα</dd></div>
+        <div class="sick-patient-row"><dt>Διαιτολόγος</dt><dd>Georgia Chappa<span class="sick-data-detail">Clinical Paediatric Dietitian</span></dd></div>
+      </dl>
       <p class="sick-muted"><strong>Πηγή:</strong> Τρέχουσες καταγραφές του Giorgos Health. Πριν χρησιμοποιηθεί έντυπο σε άλλη ημερομηνία, ελέγξτε το βάρος και το τρέχον πλάνο.</p>
     </section>
     <section class="sick-card">
