@@ -2,6 +2,11 @@
 {% block title %}Emergency Card{% endblock %}
 {% block content %}
 <div class="page-head no-print"><div><h1>🆘 Επείγουσα κάρτα</h1><p class="muted">Τα βασικά στοιχεία συγκεντρωμένα για γρήγορη πρόσβαση.</p></div><div class="page-actions"><button class="btn secondary" onclick="window.print()" type="button">🖨️ Εκτύπωση</button><a class="btn secondary" href="{% url 'emergency_share_settings' %}">📱 QR Settings</a><a class="btn primary" href="{% url 'emergency_edit' %}">Edit</a></div></div>
+<section class="card no-print" style="padding:14px 17px;margin:12px 0;border-left:4px solid #d19b34">
+  <strong>🧬 Έκτακτη ανάγκη & ασθένεια — προσχέδιο</strong>
+  <p style="margin:6px 0">Υπάρχει ξεχωριστό εξατομικευμένο σχέδιο προς ιατρική έγκριση. <strong>Δεν είναι εγκεκριμένη οδηγία θεραπείας</strong> και δεν δημοσιεύεται στο Emergency QR.</p>
+  <a class="btn secondary" href="{% url 'sick_day_plan' %}">Άνοιγμα Emergency & Sick Day Plan →</a>
+</section>
 <article class="emergency-card-page">
 <header><div class="emergency-symbol">✚</div><div><span>GIORGOS HEALTH · EMERGENCY INFORMATION</span><h1>{% if profile %}{{ profile.full_name }}{% else %}Giorgos Panayiotis Michael{% endif %}</h1><p>{% if profile %}Ημερομηνία γέννησης: {{ profile.birth_date|date:"d/m/Y" }}{% endif %}</p></div></header>
 {% if profile and profile.confirmed_diagnosis_display %}

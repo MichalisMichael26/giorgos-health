@@ -1,11 +1,12 @@
 from django.urls import path
-from . import views, advanced_views, mega_views, push_views, native_alarm_views, ngt_views
+from . import views, advanced_views, mega_views, push_views, native_alarm_views, ngt_views, sick_day_views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("more/", views.more, name="more"),
     path("health/", views.more, name="health_hub"),
     path("health/nasogastric-tube/", ngt_views.nasogastric_tube, name="nasogastric_tube"),
+    path("health/emergency-sick-day-plan/", sick_day_views.sick_day_plan, name="sick_day_plan"),
     path("health/maxijul-calculator/", views.maxijul_calculator, name="maxijul_calculator"),
     path("health/allergies/", views.allergies_view, name="allergies_view"),
     path("profile/", views.child_profile_edit, name="child_profile_edit"),

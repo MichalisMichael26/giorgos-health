@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Emergency & Sick Day Plan — ΠΡΟΣ ΙΑΤΡΙΚΗ ΕΓΚΡΙΣΗ{% endblock %}
+{% block content %}
+<style>
+.sick-plan{max-width:1060px;margin:auto;--sick-border:rgba(112,132,151,.3)}
+.sick-plan .sick-bar{display:flex;gap:12px;justify-content:space-between;align-items:start;flex-wrap:wrap}
+.sick-plan .sick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:13px;margin:16px 0}
+.sick-plan .sick-card{border:1px solid var(--sick-border);background:var(--card-bg,rgba(255,255,255,.85));border-radius:18px;padding:19px;margin:13px 0}
+.sick-plan .sick-grid>.sick-card{margin:0}
+.sick-plan .sick-card h2{font-size:1.18rem;line-height:1.35;margin:0 0 11px}
+.sick-plan .sick-card h3{font-size:1rem;margin:12px 0 6px}
+.sick-plan .sick-card p,.sick-plan .sick-card li{line-height:1.58}
+.sick-plan .sick-card li{margin:7px 0}
+.sick-plan .sick-danger{border:2px solid #b85a5a;background:rgba(200,75,75,.1)}
+.sick-plan .sick-warning{border-left:5px solid #d29d38;background:rgba(210,157,56,.1)}
+.sick-plan .sick-facts{width:100%;border-collapse:collapse}
+.sick-plan .sick-facts th,.sick-plan .sick-facts td{padding:9px 11px;border-bottom:1px solid var(--sick-border);text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.sick-plan .sick-facts th{width:42%;font-weight:750}
+.sick-plan .sick-status{background:#b54b4b;color:white;font-weight:900;padding:9px 12px;border-radius:10px;display:inline-block;line-height:1.4}
+.sick-plan .sick-muted{opacity:.78}
+.sick-plan .sick-pre{white-space:pre-line;overflow-wrap:anywhere;line-height:1.6}
+.sick-plan .sick-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sick-plan .sick-number{display:inline-flex;align-items:center;justify-content:center;border-radius:99px;min-width:30px;height:30px;background:rgba(68,110,187,.13);margin-right:7px;font-weight:900}
+.sick-plan .sick-blank{border-bottom:1px dashed var(--sick-border);padding:7px 2px}
+.sick-plan .sick-stamp{border:2px dashed #b64c4c;border-radius:10px;padding:12px;text-align:center;font-weight:850;letter-spacing:.03em;color:#af4040;margin:10px 0}
+.sick-plan .sick-inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sick-plan a{overflow-wrap:anywhere}
+html.night .sick-plan .sick-card{background:#202d3f}
+html.night .sick-plan .sick-danger{background:#4a2932}
+html.night .sick-plan .sick-warning{background:#463c2a}
+@media(max-width:600px){.sick-plan .sick-card{padding:14px}.sick-plan .sick-bar h1{font-size:1.55rem}}
+@media print{
+  @page{margin:12mm}
+  body{background:white!important;color:black!important}
+  .topbar,.mobile-bottom-nav,.mobile-quick-add,.mobile-search-fab,.no-print{display:none!important}
+  main.container{width:100%!important;max-width:none!important;padding:0!important}
+  .sick-plan{max-width:none;font-size:11pt;color:#111}
+  .sick-plan .sick-grid{display:block}
+  .sick-plan .sick-card{break-inside:avoid;background:white!important;box-shadow:none}
+  .sick-plan .sick-stamp{color:#9d1111!important}
+}
+</style>
+
+<div class="sick-plan">
+  <div class="page-head sick-bar">
+    <div>
+      <h1>🧬 Emergency & Sick Day Plan</h1>
+      <p class="muted">Γλυκογονίαση Τύπου 1α (GSD Ia) · Πρόληψη υπογλυκαιμίας, ασθένεια και άρνηση σίτισης</p>
+      <span class="sick-status">⚠️ ΠΡΟΣ ΙΑΤΡΙΚΗ ΕΓΚΡΙΣΗ — ΟΧΙ ΕΓΚΕΚΡΙΜΕΝΗ ΘΕΡΑΠΕΥΤΙΚΗ ΟΔΗΓΙΑ</span>
+    </div>
+    <div class="sick-actions no-print">
+      <a class="btn" href="{% url 'health_hub' %}">← Υγεία</a>
+      {% if can_print_export %}<button type="button" onclick="window.print()" class="btn secondary">🖨️ Εκτύπωση προσχεδίου</button>{% endif %}
+    </div>
+  </div>
+
+  <section class="sick-card sick-danger">
+    <h2>🆘 ΑΜΕΣΗ ΕΝΕΡΓΕΙΑ</h2>
+    <p><strong>Αν ο Γιώργος δεν μπορεί να λάβει/διατηρήσει την απαραίτητη τροφή, κάνει εμετούς ή εμφανίζει χαμηλή ή πτωτική γλυκόζη, επικοινωνήστε ΑΜΕΣΑ με τη μεταβολική ομάδα και ζητήστε επείγουσα αξιολόγηση.</strong> Αν δεν μπορεί να διατηρηθεί η πρόσληψη ή δεν υπάρχει άμεσα εφαρμόσιμο εγκεκριμένο σχέδιο, μεταβείτε στα επείγοντα χωρίς να περιμένετε το επόμενο γεύμα.</p>
+    <p><strong>Σε σπασμούς, μειωμένη ανταπόκριση, δυσκολία αναπνοής ή σοβαρή συμπτωματική υπογλυκαιμία: 112.</strong> Δεν δίνουμε τροφή/υγρά από το στόμα σε παιδί που δεν καταπίνει με ασφάλεια. Δεν χορηγούμε γλυκαγόνη ως αντιμετώπιση της υπογλυκαιμίας GSD I.</p>
+    <p class="sick-muted">Ο ρινογαστρικός δεν αρκεί όταν το παιδί δεν ανέχεται την εντερική σίτιση: μπορεί να χρειαστεί επείγουσα νοσοκομειακή ενδοφλέβια γλυκόζη κατόπιν ιατρικής εκτίμησης.</p>
+    <div class="sick-actions no-print">
+      <a class="btn primary" href="{% url 'emergency_card' %}">🆘 Επείγουσα κάρτα / τηλέφωνα</a>
+      <a class="btn" href="{% url 'glucose_list' %}">🩸 Γλυκόζη</a>
+    </div>
+  </section>
+
+  <div class="sick-grid">
+    <section class="sick-card">
+      <h2>👶 Στοιχεία Γιώργου από το app</h2>
+      <table class="sick-facts">
+        <tr><th>Παιδί</th><td>{{ profile.full_name|default:"Δεν καταχωρίστηκε" }}</td></tr>
+        <tr><th>Γέννηση</th><td>{{ profile.birth_date|date:"d/m/Y" }}</td></tr>
+        <tr><th>Διάγνωση</th><td><strong>Γλυκογονίαση Τύπου 1α (GSD Ia)</strong></td></tr>
+        <tr><th>Τελευταίο βάρος</th><td>{% if latest_weight %}<strong>{{ latest_weight.weight_kg }} kg</strong> · {{ latest_weight.date|date:"d/m/Y" }}{% else %}Δεν υπάρχει μέτρηση{% endif %}</td></tr>
+        <tr><th>Τελευταία γλυκόζη</th><td>{% if latest_glucose %}{{ latest_glucose.value }} mg/dL · {{ latest_glucose.date|date:"d/m/Y" }} {{ latest_glucose.time|time:"H:i" }}{% else %}Δεν υπάρχει μέτρηση{% endif %}</td></tr>
+        <tr><th>Μεταβολική ιατρός</th><td>Δρ Όλγα Γραφάκου</td></tr>
+        <tr><th>Παιδίατρος</th><td>Δρ Σάββας Σάββα</td></tr>
+        <tr><th>Διαιτολόγος</th><td>Georgia Chappa — Clinical Paediatric Dietitian</td></tr>
+      </table>
+      <p class="sick-muted"><strong>Πηγή:</strong> Τρέχουσες καταγραφές του Giorgos Health. Πριν χρησιμοποιηθεί έντυπο σε άλλη ημερομηνία, ελέγξτε το βάρος και το τρέχον πλάνο.</p>
+    </section>
+    <section class="sick-card">
+      <h2>🍼 Υπάρχον βασικό πρόγραμμα</h2>
+      {% if profile.current_feeding_plan %}
+      <p class="sick-pre">{{ profile.current_feeding_plan }}</p>
+      {% else %}
+      <p><strong>Τελευταία αναφερθείσα οδηγία (06/10/2026):</strong> 190 ml νερό + 6 κοφτές μεζούρες Frysolac AC + 1 κουταλιά Maxijul 5 g · τελικός όγκος περίπου 205 ml. Σίτιση ανά 3 ώρες· ελάχιστη ημερήσια κατανάλωση 800 ml· στόχος ανά κύριο γεύμα περίπου 100 ml ή περισσότερο.</p>
+      {% endif %}
+      <p><strong>Υφιστάμενη οδηγία 06/10:</strong> Αν πιει λιγότερο από 100 ml, επαναπροσφορά ύστερα από 1 ώρα <strong>μόνο όταν είναι κλινικά σταθερός</strong>. Δεν περιμένουμε μία ώρα όταν είναι άρρωστος, δεν μπορεί να τραφεί ή υπάρχει υποψία υπογλυκαιμίας.</p>
+      <p><strong>Διατροφικοί περιορισμοί:</strong> λακτόζη, σακχαρόζη, φρουκτόζη σύμφωνα με την ομάδα.</p>
+      <p class="sick-muted">Το συνηθισμένο πρόγραμμα δεν είναι «sick day rescue dose» ούτε συνταγή χορήγησης από ρινογαστρικό.</p>
+    </section>
+  </div>
+
+  <section class="sick-card">
+    <h2>🟡 A. Αρνείται το γεύμα</h2>
+    <ol>
+      <li>Ελέγξτε αμέσως την εγρήγορση, την αναπνοή και τη συμπεριφορά. Καταγράψτε ώρα τελευταίου γεύματος και ποσότητα.</li>
+      <li>Μετρήστε γλυκόζη αίματος με τον διαθέσιμο μετρητή. Αν χρησιμοποιείται υποδόριος αισθητήρας, ακολουθήστε τις οδηγίες επιβεβαίωσης με τριχοειδική μέτρηση, ειδικά σε συμπτώματα ή γρήγορη πτώση.</li>
+      <li>Σε μεμονωμένο μικρότερο γεύμα, χωρίς συμπτώματα και μόνο εφόσον η ομάδα έχει εγκρίνει τη συγκεκριμένη διαδικασία, ισχύει το συνήθες πλάνο επαναπροσφοράς.</li>
+      <li><strong>Σε συνεχιζόμενη άρνηση, ανεπαρκή λήψη ή πτώση γλυκόζης, επικοινωνήστε αμέσως με τη μεταβολική ομάδα.</strong> Αν δεν εξασφαλίζεται η σίτιση, αναζητήστε επείγουσα αξιολόγηση — μην περιμένετε απλώς το τρίωρο.</li>
+    </ol>
+  </section>
+
+  <section class="sick-card">
+    <h2>🟠 B. Πυρετός, λοίμωξη, εμετός ή διάρροια</h2>
+    <ol>
+      <li>Ενημερώστε τη μεταβολική ομάδα <strong>από την έναρξη της ασθένειας</strong>. Η ανάγκη πρόσληψης γλυκόζης μπορεί να αυξηθεί και η όρεξη να μειωθεί.</li>
+      <li>Παρακολουθήστε γλυκόζη συχνότερα <strong>με τη συχνότητα που θα γράψει η Δρ Γραφάκου</strong> και καταγράψτε θερμοκρασία, εμετούς, διάρροια, ούρα και πρόσληψη τροφής.</li>
+      <li>Μη χρησιμοποιείτε νέα σκευάσματα ή αλλάζετε τη σύνθεση/συχνότητα/ποσότητα της φόρμουλας χωρίς την ειδική οδηγία ασθένειας.</li>
+      <li><strong>Εάν υπάρχει εμετός ή αδυναμία διατήρησης της αναγκαίας τροφής, μεταβείτε άμεσα στα επείγοντα</strong> με ενημέρωση της μεταβολικής ομάδας, γιατί μπορεί να απαιτείται ενδοφλέβια γλυκόζη.</li>
+    </ol>
+  </section>
+
+  <section class="sick-card sick-danger">
+    <h2>🔴 Γ. Υπογλυκαιμία ή σοβαρά συμπτώματα</h2>
+    <ol>
+      <li>Σε σπασμούς, πολύ μειωμένη ανταπόκριση, αναπνευστική δυσχέρεια ή αδυναμία ασφαλούς κατάποσης: <strong>καλέστε 112</strong>. Δεν δίνουμε τίποτα από το στόμα.</li>
+      <li>Αν είναι ξύπνιος και καταπίνει με ασφάλεια, χρησιμοποιήστε <strong>μόνο</strong> την ακριβή επείγουσα από του στόματος αγωγή που έχει συνταγογραφήσει η μεταβολική ομάδα.</li>
+      <li>Μην καθυστερείτε την επείγουσα βοήθεια για επαναλαμβανόμενες μετρήσεις. Δηλώστε «GSD Ia — κίνδυνος σοβαρής υπογλυκαιμίας και ανάγκη άμεσης μεταβολικής αντιμετώπισης».</li>
+      <li>Η γλυκαγόνη δεν πρέπει να χρησιμοποιείται ως συνήθης θεραπεία υπογλυκαιμίας στη GSD I. Η ενδοφλέβια θεραπεία και τα ποσοστά χορήγησης αποφασίζονται από το νοσοκομείο βάσει του προσωπικού πρωτοκόλλου.</li>
+    </ol>
+  </section>
+
+  <section class="sick-card">
+    <h2>🩺 Δ. Ρινογαστρικός ως εφεδρική πρόσβαση</h2>
+    <p><strong>Κατάσταση στο app:</strong> {% if ngt_plan %}{{ ngt_plan.get_status_display }}{% else %}Δεν έχει καταχωριστεί τοποθέτηση / εγκεκριμένο πλάνο{% endif %}.</p>
+    <p>Μπορεί να βοηθήσει όταν ο Γιώργος αρνείται να πιει αλλά μπορεί να ανεχθεί εντερική σίτιση, <strong>μόνο αφού έχει τοποθετηθεί και επιβεβαιωθεί σωστά από εκπαιδευμένο πρόσωπο</strong>.</p>
+    <ul>
+      <li>Δεν χρησιμοποιείται ποτέ με αβέβαιη θέση, χωρίς το εγκεκριμένο πρωτόκολλο ελέγχου, ή με μετατόπιση.</li>
+      <li>Δεν μεταφέρουμε αυτόματα τις δόσεις του μπιμπερό σε αντλία/NGT. Απαιτείται χωριστή συνταγή για φόρμουλα, ml, ρυθμό, έκπλυση και όρια ασφαλείας.</li>
+      <li>Σε έξοδο/απόφραξη, εμετούς, διακοπή αντλίας ή αδυναμία σίτισης απαιτείται <strong>άμεση</strong> εφαρμογή του εγκεκριμένου σχεδίου και επικοινωνία με την ομάδα.</li>
+    </ul>
+    <div class="sick-actions no-print"><a class="btn" href="{% url 'nasogastric_tube' %}">Οδηγός ρινογαστρικού →</a></div>
+  </section>
+
+  <section class="sick-card sick-warning">
+    <h2>📋 Εκκρεμότητες για γραπτή έγκριση από τη Δρ Γραφάκου</h2>
+    <p><strong>Τα κενά δεν συμπληρώνονται από την εφαρμογή.</strong> Χρειάζονται προσωπική γραπτή συνταγή και εκπαίδευση για το βάρος/ηλικία του Γιώργου.</p>
+    <table class="sick-facts">
+      <tr><th>Στόχος και όριο γλυκόζης για παρέμβαση</th><td>✍️ Προς συμπλήρωση από ιατρό</td></tr>
+      <tr><th>Συχνότητα μέτρησης όταν είναι άρρωστος</th><td>✍️ Προς συμπλήρωση από ιατρό</td></tr>
+      <tr><th>Επείγον πόσιμο σκεύασμα και ακριβής ποσότητα</th><td>✍️ Προς συμπλήρωση από ιατρό</td></tr>
+      <tr><th>Επανέλεγχος γλυκόζης / κριτήρια επανάληψης</th><td>✍️ Προς συμπλήρωση από ιατρό</td></tr>
+      <tr><th>Πότε απαιτείται άμεσο νοσοκομείο</th><td>✍️ Προς συμπλήρωση από ιατρό</td></tr>
+      <tr><th>Μέγιστο επιτρεπτό διάστημα χωρίς επαρκή σίτιση</th><td>✍️ Προς συμπλήρωση από ιατρό</td></tr>
+      <tr><th>Εφεδρικό πλάνο NGT (σύνθεση, ml, ρυθμός)</th><td>✍️ Προς συμπλήρωση από ιατρό/διαιτολόγο</td></tr>
+      <tr><th>Διακοπή αντλίας / εκτόπιση σωλήνα</th><td>✍️ Προς συμπλήρωση από ιατρό</td></tr>
+      <tr><th>Νοσοκομειακή οδηγία ενδοφλέβιας γλυκόζης</th><td>✍️ Για την ομάδα του νοσοκομείου</td></tr>
+      <tr><th>24ωρο τηλέφωνο μεταβολικής ομάδας</th><td>{% if profile.dr_grafakou_phone %}{{ profile.dr_grafakou_phone }} <small>(επιβεβαίωση διαθεσιμότητας 24/7 εκκρεμεί)</small>{% else %}✍️ Προς συμπλήρωση{% endif %}</td></tr>
+      <tr><th>Νοσοκομείο αναφοράς</th><td>✍️ Προς συμπλήρωση από ιατρό</td></tr>
+    </table>
+    <p><strong>Προηγούμενη προφορική αναφορά:</strong> είχε συζητηθεί διάλυμα 100 ml νερό + 2 μεζούρες Maxijul των 5 g <em>εφόσον μπορεί να πιει</em>. <strong>Δεν αποτελεί ενεργή οδηγία εδώ</strong>: απαιτείται γραπτή επιβεβαίωση της ακριβούς χρήσης, ποσότητας και περιστάσεων από την ομάδα.</p>
+  </section>
+
+  <div class="sick-grid">
+    <section class="sick-card">
+      <h2>🎒 Τσάντα έκτακτης ανάγκης</h2>
+      <ul>
+        <li>Μετρητής γλυκόζης αίματος, ταινίες, σκαρφιστήρες, μπαταρίες.</li>
+        <li>Επίσημη διάγνωση και υπογεγραμμένη επιστολή επειγόντων όταν δοθεί.</li>
+        <li>Ειδική φόρμουλα, Maxijul και εγκεκριμένα υλικά παρασκευής.</li>
+        <li>Μόνο τα εγκεκριμένα υλικά διάσωσης ή NGT, μετά από εκπαίδευση.</li>
+        <li>Στοιχεία μεταβολικής ομάδας, παιδιάτρου και 24ωρης νοσοκομειακής επικοινωνίας.</li>
+      </ul>
+    </section>
+    <section class="sick-card">
+      <h2>☎️ Επικοινωνία</h2>
+      <p><strong>Κύπρος — Ασθενοφόρο: <a href="tel:112">112</a></strong></p>
+      {% if profile.dr_grafakou_phone %}<p>Δρ Όλγα Γραφάκου: <a href="tel:{{ profile.dr_grafakou_phone|cut:' ' }}">{{ profile.dr_grafakou_phone }}</a></p>{% endif %}
+      {% if profile.dr_savvas_phone %}<p>Δρ Σάββας Σάββα: <a href="tel:{{ profile.dr_savvas_phone|cut:' ' }}">{{ profile.dr_savvas_phone }}</a></p>{% endif %}
+      {% if profile.father_phone %}<p>Μπαμπάς: <a href="tel:{{ profile.father_phone|cut:' ' }}">{{ profile.father_phone }}</a></p>{% endif %}
+      {% if profile.mother_phone %}<p>Μαμά: <a href="tel:{{ profile.mother_phone|cut:' ' }}">{{ profile.mother_phone }}</a></p>{% endif %}
+      {% if profile.emergency_contacts %}<p class="sick-pre">{{ profile.emergency_contacts }}</p>{% endif %}
+      <p class="sick-muted">Ελέγξτε ότι οι αριθμοί είναι σωστοί. Ο αριθμός ιατρού δεν σημαίνει απαραίτητα 24ωρη διαθεσιμότητα.</p>
+      <div class="sick-actions no-print"><a class="btn" href="{% url 'emergency_card' %}">Πλήρης κάρτα επαφών →</a></div>
+    </section>
+  </div>
+
+  <section class="sick-card">
+    <h2>✍️ Ιατρική επικύρωση — εκκρεμεί</h2>
+    <div class="sick-stamp">ΠΡΟΣΧΕΔΙΟ · ΟΧΙ ΥΠΟΓΕΓΡΑΜΜΕΝΟ · ΟΧΙ ΕΓΚΕΚΡΙΜΕΝΗ ΟΔΗΓΙΑ ΔΟΣΟΛΟΓΙΑΣ</div>
+    <p class="sick-blank">Μεταβολική ιατρός / υπογραφή: ___________________________________</p>
+    <p class="sick-blank">Κλινική παιδιατρική διαιτολόγος / υπογραφή: ________________________</p>
+    <p class="sick-blank">Ημερομηνία έγκρισης και επόμενος επανέλεγχος: _____________________</p>
+    <p class="sick-muted"><strong>Βάση σύνταξης προσχεδίου:</strong> στοιχεία καταχωρισμένα στο Giorgos Health, οικογενειακές πληροφορίες στις 06–08/10/2026 και τεκμηρίωση ACMG / GeneReviews για GSD I. Τα πραγματικά κλινικά δεδομένα (βάρος, τελευταία μέτρηση, feeding plan) αντλούνται κάθε φορά από το app. Αυτό το προσχέδιο ΔΕΝ προστίθεται αυτόματα στις επίσημες ιατρικές οδηγίες ή στη δημόσια QR emergency σελίδα.</p>
+    <p>Πηγές: <a href="https://www.nature.com/articles/gim2014128" target="_blank" rel="noopener noreferrer">ACMG GSD I Guideline</a> · <a href="https://www.ncbi.nlm.nih.gov/books/NBK1312/" target="_blank" rel="noopener noreferrer">GeneReviews GSD I</a>.</p>
+  </section>
+</div>
+{% endblock %}
