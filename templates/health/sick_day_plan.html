@@ -29,8 +29,6 @@
 .sick-plan .sick-pre{white-space:pre-line;overflow-wrap:anywhere;line-height:1.6}
 .sick-plan .sick-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .sick-plan .sick-number{display:inline-flex;align-items:center;justify-content:center;border-radius:99px;min-width:30px;height:30px;background:rgba(68,110,187,.13);margin-right:7px;font-weight:900}
-.sick-plan .sick-blank{border-bottom:1px dashed var(--sick-border);padding:7px 2px}
-.sick-plan .sick-stamp{border:2px dashed #b64c4c;border-radius:10px;padding:12px;text-align:center;font-weight:850;letter-spacing:.03em;color:#af4040;margin:10px 0}
 .sick-plan .sick-inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .sick-plan a{overflow-wrap:anywhere}
 html.night .sick-plan .sick-card{background:#202d3f}
@@ -45,7 +43,6 @@ html.night .sick-plan .sick-warning{background:#463c2a}
   .sick-plan{max-width:none;font-size:11pt;color:#111}
   .sick-plan .sick-grid{display:block}
   .sick-plan .sick-card{break-inside:avoid;background:white!important;box-shadow:none}
-  .sick-plan .sick-stamp{color:#9d1111!important}
 }
 </style>
 
@@ -187,14 +184,5 @@ html.night .sick-plan .sick-warning{background:#463c2a}
     </section>
   </div>
 
-  <section class="sick-card">
-    <h2>✍️ Ιατρική επικύρωση — εκκρεμεί</h2>
-    <div class="sick-stamp">ΠΡΟΣΧΕΔΙΟ · ΟΧΙ ΥΠΟΓΕΓΡΑΜΜΕΝΟ · ΟΧΙ ΕΓΚΕΚΡΙΜΕΝΗ ΟΔΗΓΙΑ ΔΟΣΟΛΟΓΙΑΣ</div>
-    <p class="sick-blank">Μεταβολική ιατρός / υπογραφή: ___________________________________</p>
-    <p class="sick-blank">Κλινική παιδιατρική διαιτολόγος / υπογραφή: ________________________</p>
-    <p class="sick-blank">Ημερομηνία έγκρισης και επόμενος επανέλεγχος: _____________________</p>
-    <p class="sick-muted"><strong>Βάση σύνταξης προσχεδίου:</strong> στοιχεία καταχωρισμένα στο Giorgos Health, οικογενειακές πληροφορίες στις 06–08/10/2026 και τεκμηρίωση ACMG / GeneReviews για GSD I. Τα πραγματικά κλινικά δεδομένα (βάρος, τελευταία μέτρηση, feeding plan) αντλούνται κάθε φορά από το app. Αυτό το προσχέδιο ΔΕΝ προστίθεται αυτόματα στις επίσημες ιατρικές οδηγίες ή στη δημόσια QR emergency σελίδα.</p>
-    <p>Πηγές: <a href="https://www.nature.com/articles/gim2014128" target="_blank" rel="noopener noreferrer">ACMG GSD I Guideline</a> · <a href="https://www.ncbi.nlm.nih.gov/books/NBK1312/" target="_blank" rel="noopener noreferrer">GeneReviews GSD I</a>.</p>
-  </section>
 </div>
 {% endblock %}
