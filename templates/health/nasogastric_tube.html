@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Ρινογαστρικός Σωλήνας | Υγεία{% endblock %}
+{% block content %}
+<style>
+.ngt {--ngt-line:rgba(95,118,146,.2); --ngt-accent:#2779a5}
+.ngt .ngt-top {display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.ngt .ngt-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:14px}
+.ngt .ngt-card {padding:18px;border-radius:18px;border:1px solid var(--ngt-line);background:var(--card-bg,rgba(255,255,255,.75));margin-bottom:14px}
+.ngt .ngt-warning {border-left:5px solid #bb641d;background:rgba(242,176,71,.12)}
+.ngt .ngt-danger {border-left:5px solid #b94443;background:rgba(236,93,93,.10)}
+.ngt h2 {font-size:1.19rem;margin:0 0 12px} .ngt h3 {font-size:1rem;margin:12px 0 8px}
+.ngt p {line-height:1.6} .ngt li {margin:7px 0;line-height:1.5}
+.ngt a {overflow-wrap:anywhere}
+.ngt details {border:1px solid var(--ngt-line);border-radius:13px;padding:13px 16px;margin:10px 0}
+.ngt summary {font-weight:800;cursor:pointer} .ngt label {display:block;font-weight:650}
+.ngt input:not([type="checkbox"]),.ngt select,.ngt textarea {width:100%;max-width:100%;box-sizing:border-box;padding:10px;border:1px solid #a7b4c5;border-radius:10px;background:var(--field-bg,rgba(255,255,255,.92));color:inherit}
+.ngt textarea {resize:vertical} .ngt .ngt-form {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:13px}
+.ngt .ngt-form .ngt-field {min-width:0} .ngt .ngt-help {font-size:.88rem;opacity:.8}
+.ngt .ngt-log {border-bottom:1px solid var(--ngt-line);padding:12px 0}
+.ngt .ngt-muted {opacity:.78} .ngt .ngt-actions {display:flex;gap:9px;flex-wrap:wrap}
+.ngt .ngt-pill {display:inline-block;background:rgba(28,126,170,.1);border-radius:100px;padding:5px 11px;font-weight:700}
+.ngt .ngt-check {display:flex;gap:9px;align-items:flex-start;margin:9px 0}
+.ngt .ngt-check input {margin-top:5px}
+html.night .ngt .ngt-card {background:#202d3f} html.night .ngt input:not([type="checkbox"]),html.night .ngt select,html.night .ngt textarea {background:#172333;color:#fff;border-color:#64758a}
+@media(max-width:590px){.ngt .ngt-card{padding:14px}.ngt h1{font-size:1.55rem}}
+</style>
+<div class="ngt">
+    <div class="page-head ngt-top">
+        <div>
+            <h1>🩺 Ρινογαστρικός Σωλήνας (NGT)</h1>
+            <p class="muted">Ασφάλεια · φροντίδα · σίτιση · καταγραφή · επείγον πλάνο</p>
+            <span class="ngt-pill">Κατάσταση: {% if plan %}{{ plan.get_status_display }}{% else %}Δεν έχει δηλωθεί τοποθέτηση{% endif %}</span>
+        </div>
+        <a class="btn" href="{% url 'health_hub' %}">← Υγεία</a>
+    </div>
+
+    <section class="ngt-card ngt-danger">
+        <h2>🆘 Πρώτα η ασφάλεια</h2>
+        <p><strong>Ποτέ τροφή, νερό ή φάρμακα από τον σωλήνα εάν η θέση του δεν έχει επιβεβαιωθεί με την εγκεκριμένη μέθοδο της ομάδας.</strong> Η εξωτερική εμφάνιση ή το «άκουσμα αέρα» δεν αρκούν. Μην πιέζετε απόφραξη και μην επανατοποθετείτε σωλήνα χωρίς πιστοποιημένη εκπαίδευση.</p>
+        <p><strong>Σε δύσπνοια, πνιγμονή, κυάνωση, μειωμένη ανταπόκριση, σπασμούς ή σοβαρή υπογλυκαιμία: καλέστε 112.</strong> Αν ο σωλήνας βγει, η αντλία σταματήσει ή δεν μπορεί να δοθεί το προγραμματισμένο γεύμα, <strong>επικοινωνήστε άμεσα με τη μεταβολική ομάδα και ακολουθήστε το εξατομικευμένο emergency plan</strong> — στη GSD Ia δεν είναι ασφαλές να περιμένετε απλώς το επόμενο γεύμα.</p>
+        <div class="ngt-actions"><a class="btn primary" href="{% url 'emergency_card' %}">🆘 Επείγουσα κάρτα</a><a class="btn" href="{% url 'glucose_list' %}">🩸 Καταγραφές γλυκόζης</a></div>
+    </section>
+
+    <div class="ngt-grid">
+        <section class="ngt-card">
+            <h2>ℹ️ Τι είναι και γιατί χρησιμοποιείται</h2>
+            <p>Ένας λεπτός εύκαμπτος σωλήνας περνά από τη μύτη μέχρι το στομάχι. Μπορεί να χρησιμοποιηθεί προσωρινά για τη χορήγηση ειδικά συνταγογραφημένης τροφής, υγρών ή ορισμένων φαρμάκων.</p>
+            <p>Στη <strong>Γλυκογονίαση Τύπου 1α</strong> η αποφυγή νηστείας είναι κρίσιμη. Η μεταβολική ομάδα μπορεί να προτείνει διαλείπουσα ή συνεχή σίτιση, μεταξύ άλλων τη νύχτα, με σαφές σχέδιο για διακοπές, αντλία και υπογλυκαιμία.</p>
+            <p class="ngt-muted"><strong>Δεν σημαίνει ότι έχει τοποθετηθεί σωλήνας.</strong> Αυτό το τμήμα είναι ενημερωτικό μέχρι να καταχωριστεί πραγματικό, υπογεγραμμένο πλάνο.</p>
+        </section>
+        <section class="ngt-card ngt-warning">
+            <h2>📋 Πριν από κάθε χρήση</h2>
+            <label class="ngt-check"><input type="checkbox"> <span>Έχω εκπαιδευτεί από νοσηλευτή/ιατρό και γνωρίζω το γραπτό πρωτόκολλο.</span></label>
+            <label class="ngt-check"><input type="checkbox"> <span>Ελέγχω τα εξωτερικά cm, τη στερέωση και αν υπήρξε βήχας, εμετός ή τράβηγμα.</span></label>
+            <label class="ngt-check"><input type="checkbox"> <span>Επιβεβαιώνω τη θέση με το εγκεκριμένο πρωτόκολλο αναρρόφησης/pH ή με άλλη ιατρική μέθοδο.</span></label>
+            <label class="ngt-check"><input type="checkbox"> <span>Έχω ελέγξει τη σωστή συνταγογραφημένη τροφή, ποσότητα, τρόπο και χρονισμό.</span></label>
+            <label class="ngt-check"><input type="checkbox"> <span>Γνωρίζω ποιον καλώ αν δεν μπορώ να επιβεβαιώσω θέση ή να ολοκληρώσω το γεύμα.</span></label>
+            <p class="ngt-help">☝️ Αυτή είναι λίστα υπενθύμισης, <strong>όχι</strong> αυτοματοποιημένη πιστοποίηση ασφάλειας.</p>
+        </section>
+    </div>
+
+    <section class="ngt-card">
+        <h2>📚 Οδηγός φροντίδας</h2>
+        <details open>
+            <summary>🔎 Επιβεβαίωση θέσης και pH</summary>
+            <ul>
+                <li>Εκπαιδευμένος φροντιστής ελέγχει τη θέση <strong>πριν από κάθε χρήση</strong> (τροφή, νερό, φάρμακα) και έπειτα από ύποπτη μετατόπιση, βήχα ή εμετό.</li>
+                <li>Η μέτρηση pH γαστρικού αναρροφήματος αποτελεί συνηθισμένη μέθοδο. Σε πολλά παιδιατρικά πρωτόκολλα χρησιμοποιείται όριο έως 5,5· <strong>ισχύει αποκλειστικά το όριο και η διαδικασία που σας έχει δώσει το νοσοκομείο</strong>.</li>
+                <li>Εάν δεν υπάρχει αναρρόφημα, το pH είναι εκτός ορίου, τα cm έχουν αλλάξει ή υπάρχει οποιαδήποτε αμφιβολία: <strong>μη χρησιμοποιείτε τον σωλήνα, ούτε για έκπλυση</strong>. Επικοινωνήστε άμεσα με την κλινική ομάδα.</li>
+                <li>Μη χρησιμοποιείτε δοκιμή με εμφύσηση αέρα / «whoosh test» για επιβεβαίωση.</li>
+            </ul>
+        </details>
+        <details>
+            <summary>🍼 Σίτιση, ποσότητα και αντλία</summary>
+            <ul>
+                <li>Μόνο η μεταβολική ομάδα/διαιτολόγος καθορίζει σύσταση, όγκο ανά φορά, ρυθμό ml/ώρα, διάρκεια, μεσοδιαστήματα, έκπλυση και αν επιτρέπεται ταυτόχρονη σίτιση από το στόμα.</li>
+                <li><strong>Το σημερινό πλάνο μπιμπερό δεν μετατρέπεται αυτόματα σε πλάνο ρινογαστρικού.</strong> Οι ποσότητες και η χορήγηση μέσω σωλήνα χρειάζονται ξεχωριστή έγκριση.</li>
+                <li>Σε συνεχή/νυχτερινή σίτιση χρειάζονται σαφείς έλεγχοι σωλήνα, συναγερμών αντλίας, υπολειπόμενης τροφής, χρόνων αλλαγής, και τι κάνουμε σε διακοπή ρεύματος ή απόφραξη.</li>
+                <li>Αν καταχωρίσετε χορηγημένα ml εδώ, σημειώστε την πραγματική ποσότητα και στα <a href="{% url 'meal_list' %}">Γεύματα</a>, ώστε ο ημερήσιος συνολικός υπολογισμός να παραμένει σωστός. Το ιστορικό NGT δεν προστίθεται αυτόματα στο ημερήσιο σύνολο.</li>
+            </ul>
+        </details>
+        <details>
+            <summary>🧼 Καθημερινή φροντίδα και υλικά</summary>
+            <ul>
+                <li>Πλένουμε χέρια, ελέγχουμε τη στερέωση, τη μύτη/παρειά για ερεθισμό ή πληγές, το καπάκι και την καθαριότητα σωλήνα/συνδέσεων.</li>
+                <li>Ακολουθούμε ακριβώς τις οδηγίες για αλλαγή αυτοκόλλητου, συρίγγων enteral, σετ, αντλίας, χρόνο παραμονής τροφής και καθαρισμό.</li>
+                <li>Η ποσότητα και το είδος νερού για έκπλυση σε βρέφος <strong>δεν</strong> επιλέγονται αυθαίρετα.</li>
+                <li>Προμήθειες που πρέπει να οριστούν πριν το εξιτήριο: σωλήνες/συνδέσεις, κατάλληλες enteral σύριγγες, ταινίες pH, ταινίες στερέωσης, αντλία/σετ αν χρειάζεται, υλικά καθαρισμού, γραπτή συνταγή και στοιχεία επικοινωνίας.</li>
+            </ul>
+        </details>
+        <details>
+            <summary>💊 Φάρμακα από τον σωλήνα</summary>
+            <ul>
+                <li>Επιβεβαιώνουμε με ιατρό ή φαρμακοποιό <strong>για κάθε φάρμακο</strong> αν επιτρέπεται χορήγηση μέσω NGT και σε ποια μορφή.</li>
+                <li>Δεν συνθλίβουμε δισκία ή αναμειγνύουμε φάρμακα με φόρμουλα χωρίς γραπτή οδηγία· μπορεί να προκληθεί απόφραξη ή λάθος δόση.</li>
+                <li>Ο τρόπος και οι όγκοι έκπλυσης ορίζονται από την παιδιατρική ομάδα.</li>
+            </ul>
+        </details>
+        <details>
+            <summary>😴 Ασφαλής ύπνος και παρακολούθηση</summary>
+            <ul>
+                <li>Για ύπνο, το βρέφος τοποθετείται <strong>ανάσκελα σε σταθερή, επίπεδη επιφάνεια</strong>, χωρίς μαξιλάρια, σφήνες ή ανυψωμένο στρώμα, εκτός εάν η υπεύθυνη παιδιατρική ομάδα τεκμηριώσει ειδικό ιατρικό λόγο.</li>
+                <li>Η θέση κατά την ενεργή χορήγηση και η επίβλεψη καθορίζονται από την παιδιατρική ομάδα. Μη χρησιμοποιείτε αυτοσχέδιες κλίσεις για νυχτερινή σίτιση.</li>
+                <li>Για νυχτερινή αντλία ζητήστε γραπτή διαδικασία ελέγχων, συναγερμών και άμεσης εναλλακτικής σίτισης αν χαθεί η παροχή.</li>
+            </ul>
+        </details>
+        <details>
+            <summary>⚠️ Πότε σταματάμε και ζητάμε βοήθεια</summary>
+            <ul>
+                <li>Νέα δυσκολία αναπνοής, κυάνωση, έντονος βήχας/πνιγμονή ή αλλοίωση επιπέδου συνείδησης: σταματά η χορήγηση και καλούμε <strong>112</strong>.</li>
+                <li>Έξοδος/μετατόπιση σωλήνα, αλλαγή ένδειξης cm, αμφίβολο pH, διαρροή, επαναλαμβανόμενοι έμετοι, απόφραξη ή πρόβλημα αντλίας: <strong>μη χρησιμοποιείτε τον σωλήνα</strong> μέχρι να δοθούν οδηγίες.</li>
+                <li>Στη GSD Ia ακόμη και η σύντομη αναστολή σίτισης μπορεί να είναι επικίνδυνη. Χρειάζεται άμεση συνεννόηση και το <strong>γραπτό μεταβολικό emergency plan</strong>, όχι αυτοσχεδιασμοί με τροφές, τζελ ή φάρμακα.</li>
+            </ul>
+        </details>
+    </section>
+
+    <section class="ngt-card ngt-warning">
+        <h2>🧬 Ειδικά για τη GSD Ia — πριν από το εξιτήριο</h2>
+        <div class="ngt-grid">
+            <div><h3>Να συμφωνηθούν γραπτώς</h3><ul><li>Συνταγή φόρμουλας και ρυθμός/δόσεις για NGT</li><li>Χρονισμός γλυκόζης και όρια ειδοποίησης</li><li>Προβλεπόμενη αντιμετώπιση χαμηλής γλυκόζης</li><li>Τι κάνουμε αν δεν λειτουργεί η αντλία ή αποσυνδεθεί ο σωλήνας</li><li>Πότε και πού θα γίνει επανέλεγχος σωλήνα</li></ul></div>
+            <div><h3>Να μάθουν οι φροντιστές</h3><ul><li>Έλεγχο θέσης/pH και αναγνώριση λανθασμένης θέσης</li><li>Σωστή χορήγηση και καθαρισμό</li><li>Ασφαλή χειρισμό αντλίας και συναγερμών</li><li>Τι δεν πρέπει ποτέ να χορηγηθεί</li><li>Πότε καλούμε 112 ή τη μεταβολική ομάδα</li></ul></div>
+        </div>
+        <p><strong>Προσοχή:</strong> μόνο οι θεράποντες καθορίζουν εξατομικευμένο rescue plan και ενδεχόμενη ενδοφλέβια θεραπεία στο νοσοκομείο.</p>
+    </section>
+
+    <section class="ngt-card">
+        <h2>📄 Εξατομικευμένο πλάνο & στοιχεία σωλήνα</h2>
+        {% if plan %}
+        <p class="ngt-muted">Τελευταία ενημέρωση {{ plan.updated_at|date:"d/m/Y H:i" }}{% if plan.order_source %} · {{ plan.order_source }}{% endif %}</p>
+        {% endif %}
+        {% if can_edit %}
+        <p class="ngt-help">Συμπληρώστε <strong>μόνο</strong> όσα έχει επιβεβαιώσει η ιατρική ομάδα. Κενό σημαίνει «δεν έχει δοθεί οδηγία».</p>
+        <form method="post" novalidate>
+            {% csrf_token %}<input type="hidden" name="action" value="save_plan">
+            {{ plan_form.non_field_errors }}
+            <div class="ngt-form">
+                {% for field in plan_form %}
+                <div class="ngt-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn primary" style="margin-top:14px">💾 Αποθήκευση πλάνου</button>
+        </form>
+        {% else %}
+        {% if plan %}
+        <dl>
+        <dt><strong>Μέγεθος / θέση</strong></dt><dd>{{ plan.tube_size|default:"—" }} · {{ plan.get_nostril_display }} · {{ plan.external_mark_cm|default_if_none:"—" }} cm</dd>
+        <dt><strong>Επιβεβαίωση θέσης</strong></dt><dd>{{ plan.checking_instructions|default:"Δεν καταχωρίστηκε"|linebreaksbr }}</dd>
+        <dt><strong>Σίτιση</strong></dt><dd>{{ plan.tube_feed_instructions|default:"Δεν καταχωρίστηκε"|linebreaksbr }}</dd>
+        <dt><strong>Έκπλυση</strong></dt><dd>{{ plan.flush_instructions|default:"Δεν καταχωρίστηκε"|linebreaksbr }}</dd>
+        <dt><strong>Φάρμακα</strong></dt><dd>{{ plan.medication_instructions|default:"Δεν καταχωρίστηκε"|linebreaksbr }}</dd>
+        <dt><strong>Emergency plan</strong></dt><dd>{{ plan.backup_plan|default:"Δεν καταχωρίστηκε"|linebreaksbr }}</dd>
+        <dt><strong>Επικοινωνία</strong></dt><dd>{{ plan.contact_instructions|default:"Δεν καταχωρίστηκε"|linebreaksbr }}</dd>
+        </dl>
+        {% else %}<p>Δεν έχει καταχωριστεί ακόμη γραπτό πλάνο.</p>{% endif %}
+        {% endif %}
+    </section>
+
+    <section class="ngt-card">
+        <h2>📝 Ημερολόγιο ελέγχων και συμβάντων</h2>
+        <p class="ngt-help">Καταγράφει ποιος έκανε τι και πότε. Δεν αντικαθιστά το τεκμηριωμένο νοσηλευτικό πρωτόκολλο ούτε επαληθεύει τη θέση του σωλήνα.</p>
+        {% if can_edit %}
+        <form method="post" novalidate>
+            {% csrf_token %}<input type="hidden" name="action" value="add_event">
+            {{ event_form.non_field_errors }}
+            <div class="ngt-form">
+                {% for field in event_form %}
+                <div class="ngt-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn primary" style="margin-top:14px">➕ Αποθήκευση καταγραφής</button>
+        </form>
+        {% endif %}
+        <h3>Τελευταίες καταγραφές</h3>
+        {% for event in events %}
+        <div class="ngt-log">
+            <strong>{{ event.occurred_at|date:"d/m/Y H:i" }} — {{ event.get_event_type_display }}</strong>
+            <div class="ngt-muted">{{ event.get_position_status_display }}{% if event.gastric_ph is not None %} · pH {{ event.gastric_ph }}{% endif %}{% if event.external_mark_cm is not None %} · {{ event.external_mark_cm }} cm{% endif %}{% if event.volume_ml is not None %} · {{ event.volume_ml }} ml{% endif %}</div>
+            {% if event.notes %}<p>{{ event.notes|linebreaksbr }}</p>{% endif %}
+            <small>Καταχώριση: {{ event.recorded_by.username|default:"—" }}</small>
+        </div>
+        {% empty %}<p class="ngt-muted">Δεν υπάρχουν καταγραφές ακόμη.</p>{% endfor %}
+    </section>
+
+    <section class="ngt-card">
+        <h2>🔗 Ιατρικές πηγές</h2>
+        <ul>
+            <li><a href="https://www.rch.org.au/kidsinfo/fact_sheets/Nasogastric_tubes/" target="_blank" rel="noopener noreferrer">Royal Children's Hospital — Nasogastric tubes</a></li>
+            <li><a href="https://www.cuh.nhs.uk/patient-information/your-child-requires-a-nasogastric-ng-tube/" target="_blank" rel="noopener noreferrer">Cambridge University Hospitals NHS — Your child requires a nasogastric tube</a></li>
+            <li><a href="https://www.ncbi.nlm.nih.gov/books/NBK1312/" target="_blank" rel="noopener noreferrer">GeneReviews — Glycogen Storage Disease Type I</a></li>
+            <li><a href="https://www.aap.org/en/patient-care/safe-sleep/" target="_blank" rel="noopener noreferrer">American Academy of Pediatrics — Safe Sleep</a></li>
+        </ul>
+        <p class="ngt-help">Πληροφοριακό υλικό. Η γραπτή οδηγία της θεραπευτικής ομάδας υπερισχύει.</p>
+    </section>
+</div>
+{% endblock %}

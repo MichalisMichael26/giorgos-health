@@ -43,6 +43,7 @@
         </div>
     </div>
     <div class="health-card-grid">
+        <a href="{% url 'nasogastric_tube' %}" class="health-menu-card"><span>🩺</span><div><strong>Ρινογαστρικός Σωλήνας</strong><small>Ασφάλεια, εγκεκριμένο πλάνο, φροντίδα και καταγραφές</small></div></a>
         <a href="{% url 'growth_list' %}" class="health-menu-card"><span>📏</span><div><strong>Ανάπτυξη</strong><small>Βάρος, μήκος, κεφάλι</small></div></a>
         {% if can_print_export %}
         <a href="{% url 'maxijul_calculator' %}" class="health-menu-card"><span>🥄</span><div><strong>Maxijul Calculator 🔒</strong><small>Αναλογική εκτίμηση g ανά γεύμα βάσει βάρους — μόνο για εσένα</small></div></a>

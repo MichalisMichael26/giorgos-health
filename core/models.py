@@ -1006,3 +1006,83 @@ class PushDeliveryLog(models.Model):
 
     def __str__(self):
         return f"{self.reminder_id} - {self.delivery_kind} - {'OK' if self.success else 'FAILED'}"
+
+
+class NasogastricTubePlan(models.Model):
+    """Clinician-directed home plan; no presumed tube insertion or dose."""
+    STATUS_CHOICES = [
+        ("not_placed", "Δεν έχει τοποθετηθεί / δεν έχει δηλωθεί"),
+        ("hospital", "Σε χρήση στο νοσοκομείο"),
+        ("home", "Σε χρήση στο σπίτι"),
+        ("removed", "Έχει αφαιρεθεί"),
+    ]
+    NOSTRIL_CHOICES = [("", "Δεν ορίστηκε"), ("left", "Αριστερό"), ("right", "Δεξί")]
+
+    child = models.OneToOneField(
+        ChildProfile, on_delete=models.CASCADE, related_name="nasogastric_plan"
+    )
+    status = models.CharField("Κατάσταση", max_length=20, choices=STATUS_CHOICES, default="not_placed")
+    nostril = models.CharField("Ρουθούνι", max_length=8, choices=NOSTRIL_CHOICES, blank=True)
+    tube_size = models.CharField("Μέγεθος / τύπος σωλήνα", max_length=120, blank=True)
+    external_mark_cm = models.DecimalField(
+        "Σημάδι στο ρουθούνι (cm)", max_digits=5, decimal_places=1, blank=True, null=True
+    )
+    placed_on = models.DateField("Ημερομηνία τοποθέτησης", blank=True, null=True)
+    next_review_on = models.DateField("Επανέλεγχος / αλλαγή κατά ιατρική οδηγία", blank=True, null=True)
+    trained_carers = models.TextField("Εκπαιδευμένοι φροντιστές", blank=True)
+    checking_instructions = models.TextField("Γραπτές οδηγίες επιβεβαίωσης θέσης", blank=True)
+    tube_feed_instructions = models.TextField("Εγκεκριμένο πλάνο σίτισης μέσω σωλήνα", blank=True)
+    flush_instructions = models.TextField("Εγκεκριμένες οδηγίες έκπλυσης / υγρών", blank=True)
+    medication_instructions = models.TextField("Εγκεκριμένα φάρμακα μέσω σωλήνα", blank=True)
+    backup_plan = models.TextField("Σχέδιο διακοπής σίτισης / βλάβης / υπογλυκαιμίας", blank=True)
+    contact_instructions = models.TextField("24ωρα τηλέφωνα και πότε καλούμε", blank=True)
+    order_source = models.CharField("Πηγή / ημερομηνία ιατρικής οδηγίας", max_length=250, blank=True)
+    updated_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Πλάνο ρινογαστρικού σωλήνα"
+
+    def __str__(self):
+        return "Πλάνο ρινογαστρικού σωλήνα"
+
+
+class NasogastricTubeEvent(models.Model):
+    EVENT_CHOICES = [
+        ("position", "Έλεγχος θέσης"),
+        ("feed", "Σίτιση μέσω σωλήνα"),
+        ("medication", "Φάρμακο / έκπλυση"),
+        ("incident", "Πρόβλημα / μετατόπιση / απόφραξη"),
+        ("replacement", "Τοποθέτηση / αντικατάσταση από εκπαιδευμένο άτομο"),
+        ("training", "Εκπαίδευση φροντιστή"),
+        ("other", "Άλλο"),
+    ]
+    CHECK_CHOICES = [
+        ("not_checked", "Δεν ελέγχθηκε / δεν αφορά"),
+        ("confirmed", "Επιβεβαιώθηκε από εκπαιδευμένο άτομο κατά το πρωτόκολλο"),
+        ("uncertain", "Δεν επιβεβαιώθηκε / αμφίβολη θέση — μη χρήση"),
+    ]
+
+    child = models.ForeignKey(
+        ChildProfile, on_delete=models.CASCADE, related_name="nasogastric_events"
+    )
+    occurred_at = models.DateTimeField("Ημερομηνία και ώρα", default=timezone.now)
+    event_type = models.CharField("Είδος συμβάντος", max_length=20, choices=EVENT_CHOICES)
+    position_status = models.CharField(
+        "Έλεγχος θέσης", max_length=20, choices=CHECK_CHOICES, default="not_checked"
+    )
+    gastric_ph = models.DecimalField("pH αναρρόφησης", max_digits=3, decimal_places=1, blank=True, null=True)
+    external_mark_cm = models.DecimalField(
+        "Σημάδι στο ρουθούνι (cm)", max_digits=5, decimal_places=1, blank=True, null=True
+    )
+    volume_ml = models.PositiveSmallIntegerField("Ποσότητα (ml)", blank=True, null=True)
+    notes = models.TextField("Παρατηρήσεις / ενέργειες", blank=True)
+    recorded_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-occurred_at", "-pk"]
+        verbose_name = "Καταγραφή ρινογαστρικού σωλήνα"
+
+    def __str__(self):
+        return f"{self.get_event_type_display()} – {self.occurred_at:%d/%m/%Y %H:%M}"
