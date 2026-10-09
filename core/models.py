@@ -28,6 +28,7 @@ class MealEntry(models.Model):
     offered_ml = models.PositiveIntegerField("Προσφέρθηκαν (ml)", blank=True, null=True)
     consumed_ml = models.PositiveIntegerField("Ήπιε (ml)", blank=True, null=True)
     remaining_ml = models.PositiveIntegerField("Έμεινε (ml)", blank=True, null=True)
+    nasogastric_tube_used = models.BooleanField("Ρινογαστρικός σωλήνας", default=False)
     formula = models.CharField("Formula", max_length=120, blank=True)
     supplement = models.CharField("Maxijul (κουταλιές — 1 κουταλιά = 5 g)", max_length=120, blank=True)
     status = models.CharField(

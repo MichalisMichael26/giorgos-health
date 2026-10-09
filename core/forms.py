@@ -54,6 +54,7 @@ class MealEntryForm(forms.ModelForm):
             "offered_ml",
             "remaining_ml",
             "consumed_ml",
+            "nasogastric_tube_used",
             "formula",
             "supplement",
             "status",
@@ -75,6 +76,7 @@ class MealEntryForm(forms.ModelForm):
             "offered_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "remaining_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "consumed_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
+            "nasogastric_tube_used": forms.CheckboxInput(),
             "formula": forms.TextInput(attrs={"inputmode": "decimal"}),
             "supplement": forms.TextInput(attrs={"inputmode": "decimal"}),
         }
@@ -90,12 +92,16 @@ class MealEntryForm(forms.ModelForm):
             "offered_ml",
             "remaining_ml",
             "consumed_ml",
+            "nasogastric_tube_used",
             "formula",
             "supplement",
             "status",
             "notes",
         ])
 
+        self.fields["nasogastric_tube_used"].help_text = (
+            "Τσέκαρε μόνο αν χρησιμοποιήθηκε ρινογαστρικός σωλήνας σε αυτό το γεύμα."
+        )
         self.fields["finished_time"].help_text = (
             "Προαιρετική καταγραφή. Δεν αλλάζει την ώρα του επόμενου γεύματος."
         )

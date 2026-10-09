@@ -33,7 +33,7 @@
                     <td data-label="Τέλος">{% if meal.finished_time %}<span class="module-chip module-chip--lilac">✅ {{ meal.finished_time|time:"H:i" }}</span>{% else %}—{% endif %}</td>
                     <td data-label="Προσφέρθηκαν">{% if meal.offered_ml != None %}<span class="meal-amount meal-amount--offered">🍼 {{ meal.offered_ml }} ml</span>{% else %}—{% endif %}</td>
                     <td data-label="Έμεινε">{% if meal.remaining_ml != None %}<span class="meal-amount meal-amount--remaining">📉 {{ meal.remaining_ml }} ml</span>{% else %}—{% endif %}</td>
-                    <td data-label="Ήπιε">{% if meal.consumed_ml != None %}<span class="meal-amount meal-amount--consumed">😋 {{ meal.consumed_ml }} ml</span>{% else %}—{% endif %}</td>
+                    <td data-label="Ήπιε">{% if meal.consumed_ml != None %}<span class="meal-amount meal-amount--consumed">😋 {{ meal.consumed_ml }} ml</span>{% else %}—{% endif %}{% if meal.nasogastric_tube_used %}<span class="module-subvalue">☑ Ρινογαστρικός σωλήνας</span>{% endif %}</td>
                     <td data-label="Formula">{{ meal.formula|default:"—" }}</td>
                     <td data-label="Maxijul">{% if meal.supplement %}<span class="module-chip module-chip--peach">🥄 {{ meal.supplement }}</span>{% else %}—{% endif %}</td>
                     <td data-label="Σχόλιο">{% if meal.notes %}<span class="entry-comment">💬 {{ meal.notes }}</span>{% else %}—{% endif %}</td>
