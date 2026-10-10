@@ -701,3 +701,18 @@ html.night .mood-empty{background:#202d3f;border-color:#475b71;color:#c3cfdf}
     .mood-choices #id_mood{gap:9px}.mood-choices #id_mood label{font-size:15px;gap:8px;padding:10px;min-height:68px}
     .mood-record{padding:15px}.mood-form .actions{display:grid;grid-template-columns:1fr}
 }
+
+
+/* Gentle colors for new mood/observed-behavior categories. */
+.mood-badge--scared{color:#7f4c86;background:#f7e8ff}
+.mood-badge--sleepy{color:#545d91;background:#ecefff}
+.mood-badge--crying{color:#aa455e;background:#ffe5ed}
+.mood-badge--uncomfortable{color:#99602f;background:#fff0db}
+.mood-badge--playful{color:#307a6a;background:#e2faed}
+.mood-badge--very_playful{color:#7a3b8f;background:#f9e4ff}
+html.night .mood-badge--scared{background:#49354e;color:#f2d5fa}
+html.night .mood-badge--sleepy{background:#374361;color:#dce1ff}
+html.night .mood-badge--crying{background:#5c303f;color:#ffd0df}
+html.night .mood-badge--uncomfortable{background:#563d2b;color:#ffe0bc}
+html.night .mood-badge--playful{background:#265246;color:#bff2df}
+html.night .mood-badge--very_playful{background:#513258;color:#f1d2ff}

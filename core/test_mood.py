@@ -32,6 +32,16 @@ class MoodJournalTests(TestCase):
         self.assertRedirects(response, reverse("mood_list"))
         self.assertFalse(MoodEntry.objects.exists())
 
+    def test_extended_infant_moods_are_saved(self):
+        for code in ("scared", "sleepy", "crying", "uncomfortable", "playful", "very_playful"):
+            with self.subTest(mood=code):
+                response = self.client.post(reverse("mood_create"), {
+                    "date": "2026-10-10", "time": "15:25", "mood": code,
+                })
+                self.assertRedirects(response, reverse("mood_list"))
+                entry = MoodEntry.objects.filter(mood=code).latest("pk")
+                self.assertEqual(entry.get_mood_display(), dict(MoodEntry.MOOD_CHOICES)[code])
+
     def test_mood_choice_is_required(self):
         response = self.client.post(reverse("mood_create"), {
             "date": "2026-10-10", "time": "15:25", "mood": "",

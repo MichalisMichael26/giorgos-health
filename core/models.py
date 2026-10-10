@@ -68,6 +68,12 @@ class MoodEntry(models.Model):
         ("restless", "😟 Ανήσυχος"),
         ("fussy", "😣 Γκρινιάρης"),
         ("sad", "😢 Λυπημένος"),
+        ("scared", "😨 Φοβισμένος"),
+        ("sleepy", "😴 Νυσταγμένος"),
+        ("crying", "😭 Κλαίει"),
+        ("uncomfortable", "😖 Δείχνει δυσφορία"),
+        ("playful", "🥰 Παιχνιδιάρης"),
+        ("very_playful", "🤩 Πολύ παιχνιδιάρης"),
     ]
 
     date = models.DateField("Ημερομηνία")
