@@ -21,6 +21,10 @@
 .ngt .ngt-pill {display:inline-block;background:rgba(28,126,170,.1);border-radius:100px;padding:5px 11px;font-weight:700}
 .ngt .ngt-check {display:flex;gap:9px;align-items:flex-start;margin:9px 0}
 .ngt .ngt-check input {margin-top:5px}
+.ngt .ngt-errors {border:2px solid #b94443;background:rgba(236,93,93,.13);border-radius:15px;padding:16px;margin:16px 0}
+.ngt .ngt-errors ul {margin:8px 0 0;padding-left:22px}
+.ngt .ngt-field .errorlist {color:#b02629;font-weight:700}
+.ngt .ngt-unverified {border-left:5px solid #b86b24;background:rgba(242,176,71,.12)}
 html.night .ngt .ngt-card {background:#202d3f} html.night .ngt input:not([type="checkbox"]),html.night .ngt select,html.night .ngt textarea {background:#172333;color:#fff;border-color:#64758a}
 @media(max-width:590px){.ngt .ngt-card{padding:14px}.ngt h1{font-size:1.55rem}}
 </style>
@@ -33,6 +37,20 @@ html.night .ngt .ngt-card {background:#202d3f} html.night .ngt input:not([type="
         </div>
         <a class="btn" href="{% url 'health_hub' %}">← Υγεία</a>
     </div>
+
+    {% if plan_form.errors or event_form.errors %}
+    <div class="ngt-errors" id="ngt-save-errors" role="alert" tabindex="-1">
+        <strong>⚠️ Η καταχώρηση δεν αποθηκεύτηκε.</strong>
+        <p>Οι τιμές που πληκτρολόγησες παραμένουν στη φόρμα για διόρθωση. Ελέγξε:</p>
+        <ul>
+        {% for field in plan_form %}{% for error in field.errors %}<li><strong>{{ field.label }}:</strong> {{ error }}</li>{% endfor %}{% endfor %}
+        {% for error in plan_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+        {% for field in event_form %}{% for error in field.errors %}<li><strong>{{ field.label }}:</strong> {{ error }}</li>{% endfor %}{% endfor %}
+        {% for error in event_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+        <a class="btn" href="{% if plan_form.errors %}#ngt-plan-form{% else %}#ngt-event-form{% endif %}">Μετάβαση στη φόρμα</a>
+    </div>
+    {% endif %}
 
     <section class="ngt-card ngt-danger">
         <h2>🆘 Πρώτα η ασφάλεια</h2>
@@ -55,7 +73,7 @@ html.night .ngt .ngt-card {background:#202d3f} html.night .ngt input:not([type="
             <label class="ngt-check"><input type="checkbox"> <span>Επιβεβαιώνω τη θέση με το εγκεκριμένο πρωτόκολλο αναρρόφησης/pH ή με άλλη ιατρική μέθοδο.</span></label>
             <label class="ngt-check"><input type="checkbox"> <span>Έχω ελέγξει τη σωστή συνταγογραφημένη τροφή, ποσότητα, τρόπο και χρονισμό.</span></label>
             <label class="ngt-check"><input type="checkbox"> <span>Γνωρίζω ποιον καλώ αν δεν μπορώ να επιβεβαιώσω θέση ή να ολοκληρώσω το γεύμα.</span></label>
-            <p class="ngt-help">☝️ Αυτή είναι λίστα υπενθύμισης, <strong>όχι</strong> αυτοματοποιημένη πιστοποίηση ασφάλειας.</p>
+            <p class="ngt-help">☝️ Αυτή είναι λίστα υπενθύμισης: <strong>τα τικ εδώ δεν αποθηκεύονται</strong> και δεν πιστοποιούν την ασφάλεια. Για μόνιμη καταγραφή χρησιμοποίησε το «Ημερολόγιο ελέγχων και συμβάντων» παρακάτω.</p>
         </section>
     </div>
 
@@ -123,13 +141,16 @@ html.night .ngt .ngt-card {background:#202d3f} html.night .ngt input:not([type="
         <p><strong>Προσοχή:</strong> μόνο οι θεράποντες καθορίζουν εξατομικευμένο rescue plan και ενδεχόμενη ενδοφλέβια θεραπεία στο νοσοκομείο. Στη GSD I η γλυκαγόνη δεν αποτελεί κατάλληλη συνήθη αντιμετώπιση υπογλυκαιμίας· ακολουθείται η ειδική μεταβολική οδηγία.</p>
     </section>
 
-    <section class="ngt-card">
+    <section class="ngt-card" id="ngt-plan-form">
         <h2>📄 Εξατομικευμένο πλάνο & στοιχεία σωλήνα</h2>
         {% if plan %}
-        <p class="ngt-muted">Τελευταία ενημέρωση {{ plan.updated_at|date:"d/m/Y H:i" }}{% if plan.order_source %} · {{ plan.order_source }}{% endif %}</p>
+        <p class="ngt-muted">✅ Αποθηκευμένο στη βάση · Τελευταία ενημέρωση {{ plan.updated_at|date:"d/m/Y H:i" }}{% if plan.order_source %} · Πηγή οδηγίας: {{ plan.order_source }}{% endif %}</p>
+        {% if not plan.order_source %}
+        <div class="ngt-card ngt-unverified" role="note"><strong>⚠️ Μη επικυρωμένο προσχέδιο.</strong> Οι πληροφορίες έχουν καταγραφεί, αλλά δεν έχει δηλωθεί πηγή ιατρικής οδηγίας. Μην τις εκλαμβάνεις ως εγκεκριμένες οδηγίες σίτισης ή φαρμάκων.</div>
+        {% endif %}
         {% endif %}
         {% if can_edit %}
-        <p class="ngt-help">Συμπληρώστε <strong>μόνο</strong> όσα έχει επιβεβαιώσει η ιατρική ομάδα. Κενό σημαίνει «δεν έχει δοθεί οδηγία».</p>
+        <p class="ngt-help">Μπορείς να αποθηκεύσεις τα στοιχεία του σωλήνα και την κατάσταση χωρίς πηγή ιατρικής οδηγίας. Χωρίς τεκμηριωμένη πηγή, το πλάνο καταγράφεται <strong>μόνο ως μη επικυρωμένο προσχέδιο</strong> — όχι ως άδεια χορήγησης τροφής/υγρών/φαρμάκων. Για κλινικές οδηγίες καταχώρισε αποκλειστικά όσα έχει δώσει η ιατρική ομάδα.</p>
         <form method="post" novalidate>
             {% csrf_token %}<input type="hidden" name="action" value="save_plan">
             {{ plan_form.non_field_errors }}
@@ -155,7 +176,7 @@ html.night .ngt .ngt-card {background:#202d3f} html.night .ngt input:not([type="
         {% endif %}
     </section>
 
-    <section class="ngt-card">
+    <section class="ngt-card" id="ngt-event-form">
         <h2>📝 Ημερολόγιο ελέγχων και συμβάντων</h2>
         <p class="ngt-help">Καταγράφει ποιος έκανε τι και πότε. Δεν αντικαθιστά το τεκμηριωμένο νοσηλευτικό πρωτόκολλο ούτε επαληθεύει τη θέση του σωλήνα.</p>
         {% if can_edit %}
@@ -192,4 +213,26 @@ html.night .ngt .ngt-card {background:#202d3f} html.night .ngt input:not([type="
         <p class="ngt-help">Πληροφοριακό υλικό. Η γραπτή οδηγία της θεραπευτικής ομάδας υπερισχύει.</p>
     </section>
 </div>
+<script>
+(function () {
+    const errors = document.getElementById("ngt-save-errors");
+    if (errors) {
+        errors.scrollIntoView({block: "start"});
+        errors.focus({preventScroll: true});
+    }
+    // Protect unsaved input on this long medical form. No medical content is
+    // stored in browser storage or transmitted until explicit submission.
+    for (const form of document.querySelectorAll(".ngt form[method='post']")) {
+        let dirty = false;
+        form.addEventListener("input", () => { dirty = true; });
+        form.addEventListener("change", () => { dirty = true; });
+        form.addEventListener("submit", () => { dirty = false; });
+        window.addEventListener("beforeunload", (event) => {
+            if (!dirty) return;
+            event.preventDefault();
+            event.returnValue = "";
+        });
+    }
+})();
+</script>
 {% endblock %}

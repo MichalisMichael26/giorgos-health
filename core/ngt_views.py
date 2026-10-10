@@ -32,12 +32,9 @@ class NasogastricTubePlanForm(forms.ModelForm):
             "contact_instructions": forms.Textarea(attrs={"rows": 2}),
         }
 
-    def clean(self):
-        result = super().clean()
-        status = result.get("status")
-        if status in {"hospital", "home"} and not result.get("order_source"):
-            self.add_error("order_source", "Καταχώρισε ποιος ιατρός ενέκρινε το πλάνο και πότε.")
-        return result
+    # A parent's description of the tube/status can be saved even if the
+    # medical order source is not yet available. The UI must mark such plans
+    # as unverified, never as clinician-approved instructions.
 
 
 class NasogastricTubeEventForm(forms.ModelForm):
@@ -90,8 +87,16 @@ def nasogastric_tube(request):
                 updated_plan.child = profile
                 updated_plan.updated_by = request.user
                 updated_plan.save()
-                messages.success(request, "Το εξατομικευμένο πλάνο αποθηκεύτηκε.")
+                if updated_plan.order_source:
+                    messages.success(request, "Το πλάνο ρινογαστρικού αποθηκεύτηκε στη βάση δεδομένων.")
+                else:
+                    messages.success(
+                        request,
+                        "Τα στοιχεία του ρινογαστρικού αποθηκεύτηκαν στη βάση ως μη επικυρωμένο προσχέδιο. "
+                        "Δεν αποτελούν εγκεκριμένες ιατρικές οδηγίες.",
+                    )
                 return redirect("nasogastric_tube")
+            messages.error(request, "Το πλάνο ΔΕΝ αποθηκεύτηκε. Διόρθωσε τα πεδία που σημειώνονται παρακάτω.")
         elif action == "add_event":
             event_form = NasogastricTubeEventForm(request.POST)
             if event_form.is_valid():
@@ -99,8 +104,9 @@ def nasogastric_tube(request):
                 event.child = profile
                 event.recorded_by = request.user
                 event.save()
-                messages.success(request, "Η καταγραφή αποθηκεύτηκε στο ιστορικό.")
+                messages.success(request, "Η καταγραφή αποθηκεύτηκε στη βάση δεδομένων και εμφανίζεται στο ιστορικό.")
                 return redirect("nasogastric_tube")
+            messages.error(request, "Η καταγραφή ΔΕΝ αποθηκεύτηκε. Διόρθωσε τα πεδία που σημειώνονται παρακάτω.")
         else:
             return HttpResponseBadRequest("Μη έγκυρη ενέργεια.")
 
