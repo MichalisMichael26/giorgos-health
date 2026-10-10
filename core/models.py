@@ -79,6 +79,7 @@ class MoodEntry(models.Model):
     date = models.DateField("Ημερομηνία")
     time = models.TimeField("Ώρα")
     mood = models.CharField("Διάθεση", max_length=16, choices=MOOD_CHOICES)
+    additional_moods = models.JSONField("Επιπλέον διαθέσεις", default=list, blank=True)
     notes = models.TextField("Παρατήρηση (προαιρετική)", blank=True)
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True,
@@ -95,6 +96,19 @@ class MoodEntry(models.Model):
     @property
     def weekday_name(self):
         return greek_weekday(self.date)
+
+    @property
+    def mood_labels(self):
+        """All labels for both old and new entries, without duplicates."""
+        choices = dict(self.MOOD_CHOICES)
+        values = [self.mood] + (self.additional_moods or [])
+        seen = set()
+        labels = []
+        for value in values:
+            if value in choices and value not in seen:
+                seen.add(value)
+                labels.append({"code": value, "label": choices[value]})
+        return labels
 
     def __str__(self):
         return f"{self.date} {self.time.strftime('%H:%M')} — {self.get_mood_display()}"

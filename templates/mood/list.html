@@ -12,7 +12,7 @@
         </div>
         {% if not is_readonly_doctor %}<a class="btn primary" href="{% url 'mood_create' %}">＋ Νέα διάθεση</a>{% endif %}
     </section>
-    <p class="mood-intro">Η καταγραφή αποτυπώνει αυτά που παρατηρούμε στη συμπεριφορά του. Μπορείς να προσθέτεις όσες καταγραφές θέλεις μέσα στην ημέρα, ανεξάρτητα από τα γεύματα.</p>
+    <p class="mood-intro">Η καταγραφή αποτυπώνει αυτά που παρατηρούμε στη συμπεριφορά του. Μπορείς να επιλέγεις έως 3 διαθέσεις σε κάθε καταγραφή, όσες φορές θέλεις μέσα στην ημέρα, ανεξάρτητα από τα γεύματα.</p>
     <div class="mood-history">
         {% for entry in entries %}
         <article class="mood-record">
@@ -21,7 +21,11 @@
                     <span class="mood-record-date">📅 {{ entry.weekday_name }} · {{ entry.date|date:"d/m/Y" }}</span>
                     <strong class="mood-record-time">🕒 {{ entry.time|time:"H:i" }}</strong>
                 </div>
-                <span class="mood-badge mood-badge--{{ entry.mood }}">{{ entry.get_mood_display }}</span>
+                <div class="mood-record-badges">
+                    {% for mood in entry.mood_labels %}
+                    <span class="mood-badge mood-badge--{{ mood.code }}">{{ mood.label }}</span>
+                    {% endfor %}
+                </div>
             </div>
             {% if entry.notes %}<p class="mood-record-note">💬 {{ entry.notes|linebreaksbr }}</p>{% endif %}
             {% if not is_readonly_doctor %}

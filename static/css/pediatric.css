@@ -659,6 +659,9 @@ html.night .meal-table .meal-ngt-badge {
 .mood-badge--restless{color:#92602b;background:#fff0d7}
 .mood-badge--fussy{color:#a64952;background:#ffe8e9}
 .mood-badge--sad{color:#5465a5;background:#e8ebff}
+.mood-record-badges{display:flex;flex-wrap:wrap;gap:7px;max-width:100%}
+.mood-selection-help{font-size:13px;line-height:1.45;color:#65738e}
+.mood-selection-count{font-size:13px;font-weight:850;color:#6e4b1d}
 .mood-record-note{white-space:normal;overflow-wrap:anywhere;color:#5a667d;line-height:1.65;margin:14px 0 0}
 .mood-record-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px;padding-top:13px;border-top:1px solid #e8ebf3}
 .mood-new-card{max-width:750px;margin:0 auto}
@@ -671,14 +674,14 @@ html.night .meal-table .meal-ngt-badge {
     max-width:100%;width:100%;box-sizing:border-box;min-height:50px;border:1px solid #cbd7e6;
     border-radius:14px;padding:12px;font:inherit;background:var(--field-bg,#fff);color:inherit}
 .mood-field textarea{min-height:100px;resize:vertical}
-.mood-choices #id_mood{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-.mood-choices #id_mood>div:last-child:nth-child(odd){grid-column:1/-1}
-.mood-choices #id_mood label{display:flex;align-items:center;gap:11px;min-height:68px;
+.mood-choices #id_moods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.mood-choices #id_moods>div:last-child:nth-child(odd){grid-column:1/-1}
+.mood-choices #id_moods label{display:flex;align-items:center;gap:11px;min-height:68px;
     border:2px solid #dce5ef;border-radius:16px;padding:13px 15px;box-sizing:border-box;
     color:#405476;background:#f9fbff;font-size:16px;font-weight:850;cursor:pointer}
-.mood-choices #id_mood label:has(input:checked){border-color:#dda549;background:#fff2d6;color:#69460b;box-shadow:0 0 0 3px rgba(230,169,56,.11)}
-.mood-choices #id_mood label:focus-within{outline:3px solid #91bdf3;outline-offset:2px}
-.mood-choices #id_mood input{height:26px;width:26px;min-height:26px;margin:0;accent-color:#bd8734;flex-shrink:0}
+.mood-choices #id_moods label:has(input:checked){border-color:#dda549;background:#fff2d6;color:#69460b;box-shadow:0 0 0 3px rgba(230,169,56,.11)}
+.mood-choices #id_moods label:focus-within{outline:3px solid #91bdf3;outline-offset:2px}
+.mood-choices #id_moods input{height:26px;width:26px;min-height:26px;margin:0;accent-color:#bd8734;flex-shrink:0}
 .mood-form .errorlist{margin:2px 0;color:#b33344;font-size:14px;font-weight:800}
 .mood-form .actions{display:flex;gap:11px;flex-wrap:wrap}
 .mood-form .actions .btn{min-height:48px}
@@ -687,8 +690,10 @@ html.night .module-hero--mood{background:linear-gradient(120deg,#3a312b,#3a2b38)
 html.night .mood-record{background:#202d3f;border-color:#44516a}
 html.night .mood-record-time,html.night .mood-field>label,html.night .mood-legend{color:#e0edfa}
 html.night .mood-record-note,html.night .mood-intro{color:#c2cede}
-html.night .mood-choices #id_mood label{background:#202f43;color:#e7eef9;border-color:#56657b}
-html.night .mood-choices #id_mood label:has(input:checked){background:#493a27;border-color:#d8a351;color:#ffedd4}
+html.night .mood-selection-help{color:#b8c6d7}
+html.night .mood-selection-count{color:#e7c58d}
+html.night .mood-choices #id_moods label{background:#202f43;color:#e7eef9;border-color:#56657b}
+html.night .mood-choices #id_moods label:has(input:checked){background:#493a27;border-color:#d8a351;color:#ffedd4}
 html.night .mood-field input,html.night .mood-field textarea{background:#1b2a3b;color:#fff;border-color:#64758a}
 html.night .mood-badge--happy{background:#514121;color:#ffe49e}
 html.night .mood-badge--calm{background:#234f40;color:#b5ead5}
@@ -698,7 +703,7 @@ html.night .mood-badge--sad{background:#38456b;color:#cfd8ff}
 html.night .mood-empty{background:#202d3f;border-color:#475b71;color:#c3cfdf}
 @media(max-width:620px){
     .mood-new-card{padding:16px}.mood-datetime{grid-template-columns:1fr}
-    .mood-choices #id_mood{gap:9px}.mood-choices #id_mood label{font-size:15px;gap:8px;padding:10px;min-height:68px}
+    .mood-choices #id_moods{gap:9px}.mood-choices #id_moods label{font-size:15px;gap:8px;padding:10px;min-height:68px}
     .mood-record{padding:15px}.mood-form .actions{display:grid;grid-template-columns:1fr}
 }
 
@@ -716,3 +721,6 @@ html.night .mood-badge--crying{background:#5c303f;color:#ffd0df}
 html.night .mood-badge--uncomfortable{background:#563d2b;color:#ffe0bc}
 html.night .mood-badge--playful{background:#265246;color:#bff2df}
 html.night .mood-badge--very_playful{background:#513258;color:#f1d2ff}
+
+.mood-choices #id_moods input[type="checkbox"]:disabled:not(:checked){cursor:not-allowed}
+.mood-choices #id_moods label:has(input:disabled:not(:checked)){opacity:.45;cursor:not-allowed}

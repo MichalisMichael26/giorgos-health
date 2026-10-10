@@ -31,8 +31,10 @@
         </div>
         <div class="mood-field mood-choices">
             <span class="mood-legend" id="mood-choice-label">😊 Πώς ήταν η διάθεσή του;</span>
-            <div role="group" aria-labelledby="mood-choice-label">{{ form.mood }}</div>
-            {{ form.mood.errors }}
+            <span class="mood-selection-help">Επίλεξε 1, 2 ή 3 διαθέσεις μαζί.</span>
+            <span class="mood-selection-count" id="mood-selection-count" role="status" aria-live="polite">0 από 3 επιλεγμένες</span>
+            <div role="group" aria-labelledby="mood-choice-label" aria-describedby="mood-selection-count">{{ form.moods }}</div>
+            {{ form.moods.errors }}
         </div>
         <div class="mood-field">
             <label for="{{ form.notes.id_for_label }}">📝 Παρατήρηση (προαιρετική)</label>
@@ -44,4 +46,21 @@
         </div>
     </form>
 </div>
+<script>
+(function () {
+    const container = document.getElementById("id_moods");
+    const counter = document.getElementById("mood-selection-count");
+    if (!container || !counter) return;
+    const boxes = Array.from(container.querySelectorAll('input[type="checkbox"]'));
+    function update() {
+        const total = boxes.filter(box => box.checked).length;
+        counter.textContent = total + " από 3 επιλεγμένες";
+        boxes.forEach(box => {
+            box.disabled = total >= 3 && !box.checked;
+        });
+    }
+    boxes.forEach(box => box.addEventListener("change", update));
+    update();
+})();
+</script>
 {% endblock %}

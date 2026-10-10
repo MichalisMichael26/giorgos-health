@@ -12,13 +12,21 @@ from .models import MoodEntry
 
 
 class MoodEntryForm(forms.ModelForm):
+    moods = forms.MultipleChoiceField(
+        label="Επίλεξε 1 έως 3 διαθέσεις",
+        choices=MoodEntry.MOOD_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=True,
+        error_messages={"required": "Επίλεξε τουλάχιστον μία διάθεση."},
+    )
+
     class Meta:
         model = MoodEntry
-        fields = ("date", "time", "mood", "notes")
+        # Preserve the original 'mood' field; the new multi-select drives it.
+        fields = ("date", "time", "notes")
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "time": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
-            "mood": forms.RadioSelect,
             "notes": forms.Textarea(attrs={
                 "rows": 3,
                 "placeholder": "Προαιρετικά: τι παρατήρησες, πριν/μετά τη σίτιση ή τον ρινογαστρικό;",
@@ -29,7 +37,28 @@ class MoodEntryForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["date"].input_formats = ["%Y-%m-%d"]
         self.fields["time"].input_formats = ["%H:%M", "%H:%M:%S"]
+        if not self.is_bound and self.instance and self.instance.pk:
+            self.initial["moods"] = [
+                self.instance.mood, *(self.instance.additional_moods or [])
+            ]
 
+    def clean_moods(self):
+        moods = self.cleaned_data["moods"]
+        if len(moods) > 3:
+            raise forms.ValidationError("Μπορείς να επιλέξεις το πολύ 3 διαθέσεις.")
+        if len(set(moods)) != len(moods):
+            raise forms.ValidationError("Κάθε διάθεση επιλέγεται μία μόνο φορά.")
+        return moods
+
+    def save(self, commit=True):
+        entry = super().save(commit=False)
+        moods = self.cleaned_data["moods"]
+        entry.mood = moods[0]
+        entry.additional_moods = moods[1:]
+        if commit:
+            entry.save()
+            self.save_m2m()
+        return entry
 
 @login_required
 def mood_list(request):
