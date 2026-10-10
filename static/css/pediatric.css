@@ -621,3 +621,19 @@ html.night .meal-table .meal-ngt-badge {
     border-color: #476f94;
     color: #e2f2ff;
 }
+
+@media (max-width: 720px) {
+    .meal-table td[data-label="Ήπιε"] .meal-ngt-badge {
+        grid-column: 2;
+        justify-self: end;
+        font-size: 15px;
+        line-height: 1.4;
+        padding: 10px 12px;
+        margin-top: 7px;
+        max-width: 100%;
+    }
+    .meal-form-card .meal-ngt-choice {
+        grid-template-columns: 42px minmax(0,1fr);
+        gap: 4px 12px;
+    }
+}
