@@ -49,6 +49,25 @@
         }
     }
 
+    // Keep the nasogastric option easy to see and tap on a phone.
+    const ngtMealCheckbox = document.getElementById("id_nasogastric_tube_used");
+    if (ngtMealCheckbox) {
+        const ngtMealRow = ngtMealCheckbox.closest("p");
+        if (ngtMealRow) {
+            ngtMealRow.classList.add("meal-ngt-choice");
+            function syncNgtChoice() {
+                ngtMealRow.classList.toggle("is-selected", ngtMealCheckbox.checked);
+            }
+            ngtMealCheckbox.addEventListener("change", syncNgtChoice);
+            ngtMealRow.addEventListener("click", function (event) {
+                if (event.target.closest("label, input, button, a, select, textarea")) return;
+                ngtMealCheckbox.checked = !ngtMealCheckbox.checked;
+                ngtMealCheckbox.dispatchEvent(new Event("change", {bubbles: true}));
+            });
+            syncNgtChoice();
+        }
+    }
+
     const sameBox = document.getElementById("id_same_as_scheduled");
     const scheduled = document.getElementById("id_scheduled_time");
     const actual = document.getElementById("id_actual_time");
