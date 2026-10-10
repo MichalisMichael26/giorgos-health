@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, advanced_views, mega_views, push_views, native_alarm_views, ngt_views, sick_day_views
+from . import views, advanced_views, mega_views, push_views, native_alarm_views, ngt_views, sick_day_views, mood_views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
@@ -23,6 +23,11 @@ urlpatterns = [
     path("report/48h/print/", views.report_48h_print, name="report_48h_print"),
     path("report/24h/", views.report_24h_preview, name="report_24h_preview"),
     path("report/24h/pdf/", views.report_24h_pdf, name="report_24h_pdf"),
+
+    path("mood/", mood_views.mood_list, name="mood_list"),
+    path("mood/new/", mood_views.mood_create, name="mood_create"),
+    path("mood/<int:pk>/edit/", mood_views.mood_edit, name="mood_edit"),
+    path("mood/<int:pk>/delete/", mood_views.mood_delete, name="mood_delete"),
 
     path("meals/", views.meal_list, name="meal_list"),
     path("meals/new/", views.meal_create, name="meal_create"),

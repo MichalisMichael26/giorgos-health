@@ -59,6 +59,41 @@ class MealEntry(models.Model):
         return f"{self.date} {self.scheduled_time.strftime('%H:%M')}"
 
 
+
+class MoodEntry(models.Model):
+    """Parent-observed behaviour and mood, not a psychological diagnosis."""
+    MOOD_CHOICES = [
+        ("happy", "😄 Χαρούμενος"),
+        ("calm", "😌 Ήρεμος"),
+        ("restless", "😟 Ανήσυχος"),
+        ("fussy", "😣 Γκρινιάρης"),
+        ("sad", "😢 Λυπημένος"),
+    ]
+
+    date = models.DateField("Ημερομηνία")
+    time = models.TimeField("Ώρα")
+    mood = models.CharField("Διάθεση", max_length=16, choices=MOOD_CHOICES)
+    notes = models.TextField("Παρατήρηση (προαιρετική)", blank=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="mood_entries",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date", "-time", "-pk"]
+        verbose_name = "Καταγραφή διάθεσης"
+        verbose_name_plural = "Καταγραφές διάθεσης"
+
+    @property
+    def weekday_name(self):
+        return greek_weekday(self.date)
+
+    def __str__(self):
+        return f"{self.date} {self.time.strftime('%H:%M')} — {self.get_mood_display()}"
+
+
 class GlucoseReading(models.Model):
     CONTEXT_CHOICES = [
         ("pre_feed", "Πριν το γεύμα"),

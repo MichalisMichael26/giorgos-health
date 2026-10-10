@@ -102,6 +102,7 @@ html.night .pediatric-entry-form form>p{background:rgba(255,255,255,.035);border
 .pediatric-desktop-nav .nav-meals.is-active { background:#e9f8f1; color:#30715b; }
 .pediatric-desktop-nav .nav-glucose.is-active { background:#fff0f4; color:#c23b59; }
 .pediatric-desktop-nav .nav-diapers.is-active { background:#f0ebff; color:#66518d; }
+.pediatric-desktop-nav .nav-mood.is-active { background:#fff2dc; color:#80501e; }
 .pediatric-desktop-nav .nav-health.is-active { background:#fff0f2; color:#b63a50; }
 .pediatric-desktop-nav .nav-doctor.is-active { background:#eaf6ff; color:#2f668d; }
 .pediatric-desktop-nav .nav-scan.is-active { background:#fff5e7; color:#845b26; }
@@ -196,6 +197,9 @@ html.night .pediatric-entry-form form>p{background:rgba(255,255,255,.035);border
 
     .pediatric-bottom-nav .nav-diapers.is-active { color:#67528d; background:#f4f0ff; }
     .pediatric-bottom-nav .nav-diapers.is-active .nav-icon { background:#e8dfff; }
+
+    .pediatric-bottom-nav .nav-mood.is-active { color:#80501e; background:#fff4de; }
+    .pediatric-bottom-nav .nav-mood.is-active .nav-icon { background:#ffebc3; }
 
     .pediatric-bottom-nav .nav-health.is-active { color:#b63a50; background:#fff1f3; }
     .pediatric-bottom-nav .nav-health.is-active .nav-icon { background:#ffdee4; }
@@ -636,4 +640,64 @@ html.night .meal-table .meal-ngt-badge {
         grid-template-columns: 42px minmax(0,1fr);
         gap: 4px 12px;
     }
+}
+
+
+/* Independent Giorgos mood journal. */
+.module-hero--mood{background:linear-gradient(120deg,#fff5e6,#fff1f6);border-color:#f0d8b8}
+.module-hero--mood::after{content:"🌼";font-size:60px}
+.mood-page{max-width:1080px;margin:0 auto}
+.mood-intro{margin:0 0 19px;color:#6f7790;line-height:1.6}
+.mood-history{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,315px),1fr));gap:15px}
+.mood-record{padding:19px;border:1px solid #e5e6f1;border-radius:20px;background:var(--card-bg,#fff);box-shadow:0 6px 23px rgba(41,59,89,.06);min-width:0}
+.mood-record-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mood-record-date{color:#788198;font-size:13px;font-weight:850}
+.mood-record-time{display:block;font-size:23px;font-weight:900;line-height:1.35;color:#354c70;margin-top:4px}
+.mood-badge{display:inline-flex;align-items:center;min-height:40px;padding:8px 13px;border-radius:14px;font-size:16px;font-weight:850;white-space:nowrap}
+.mood-badge--happy{color:#77530c;background:#fff0b9}
+.mood-badge--calm{color:#27735c;background:#dff7ed}
+.mood-badge--restless{color:#92602b;background:#fff0d7}
+.mood-badge--fussy{color:#a64952;background:#ffe8e9}
+.mood-badge--sad{color:#5465a5;background:#e8ebff}
+.mood-record-note{white-space:normal;overflow-wrap:anywhere;color:#5a667d;line-height:1.65;margin:14px 0 0}
+.mood-record-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px;padding-top:13px;border-top:1px solid #e8ebf3}
+.mood-new-card{max-width:750px;margin:0 auto}
+.mood-new-card h1{margin:0 0 7px;font-size:26px}
+.mood-form{display:grid;gap:19px;margin-top:22px}
+.mood-field{display:grid;gap:9px}
+.mood-field>label,.mood-legend{font-size:16px;font-weight:900;color:#485870}
+.mood-datetime{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.mood-field input[type="date"],.mood-field input[type="time"],.mood-field textarea{
+    max-width:100%;width:100%;box-sizing:border-box;min-height:50px;border:1px solid #cbd7e6;
+    border-radius:14px;padding:12px;font:inherit;background:var(--field-bg,#fff);color:inherit}
+.mood-field textarea{min-height:100px;resize:vertical}
+.mood-choices #id_mood{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.mood-choices #id_mood>div:last-child:nth-child(odd){grid-column:1/-1}
+.mood-choices #id_mood label{display:flex;align-items:center;gap:11px;min-height:68px;
+    border:2px solid #dce5ef;border-radius:16px;padding:13px 15px;box-sizing:border-box;
+    color:#405476;background:#f9fbff;font-size:16px;font-weight:850;cursor:pointer}
+.mood-choices #id_mood label:has(input:checked){border-color:#dda549;background:#fff2d6;color:#69460b;box-shadow:0 0 0 3px rgba(230,169,56,.11)}
+.mood-choices #id_mood label:focus-within{outline:3px solid #91bdf3;outline-offset:2px}
+.mood-choices #id_mood input{height:26px;width:26px;min-height:26px;margin:0;accent-color:#bd8734;flex-shrink:0}
+.mood-form .errorlist{margin:2px 0;color:#b33344;font-size:14px;font-weight:800}
+.mood-form .actions{display:flex;gap:11px;flex-wrap:wrap}
+.mood-form .actions .btn{min-height:48px}
+.mood-empty{border:1px dashed #d6e0ee;background:#fafcff;border-radius:20px;padding:29px;text-align:center;color:#65718c}
+html.night .module-hero--mood{background:linear-gradient(120deg,#3a312b,#3a2b38);border-color:#64514c}
+html.night .mood-record{background:#202d3f;border-color:#44516a}
+html.night .mood-record-time,html.night .mood-field>label,html.night .mood-legend{color:#e0edfa}
+html.night .mood-record-note,html.night .mood-intro{color:#c2cede}
+html.night .mood-choices #id_mood label{background:#202f43;color:#e7eef9;border-color:#56657b}
+html.night .mood-choices #id_mood label:has(input:checked){background:#493a27;border-color:#d8a351;color:#ffedd4}
+html.night .mood-field input,html.night .mood-field textarea{background:#1b2a3b;color:#fff;border-color:#64758a}
+html.night .mood-badge--happy{background:#514121;color:#ffe49e}
+html.night .mood-badge--calm{background:#234f40;color:#b5ead5}
+html.night .mood-badge--restless{background:#594026;color:#ffddb6}
+html.night .mood-badge--fussy{background:#60343c;color:#ffc1cb}
+html.night .mood-badge--sad{background:#38456b;color:#cfd8ff}
+html.night .mood-empty{background:#202d3f;border-color:#475b71;color:#c3cfdf}
+@media(max-width:620px){
+    .mood-new-card{padding:16px}.mood-datetime{grid-template-columns:1fr}
+    .mood-choices #id_mood{gap:9px}.mood-choices #id_mood label{font-size:15px;gap:8px;padding:10px;min-height:68px}
+    .mood-record{padding:15px}.mood-form .actions{display:grid;grid-template-columns:1fr}
 }

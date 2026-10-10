@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Διάθεση Γιώργη{% endblock %}
+{% block content %}
+<div class="mood-page module-page">
+    <section class="module-hero module-hero--mood">
+        <div class="module-hero-main">
+            <span class="module-hero-icon" aria-hidden="true">😊</span>
+            <div>
+                <h1>Διάθεση Γιώργη</h1>
+                <p>Πώς φαίνεται να αισθάνεται, με ημερομηνία και ώρα</p>
+            </div>
+        </div>
+        {% if not is_readonly_doctor %}<a class="btn primary" href="{% url 'mood_create' %}">＋ Νέα διάθεση</a>{% endif %}
+    </section>
+    <p class="mood-intro">Η καταγραφή αποτυπώνει αυτά που παρατηρούμε στη συμπεριφορά του. Μπορείς να προσθέτεις όσες καταγραφές θέλεις μέσα στην ημέρα, ανεξάρτητα από τα γεύματα.</p>
+    <div class="mood-history">
+        {% for entry in entries %}
+        <article class="mood-record">
+            <div class="mood-record-head">
+                <div>
+                    <span class="mood-record-date">📅 {{ entry.weekday_name }} · {{ entry.date|date:"d/m/Y" }}</span>
+                    <strong class="mood-record-time">🕒 {{ entry.time|time:"H:i" }}</strong>
+                </div>
+                <span class="mood-badge mood-badge--{{ entry.mood }}">{{ entry.get_mood_display }}</span>
+            </div>
+            {% if entry.notes %}<p class="mood-record-note">💬 {{ entry.notes|linebreaksbr }}</p>{% endif %}
+            {% if not is_readonly_doctor %}
+            <div class="mood-record-actions">
+                <a class="mini-action module-edit" href="{% url 'mood_edit' entry.pk %}">✏️ Επεξεργασία</a>
+                <a class="mini-action danger-link module-delete" href="{% url 'mood_delete' entry.pk %}">🗑️ Διαγραφή</a>
+            </div>
+            {% endif %}
+        </article>
+        {% empty %}
+        <div class="mood-empty">
+            <div style="font-size:35px">😊</div>
+            <p><strong>Δεν υπάρχουν ακόμα καταγραφές διάθεσης.</strong></p>
+            {% if not is_readonly_doctor %}<a href="{% url 'mood_create' %}" class="btn primary">＋ Πρώτη καταγραφή</a>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% if page_obj.has_other_pages %}
+    <nav class="compact-pagination" aria-label="Σελίδες καταγραφών διάθεσης" style="margin-top:18px">
+        {% if page_obj.has_previous %}<a class="mini-action" href="?page={{ page_obj.previous_page_number }}">← Νεότερες</a>{% endif %}
+        <span>Σελίδα {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a class="mini-action" href="?page={{ page_obj.next_page_number }}">Παλιότερες →</a>{% endif %}
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

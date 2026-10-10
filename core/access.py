@@ -8,6 +8,9 @@ SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 
 # GET pages that are themselves mutation forms/actions.
 UNSAFE_VIEW_NAMES = {
+    "mood_create",
+    "mood_edit",
+    "mood_delete",
     "meal_create",
     "meal_edit",
     "meal_delete",

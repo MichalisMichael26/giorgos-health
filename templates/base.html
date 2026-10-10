@@ -62,6 +62,7 @@
         <a class="nav-meals" href="{% url 'meal_list' %}"><span>🍼</span>Γεύματα</a>
         <a class="nav-glucose" href="{% url 'glucose_list' %}"><span>🩸</span>Γλυκόζη</a>
         <a class="nav-diapers" href="{% url 'diaper_list' %}"><span>👶</span>Πάνες</a>
+        <a class="nav-mood" href="{% url 'mood_list' %}"><span>😊</span>Διάθεση</a>
         <a class="nav-health" href="{% url 'health_hub' %}"><span>❤️</span>Υγεία</a>
         <a class="nav-doctor" href="{% url 'doctor_view' %}"><span>🧑‍⚕️</span>Doctor</a>
         <a class="nav-scan" href="{% url 'product_scanner' %}"><span>📷</span>Scan</a>
@@ -112,6 +113,7 @@
         <div class="quick-add-options">
             <a href="{% url 'meal_create' %}"><span>🍼</span><strong>Γεύμα</strong></a>
             <a href="{% url 'glucose_create' %}"><span>🩸</span><strong>Γλυκόζη</strong></a>
+            <a href="{% url 'mood_create' %}"><span>😊</span><strong>Διάθεση</strong></a>
             <a href="{% url 'medication_create' %}"><span>💊</span><strong>Φάρμακο</strong></a>
             <a href="{% url 'symptom_create' %}"><span>🌡️</span><strong>Σύμπτωμα</strong></a>
             <a href="{% url 'diaper_create' %}"><span>👶</span><strong>Πάνα</strong></a>
@@ -144,8 +146,8 @@
     <a class="nav-health" href="{% url 'health_hub' %}">
         <span class="nav-icon">❤️</span><small>Υγεία</small>
     </a>
-    <a class="nav-doctor" href="{% url 'doctor_view' %}">
-        <span class="nav-icon">🧑‍⚕️</span><small>Doctor</small>
+    <a class="nav-mood" href="{% url 'mood_list' %}">
+        <span class="nav-icon">😊</span><small>Διάθεση</small>
     </a>
 </nav>
 {% endif %}

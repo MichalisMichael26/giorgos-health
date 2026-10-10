@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Διαγραφή διάθεσης{% endblock %}
+{% block content %}
+<div class="form-card narrow pediatric-delete-card">
+    <div class="delete-card-icon">🗑️</div>
+    <h1>Διαγραφή διάθεσης</h1>
+    <p>Να διαγραφεί η καταγραφή <strong>{{ entry.get_mood_display }}</strong> στις <strong>{{ entry.date|date:"d/m/Y" }} · {{ entry.time|time:"H:i" }}</strong>;</p>
+    <div class="delete-card-warning">⚠️ Η διαγραφή δεν αναιρείται.</div>
+    <form method="post" class="delete-card-actions">
+        {% csrf_token %}
+        <button class="btn danger" type="submit">🗑️ Διαγραφή</button>
+        <a class="btn secondary" href="{% url 'mood_list' %}">Ακύρωση</a>
+    </form>
+</div>
+{% endblock %}
