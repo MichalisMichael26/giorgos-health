@@ -528,3 +528,96 @@ html.night .meal-page .meal-table td {
     border-bottom-color:#33445a !important;
 }
 /* ===== End desktop meal cards v1 ===== */
+
+
+/* Easily readable NGT option inside the meal form, with an enlarged tap target. */
+.meal-form-card .meal-ngt-choice {
+    display: grid;
+    grid-template-columns: 44px minmax(0,1fr);
+    align-items: center;
+    gap: 4px 14px;
+    min-height: 84px;
+    padding: 18px !important;
+    border: 2px solid #a9cbe9 !important;
+    border-radius: 18px !important;
+    background: linear-gradient(135deg,#eff8ff,#f6fbff) !important;
+    box-shadow: 0 5px 14px rgba(33,102,161,.08);
+    cursor: pointer;
+}
+.meal-form-card .meal-ngt-choice > label {
+    grid-column: 2;
+    grid-row: 1;
+    display: block !important;
+    margin: 0 !important;
+    color: #194e79 !important;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    line-height: 1.3;
+    cursor: pointer;
+}
+.meal-form-card .meal-ngt-choice > label::before {content: "🩺 "}
+.meal-form-card .meal-ngt-choice input[type="checkbox"] {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin: 0 !important;
+    accent-color: #267bc5;
+    cursor: pointer;
+}
+.meal-form-card .meal-ngt-choice .helptext,
+.meal-form-card .meal-ngt-choice small {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #526e89;
+}
+.meal-form-card .meal-ngt-choice.is-selected {
+    background: linear-gradient(135deg,#e2f5ea,#f1fbf5) !important;
+    border-color: #55a77c !important;
+    box-shadow: 0 0 0 3px rgba(69,166,110,.10);
+}
+.meal-form-card .meal-ngt-choice.is-selected > label {color: #216744 !important}
+
+/* Large, standalone badge in the saved meal history (instead of tiny 11px text). */
+.meal-table .meal-ngt-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    max-width: 100%;
+    width: fit-content;
+    margin-top: 9px;
+    padding: 9px 12px;
+    border: 1px solid #99c6ed;
+    border-radius: 13px;
+    background: #e6f3ff;
+    color: #1c5684;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.4;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: break-word;
+    box-shadow: 0 3px 9px rgba(40,106,167,.07);
+}
+.meal-table td[data-label="Ήπιε"] .meal-ngt-badge {display: flex}
+html.night .meal-form-card .meal-ngt-choice {
+    background: #21394c !important;
+    border-color: #496f95 !important;
+}
+html.night .meal-form-card .meal-ngt-choice > label {color: #e1effe !important}
+html.night .meal-form-card .meal-ngt-choice .helptext,
+html.night .meal-form-card .meal-ngt-choice small {color: #c1d2e2}
+html.night .meal-form-card .meal-ngt-choice.is-selected {
+    background: #213f34 !important;
+    border-color: #65b68a !important;
+}
+html.night .meal-form-card .meal-ngt-choice.is-selected > label {color: #ddf7e8 !important}
+html.night .meal-table .meal-ngt-badge {
+    background: #233c57;
+    border-color: #476f94;
+    color: #e2f2ff;
+}
