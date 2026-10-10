@@ -56,9 +56,9 @@ class MoodJournalTests(TestCase):
         ]
         self.assertEqual([code for code, _ in MoodEntry.MOOD_CHOICES], expected)
         response = self.client.get(reverse("mood_create"))
-        self.assertContains(response, "🌞 Χαρά &amp; παιχνίδι")
-        self.assertContains(response, "🌿 Ηρεμία &amp; κούραση")
-        self.assertContains(response, "🌥️ Ανησυχία &amp; δυσφορία")
+        self.assertContains(response, "🌞 Χαρά & παιχνίδι")
+        self.assertContains(response, "🌿 Ηρεμία & κούραση")
+        self.assertContains(response, "🌥️ Ανησυχία & δυσφορία")
         markup = response.content.decode()
         self.assertLess(markup.index("Πολύ παιχνιδιάρης"), markup.index("Παιχνιδιάρης"))
         self.assertLess(markup.index("Παιχνιδιάρης"), markup.index("Ήρεμος"))
