@@ -724,3 +724,23 @@ html.night .mood-badge--very_playful{background:#513258;color:#f1d2ff}
 
 .mood-choices #id_moods input[type="checkbox"]:disabled:not(:checked){cursor:not-allowed}
 .mood-choices #id_moods label:has(input:disabled:not(:checked)){opacity:.45;cursor:not-allowed}
+
+
+/* Visually separated mood categories, in parent-friendly hierarchy. */
+.mood-choices #id_moods .mood-group-title{
+    grid-column:1/-1;
+    margin:9px 0 0;
+    padding:11px 13px 8px;
+    border-bottom:1px solid #dde5ef;
+    color:#405b7a;
+    font-size:15px;
+    line-height:1.45;
+    font-weight:900;
+}
+.mood-choices #id_moods .mood-group-title:first-child{margin-top:0}
+.mood-choices #id_moods .mood-option{min-width:0}
+.mood-choices #id_moods .mood-option label{height:100%;box-sizing:border-box}
+html.night .mood-choices #id_moods .mood-group-title{
+    color:#d8e5f5;
+    border-color:#50617b;
+}

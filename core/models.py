@@ -62,18 +62,20 @@ class MealEntry(models.Model):
 
 class MoodEntry(models.Model):
     """Parent-observed behaviour and mood, not a psychological diagnosis."""
+    # Display order: playful/positive -> calm/tired -> unsettled/distressed.
+    # This is a visual grouping of observed behaviour, not a clinical scale.
     MOOD_CHOICES = [
+        ("very_playful", "🤩 Πολύ παιχνιδιάρης"),
+        ("playful", "🥰 Παιχνιδιάρης"),
         ("happy", "😄 Χαρούμενος"),
         ("calm", "😌 Ήρεμος"),
+        ("sleepy", "😴 Νυσταγμένος"),
         ("restless", "😟 Ανήσυχος"),
         ("fussy", "😣 Γκρινιάρης"),
         ("sad", "😢 Λυπημένος"),
         ("scared", "😨 Φοβισμένος"),
-        ("sleepy", "😴 Νυσταγμένος"),
         ("crying", "😭 Κλαίει"),
         ("uncomfortable", "😖 Δείχνει δυσφορία"),
-        ("playful", "🥰 Παιχνιδιάρης"),
-        ("very_playful", "🤩 Πολύ παιχνιδιάρης"),
     ]
 
     date = models.DateField("Ημερομηνία")
@@ -108,7 +110,8 @@ class MoodEntry(models.Model):
             if value in choices and value not in seen:
                 seen.add(value)
                 labels.append({"code": value, "label": choices[value]})
-        return labels
+        rank = {code: i for i, (code, _) in enumerate(self.MOOD_CHOICES)}
+        return sorted(labels, key=lambda mood: rank[mood["code"]])
 
     def __str__(self):
         return f"{self.date} {self.time.strftime('%H:%M')} — {self.get_mood_display()}"

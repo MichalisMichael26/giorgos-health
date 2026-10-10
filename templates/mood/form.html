@@ -33,7 +33,18 @@
             <span class="mood-legend" id="mood-choice-label">😊 Πώς ήταν η διάθεσή του;</span>
             <span class="mood-selection-help">Επίλεξε 1, 2 ή 3 διαθέσεις μαζί.</span>
             <span class="mood-selection-count" id="mood-selection-count" role="status" aria-live="polite">0 από 3 επιλεγμένες</span>
-            <div role="group" aria-labelledby="mood-choice-label" aria-describedby="mood-selection-count">{{ form.moods }}</div>
+            <div role="group" id="id_moods" aria-labelledby="mood-choice-label" aria-describedby="mood-selection-count">
+                {% for choice in form.moods %}
+                    {% if forloop.counter == 1 %}
+                    <h3 class="mood-group-title">🌞 Χαρά & παιχνίδι</h3>
+                    {% elif forloop.counter == 4 %}
+                    <h3 class="mood-group-title">🌿 Ηρεμία & κούραση</h3>
+                    {% elif forloop.counter == 6 %}
+                    <h3 class="mood-group-title">🌥️ Ανησυχία & δυσφορία</h3>
+                    {% endif %}
+                    <div class="mood-option">{{ choice }}</div>
+                {% endfor %}
+            </div>
             {{ form.moods.errors }}
         </div>
         <div class="mood-field">
