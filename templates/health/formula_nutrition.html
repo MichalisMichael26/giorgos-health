@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Διατροφική ανάλυση Frisolac AC & Maxijul{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>🍼 Διατροφική ανάλυση σκευασμάτων</h1>
+        <p class="muted">Frisolac AC & Super Soluble Maxijul — στοιχεία <strong>ανά 100 g σκόνης</strong>, όχι ανά 100 ml έτοιμου γάλακτος.</p>
+    </div>
+    <a class="btn secondary" href="{% url 'health_hub' %}">← Υγεία</a>
+</div>
+
+<section class="card" style="padding:20px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+        <span style="font-size:1.8rem;">📊</span>
+        <div>
+            <h2 style="margin:0;">Επίσημη καταγραφή των διατροφικών τιμών</h2>
+            <p class="muted" style="margin:4px 0 0;">Στοιχεία που κοινοποιήθηκαν από την κλινική παιδιατρική διαιτολόγο.</p>
+        </div>
+    </div>
+    <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;min-width:560px;">
+            <thead>
+                <tr style="text-align:left;border-bottom:2px solid rgba(128,128,128,.22);">
+                    <th style="padding:12px 8px;">Σκεύασμα</th>
+                    <th style="padding:12px 8px;">kcal / 100 g</th>
+                    <th style="padding:12px 8px;">Υδατάνθρακες / 100 g</th>
+                    <th style="padding:12px 8px;">Βάρος μεζούρας</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr style="border-bottom:1px solid rgba(128,128,128,.15);">
+                    <td style="padding:14px 8px;"><strong>{{ product.name }}</strong></td>
+                    <td style="padding:14px 8px;">{{ product.kcal_per_100g }} kcal</td>
+                    <td style="padding:14px 8px;">{{ product.carbs_per_100g }} g</td>
+                    <td style="padding:14px 8px;">{{ product.scoop_g }} g</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card" style="padding:20px;margin-bottom:16px;">
+    <h2 style="margin-top:0;">🥄 Ανά μία μεζούρα σκόνης</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px;">
+        {% for product in products %}
+        <div style="border:1px solid rgba(128,128,128,.22);border-radius:14px;padding:16px;">
+            <strong style="display:block;margin-bottom:8px;">{{ product.name }}</strong>
+            <p style="font-size:1.2rem;font-weight:800;margin:0 0 8px;">1 μεζούρα = {{ product.scoop_g }} g</p>
+            <p style="margin:0;">{{ product.kcal_per_scoop }} kcal · {{ product.carbs_per_scoop }} g υδατάνθρακες</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="card" style="padding:18px;border-left:4px solid #c9993e;">
+    <strong>⚕️ Σημαντική διευκρίνιση</strong>
+    <p style="margin:8px 0 0;line-height:1.6;">
+        Οι τιμές είναι διατροφικά στοιχεία αναφοράς για τη <strong>ξηρή σκόνη</strong>.
+        Δεν είναι υπολογισμός πρόσληψης ανά γεύμα, ούτε αλλαγή στη συνταγή ή στο πρόγραμμα σίτισης του Γιώργου.
+        Για αλλαγή σκευάσματος, ποσότητας ή παρασκευής ακολουθούνται μόνο οι οδηγίες της μεταβολικής ομάδας
+        και της <strong>κλινικής παιδιατρικής διαιτολόγου</strong>.
+        Αν αλλάξει η σύνθεση του προϊόντος, επανελέγχουμε την ετικέτα.
+    </p>
+    <p class="muted" style="margin:12px 0 0;">Georgia Chappa — Clinical Paediatric Dietitian (Κλινική Παιδιατρική Διαιτολόγος)</p>
+</section>
+{% endblock %}
