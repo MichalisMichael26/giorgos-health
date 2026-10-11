@@ -208,6 +208,72 @@
     }
 
 
+
+    // Live energy preview for the meal being recorded. This is an estimate
+    // from consumed ml, not a prescribed amount or an additional NG feed.
+    const formulaScoopsInput = document.getElementById("id_formula");
+    const maxijulScoopsInput = document.getElementById("id_supplement");
+    const preparedVolumeInput = document.getElementById("id_prepared_volume_ml");
+    const mealStatusInput = document.getElementById("id_status");
+    if (consumedMl && formulaScoopsInput && maxijulScoopsInput && preparedVolumeInput) {
+        const energyPreview = document.createElement("div");
+        energyPreview.className = "medical-note";
+        energyPreview.style.cssText =
+            "margin:12px 0;padding:14px 16px;border-radius:12px;border:1px solid rgba(128,128,128,.22);";
+        energyPreview.setAttribute("aria-live", "polite");
+        const target = preparedVolumeInput.closest("p") || consumedMl.closest("p");
+        if (target) target.insertAdjacentElement("afterend", energyPreview);
+
+        function scoopsNumber(raw, gramsPerScoop, emptyMeansZero) {
+            const value = String(raw || "").trim().toLowerCase().replace(",", ".");
+            if (!value) return emptyMeansZero ? 0 : null;
+            if (["0", "0.0", "χωρίς", "none", "no"].includes(value)) return 0;
+            const onlyGrams = value.match(/^(\d+(?:\.\d+)?)\s*(g|gr|γραμμάρια)$/);
+            if (onlyGrams) return Number(onlyGrams[1]) / gramsPerScoop;
+            const match = value.match(/(?:^|[^\w])(\d+(?:\.\d+)?)/);
+            if (!match) return null;
+            const count = Number(match[1]);
+            return Number.isFinite(count) && count >= 0 && count <= 30 ? count : null;
+        }
+
+        function previewMealEnergy() {
+            const consumed = consumedMl.value.trim() !== "" ? Number(consumedMl.value) : NaN;
+            const formula = scoopsNumber(formulaScoopsInput.value, 4.33, false);
+            const maxijul = scoopsNumber(maxijulScoopsInput.value, 5, true);
+            let finalMl = preparedVolumeInput.value.trim() !== ""
+                ? Number(preparedVolumeInput.value) : NaN;
+            if (!Number.isFinite(finalMl)) {
+                if (formula === 6 && maxijul === 1) finalMl = 205;
+                else if (formula === 5 && maxijul === 1) finalMl = 175;
+            }
+            if (mealStatusInput?.value === "missed" || !Number.isFinite(consumed) ||
+                consumed < 0 || formula === null || formula <= 0 || maxijul === null ||
+                !Number.isFinite(finalMl) || finalMl <= 0) {
+                energyPreview.textContent =
+                    "🔥 Εκτιμώμενες θερμίδες: — (συμπλήρωσε πόσα ml καταναλώθηκαν, " +
+                    "μεζούρες Frisolac AC / Maxijul και τελικό όγκο παρασκευής).";
+                return;
+            }
+            const ratio = consumed / finalMl;
+            const kcal = (formula * 4.33 * 503 / 100 + maxijul * 5 * 380 / 100) * ratio;
+            const cho = (formula * 4.33 * 56.2 / 100 + maxijul * 5 * 95 / 100) * ratio;
+            energyPreview.textContent =
+                "🔥 Εκτιμώμενες θερμίδες για " + consumed + " ml: " +
+                kcal.toFixed(1).replace(".", ",") + " kcal · " +
+                cho.toFixed(1).replace(".", ",") + " g υδατάνθρακες. " +
+                "Μπιμπερό και ρινογαστρικός μετρώνται μία φορά στα συνολικά ml. " +
+                "Η τιμή δεν είναι οδηγία αλλαγής της σίτισης.";
+        }
+        [
+            consumedMl, offeredMl, remainingMl, formulaScoopsInput,
+            maxijulScoopsInput, preparedVolumeInput, mealStatusInput
+        ].filter(Boolean).forEach(input => {
+            input.addEventListener("input", previewMealEnergy);
+            input.addEventListener("change", previewMealEnergy);
+        });
+        previewMealEnergy();
+    }
+
     const finishedTime = document.getElementById("id_finished_time");
     if (finishedTime) {
         const finishRow = finishedTime.closest("p");
