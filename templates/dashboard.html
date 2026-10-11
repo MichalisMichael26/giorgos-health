@@ -387,6 +387,9 @@
                 Γεύματα με Maxijul: {{ milk_guide.maxijul.with_maxijul_meals }}
                 · χωρίς: {{ milk_guide.maxijul.without_maxijul_meals }}
             </small>
+            {% if milk_guide.maxijul.incomplete_with_maxijul %}
+            <small>⚠️ Η εκτιμώμενη πρόσληψη Maxijul είναι μερική: {{ milk_guide.maxijul.incomplete_with_maxijul }} γεύματα δεν είχαν επαρκή στοιχεία παρασκευής.</small>
+            {% endif %}
         </div>
 
         {% if milk_guide.weight_guide %}
