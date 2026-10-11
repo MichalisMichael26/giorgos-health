@@ -65,11 +65,11 @@ def _quantity_in_scoops(value, scoop_size_g, *, empty_is_zero=False):
         return Decimal("0")
 
     # A grams-only supplement entry (e.g. '5 g') is not five scoops.
-    grams_match = re.fullmatch(r"(\\d+(?:\\.\\d+)?)\\s*(?:g|gr|γραμμάρια)", text)
+    grams_match = re.fullmatch(r"(\d+(?:\.\d+)?)\s*(?:g|gr|γραμμάρια)", text)
     if grams_match:
         return Decimal(grams_match.group(1)) / scoop_size_g
 
-    match = re.search(r"(?<!\\w)(\\d+(?:\\.\\d+)?)(?!\\w)", text)
+    match = re.search(r"(?<!\w)(\d+(?:\.\d+)?)(?!\w)", text)
     if not match:
         return None
     quantity = Decimal(match.group(1))
