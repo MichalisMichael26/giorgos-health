@@ -54,6 +54,7 @@ class MealEntryForm(forms.ModelForm):
             "offered_ml",
             "remaining_ml",
             "consumed_ml",
+            "prepared_volume_ml",
             "nasogastric_tube_used",
             "formula",
             "supplement",
@@ -64,7 +65,8 @@ class MealEntryForm(forms.ModelForm):
             "scheduled_time": "Προγραμματισμένη ώρα γεύματος",
             "actual_time": "Ώρα έναρξης γεύματος",
             "finished_time": "Ώρα ολοκλήρωσης γεύματος",
-            "formula": "Formula (κουταλάκια)",
+            "formula": "Frisolac AC (κοφτές μεζούρες)",
+            "prepared_volume_ml": "Τελικός όγκος παρασκευασμένου γάλακτος (ml)",
             "supplement": "Maxijul — 1 κουταλιά = 5 g",
         }
         widgets = {
@@ -76,6 +78,7 @@ class MealEntryForm(forms.ModelForm):
             "offered_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "remaining_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "consumed_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
+            "prepared_volume_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "1", "step": "1"}),
             "nasogastric_tube_used": forms.CheckboxInput(),
             "formula": forms.TextInput(attrs={"inputmode": "decimal"}),
             "supplement": forms.TextInput(attrs={"inputmode": "decimal"}),
@@ -92,12 +95,17 @@ class MealEntryForm(forms.ModelForm):
             "offered_ml",
             "remaining_ml",
             "consumed_ml",
+            "prepared_volume_ml",
             "nasogastric_tube_used",
             "formula",
             "supplement",
             "status",
             "notes",
         ])
+
+        self.fields["prepared_volume_ml"].help_text = ("Όγκος ΟΛΗΣ της παρασκευής μετά την ανάμειξη, όχι μόνο τα ml που προσφέρθηκαν. " "Για το επιβεβαιωμένο πλάνο είναι 205 ml. Αν η παρασκευή διαφέρει, άλλαξέ το ώστε να υπολογίζονται σωστά οι θερμίδες.")
+        self.fields["formula"].help_text = "Πόσες κοφτές μεζούρες Frisolac AC βάλατε σε όλη την παρασκευή (1 = 4,33 g)."
+        self.fields["supplement"].help_text = "Πόσες κουταλιές Super Soluble Maxijul στην παρασκευή (1 = 5 g). Αν δεν βάλατε, γράψτε 0."
 
         self.fields["nasogastric_tube_used"].help_text = (
             "Τσέκαρε μόνο αν χρησιμοποιήθηκε ρινογαστρικός σωλήνας σε αυτό το γεύμα."
