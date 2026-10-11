@@ -345,6 +345,15 @@
     </div>
 
     <div class="milk-guide-grid">
+        <div class="milk-guide-reference">
+            <span class="guide-kicker">🔥 Θερμίδες που καταναλώθηκαν σήμερα · εκτίμηση</span>
+            <strong>{% if energy_today.has_data %}≈ {{ energy_today.kcal|floatformat:"-1" }} kcal{% else %}—{% endif %}</strong>
+            <small>{% if energy_today.has_data %}≈ {{ energy_today.carbs_g|floatformat:"-1" }} g υδατάνθρακες · από {{ energy_today.counted_ml }} ml με γνωστή παρασκευή{% else %}Χρειάζονται ποσότητα που ήπιε, μεζούρες και τελικός όγκος παρασκευής.{% endif %}</small>
+            {% if energy_today.missing_count %}
+            <small><strong>⚠️ Μερικό σύνολο:</strong> {{ energy_today.missing_count }} γεύμα/τα ({{ energy_today.missing_ml }} ml) χωρίς ασφαλή υπολογισμό. Δεν προσμετρώνται.</small>
+            {% endif %}
+            <small>Frisolac AC + Maxijul · όχι ξεχωριστή διπλή πρόσληψη από μπιμπερό/ρινογαστρικό.</small>
+        </div>
         <div class="milk-guide-main">
             <span class="guide-kicker">Σήμερα μέχρι τώρα</span>
             <strong>{{ consumed_total }} ml</strong>
@@ -544,7 +553,7 @@
     <div class="table-wrap">
         <table class="responsive-table">
             <thead>
-                <tr><th>Προγραμματισμένη</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφ.</th><th>Ήπιε</th><th>Σχόλιο</th><th></th></tr>
+                <tr><th>Προγραμματισμένη</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφ.</th><th>Ήπιε</th><th>🔥 kcal (εκτ.)</th><th>Σχόλιο</th><th></th></tr>
             </thead>
             <tbody>
             {% for meal in meals_today %}
@@ -554,11 +563,12 @@
                     <td data-label="Τέλος">{% if meal.finished_time %}<strong>{{ meal.finished_time|time:"H:i" }}</strong>{% else %}<span class="muted">Δεν καταχωρήθηκε</span>{% endif %}</td>
                     <td data-label="Προσφέρθηκαν">{% if meal.offered_ml != None %}{{ meal.offered_ml }} ml{% else %}—{% endif %}</td>
                     <td data-label="Ήπιε">{% if meal.consumed_ml != None %}{{ meal.consumed_ml }} ml{% else %}—{% endif %}</td>
+                    <td data-label="Θερμίδες">{% if meal.energy_estimate.kcal != None %}≈ {{ meal.energy_estimate.kcal|floatformat:"-1" }} kcal{% else %}<span title="Λείπει ή είναι άγνωστη η παρασκευή">—</span>{% endif %}</td>
                     <td data-label="Σχόλιο">{% if meal.notes %}<span class="entry-comment">💬 {{ meal.notes }}</span>{% else %}—{% endif %}</td>
                     <td data-label=""><a class="mini-action" href="{% url 'meal_edit' meal.pk %}">Edit</a></td>
                 </tr>
             {% empty %}
-                <tr><td colspan="7">Δεν υπάρχουν γεύματα σήμερα.</td></tr>
+                <tr><td colspan="8">Δεν υπάρχουν γεύματα σήμερα.</td></tr>
             {% endfor %}
             </tbody>
         </table>
