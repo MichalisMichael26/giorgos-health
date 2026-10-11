@@ -88,8 +88,9 @@ for config in doctor_configs:
 python manage.py shell -c "
 import os
 from core.models import ChildProfile
+from core.nutrition import normalize_product_labels
 
-feeding_plan = (os.environ.get('GIORGOS_FEEDING_PLAN') or '').strip()
+feeding_plan = normalize_product_labels((os.environ.get('GIORGOS_FEEDING_PLAN') or '').strip())
 if feeding_plan:
     updated = ChildProfile.objects.all().update(current_feeding_plan=feeding_plan)
     print(f'Child profile feeding plan synced from environment for {updated} record(s)')
