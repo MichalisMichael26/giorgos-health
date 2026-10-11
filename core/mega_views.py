@@ -1028,6 +1028,8 @@ def daily_summary_data(day):
     glucose_values = [float(g.value) for g in glucose]
 
     profile = get_profile()
+    from .nutrition import summarize_meal_energy
+    energy = summarize_meal_energy(meals)
     maxijul = None
     if profile:
         from .views import maxijul_day_summary
@@ -1040,6 +1042,7 @@ def daily_summary_data(day):
         "consumed": consumed,
         "avg_meal": avg_meal,
         "maxijul": maxijul,
+        "energy": energy,
         "glucose": glucose,
         "glucose_count": len(glucose),
         "glucose_avg": round(sum(glucose_values) / len(glucose_values), 1) if glucose_values else None,
@@ -1085,6 +1088,7 @@ def daily_summary_pdf(request):
         Paragraph(day.strftime("%d/%m/%Y"), styles["subtitle"]),
         Spacer(1, 4*mm),
         Paragraph(f"Γεύματα: {summary['meal_count']} · Σύνολο: {summary['consumed']} ml · Μ.ό.: {summary['avg_meal'] or '—'} ml", styles["body"]),
+        Paragraph(f"Εκτιμώμενη ενέργεια Frisolac AC + Maxijul: {summary['energy']['kcal']} kcal σε {summary['energy']['counted_ml']} ml καταγεγραμμένα (χωρίς υπολογισμό: {summary['energy']['missing_count']} γεύματα / {summary['energy']['missing_ml']} ml)", styles["body"]),
         Paragraph(
             (
                 f"Maxijul: {summary['maxijul']['total_scoops']:g} κουταλιές · "
