@@ -29,6 +29,7 @@
 {% if milk_guide_today %}
 <section class="doctor-section">
     <h2>🍼 Σημερινό πλάνο / στόχος σίτισης</h2>
+    <p><strong>🔥 Εκτιμώμενες συνολικές θερμίδες Frisolac AC + Maxijul:</strong> {% if energy_today.has_data %}≈ {{ energy_today.kcal|floatformat:"-1" }} kcal από {{ energy_today.counted_ml }} ml · {{ energy_today.carbs_g|floatformat:"-1" }} g υδατάνθρακες{% else %}μη διαθέσιμο{% endif %}{% if energy_today.missing_count %} · ⚠️ εκτός υπολογισμού {{ energy_today.missing_count }} γεύματα ({{ energy_today.missing_ml }} ml){% endif %}.</p>
     <p><strong>{{ milk_guide_today.active_label }}</strong></p>
 
     {% if milk_guide_today.has_active_target %}
