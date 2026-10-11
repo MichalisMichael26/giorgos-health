@@ -28,6 +28,7 @@ class MealEntry(models.Model):
     offered_ml = models.PositiveIntegerField("Προσφέρθηκαν (ml)", blank=True, null=True)
     consumed_ml = models.PositiveIntegerField("Ήπιε (ml)", blank=True, null=True)
     remaining_ml = models.PositiveIntegerField("Έμεινε (ml)", blank=True, null=True)
+    prepared_volume_ml = models.PositiveIntegerField("Τελικός όγκος παρασκευής (ml)", blank=True, null=True, help_text="Τελικός όγκος όλου του παρασκευασμένου γάλακτος, όχι μόνο όσα προσφέρθηκαν.")
     nasogastric_tube_used = models.BooleanField("Ρινογαστρικός σωλήνας", default=False)
     formula = models.CharField("Formula", max_length=120, blank=True)
     supplement = models.CharField("Maxijul (κουταλιές — 1 κουταλιά = 5 g)", max_length=120, blank=True)
@@ -54,6 +55,11 @@ class MealEntry(models.Model):
     @property
     def weekday_name(self):
         return greek_weekday(self.date)
+
+    @property
+    def energy_estimate(self):
+        from .nutrition import estimate_meal_energy
+        return estimate_meal_energy(self)
 
     def __str__(self):
         return f"{self.date} {self.scheduled_time.strftime('%H:%M')}"
