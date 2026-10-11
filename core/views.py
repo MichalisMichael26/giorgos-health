@@ -735,6 +735,18 @@ def more(request):
 
 
 @login_required
+def formula_nutrition(request):
+    """Read-only powder nutrition details; no prescription or automated dosing."""
+    from .nutrition import nutrition_reference_products
+
+    return render(
+        request,
+        "health/formula_nutrition.html",
+        {"products": nutrition_reference_products()},
+    )
+
+
+@login_required
 def maxijul_calculator(request):
     """
     Owner-only reference calculator based on the latest clinician-confirmed
