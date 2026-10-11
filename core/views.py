@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .access import is_owner_user, user_role
-from .nutrition import summarize_meal_energy
+from .nutrition import summarize_meal_energy, estimate_meal_energy
 
 from .feeding_timing import (
     current_feed_times,
@@ -194,6 +194,7 @@ def maxijul_day_summary(profile, meals):
     consumed_scoops = 0.0
     with_maxijul = 0
     without_maxijul = 0
+    incomplete_with_maxijul = 0
 
     for meal in recorded:
         scoops = _numeric_scoops(meal.supplement)
@@ -202,14 +203,15 @@ def maxijul_day_summary(profile, meals):
             with_maxijul += 1
             prepared_scoops += scoops
 
-            # Maxijul is mixed through the prepared bottle. Estimate actual
-            # intake proportionally to consumed/offered volume. If offered
-            # volume is unavailable, fall back to the full entered scoop amount.
-            if meal.offered_ml and meal.offered_ml > 0:
-                ratio = min(max((meal.consumed_ml or 0) / meal.offered_ml, 0), 1)
-                consumed_scoops += scoops * ratio
-            elif (meal.consumed_ml or 0) > 0:
-                consumed_scoops += scoops
+            # "Offered ml" may be only part of a prepared bottle (for example,
+            # 60 ml orally followed by a tube top-up). Use the FINAL mixed
+            # volume as denominator, not offered ml or the full spoon amount.
+            estimate = estimate_meal_energy(meal)
+            final_volume = estimate["prepared_volume_ml"]
+            if final_volume is not None and final_volume > 0:
+                consumed_scoops += scoops * (meal.consumed_ml or 0) / float(final_volume)
+            else:
+                incomplete_with_maxijul += 1
         else:
             without_maxijul += 1
 
@@ -241,6 +243,7 @@ def maxijul_day_summary(profile, meals):
         "with_maxijul_meals": with_maxijul,
         "without_maxijul_meals": without_maxijul,
         "prepared_scoops": round(prepared_scoops, 2),
+        "incomplete_with_maxijul": incomplete_with_maxijul,
         "total_scoops": round(consumed_scoops, 2),
         "grams": round(grams, 1),
         "kcal": round(kcal, 1),
