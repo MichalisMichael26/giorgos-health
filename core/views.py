@@ -1429,6 +1429,7 @@ def report_24h_pdf(request):
     latest_growth = report_data["latest_growth"]
     total_ml = report_data["total_ml"]
     maxijul_24h = report_data["maxijul_24h"]
+    energy_24h = report_data["energy_24h"]
 
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = (
@@ -1470,6 +1471,11 @@ def report_24h_pdf(request):
         Paragraph(
             f"Maxijul 24ώρου: {maxijul_24h['total_scoops']:g} κουταλιές · "
             f"≈ {maxijul_24h['grams']:g} g · ≈ {maxijul_24h['kcal']:g} kcal",
+            styles["body"],
+        ),
+        Paragraph(
+            f"Εκτιμώμενη ενέργεια (Frisolac AC + Maxijul): {energy_24h['kcal']} kcal σε {energy_24h['counted_ml']} ml"
+            f" · Μη υπολογισμένα: {energy_24h['missing_count']} γεύματα / {energy_24h['missing_ml']} ml",
             styles["body"],
         ),
         Spacer(1, 4*mm),
