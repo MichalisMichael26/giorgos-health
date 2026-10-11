@@ -8,6 +8,7 @@ urlpatterns = [
     path("health/nasogastric-tube/", ngt_views.nasogastric_tube, name="nasogastric_tube"),
     path("health/emergency-sick-day-plan/", sick_day_views.sick_day_plan, name="sick_day_plan"),
     path("health/maxijul-calculator/", views.maxijul_calculator, name="maxijul_calculator"),
+    path("health/formula-nutrition/", views.formula_nutrition, name="formula_nutrition"),
     path("health/allergies/", views.allergies_view, name="allergies_view"),
     path("profile/", views.child_profile_edit, name="child_profile_edit"),
     path(
