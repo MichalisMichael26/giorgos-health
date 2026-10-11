@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .access import is_owner_user, user_role
+from .nutrition import summarize_meal_energy
 
 from .feeding_timing import (
     current_feed_times,
@@ -663,6 +664,7 @@ def dashboard(request):
             title__icontains="GSD Ia"
         ).order_by("-date", "-created_at").first(),
         "milk_guide": milk_guide,
+        "energy_today": summarize_meal_energy(meals_today),
         "consumed_total": consumed_total,
         "meal_comparison_rows": meal_comparison_rows,
         "yesterday": yesterday,
@@ -1225,6 +1227,7 @@ def _rolling_24h_data():
         "latest_growth": latest_growth,
         "total_ml": total_ml,
         "maxijul_24h": maxijul_24h,
+        "energy_24h": summarize_meal_energy(meals),
         "glucose_min": glucose_min,
         "glucose_max": glucose_max,
     }
@@ -1347,6 +1350,7 @@ def _rolling_48h_clinical_data():
         "total_ml": total_ml,
         "total_offered_ml": total_offered_ml,
         "maxijul_48h": maxijul_48h,
+        "energy_48h": summarize_meal_energy(meals),
         "glucose_avg": glucose_avg,
         "glucose_min": glucose_min,
         "glucose_max": glucose_max,
@@ -1579,7 +1583,8 @@ def meal_create(request):
             "offered_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "205")),
             "remaining_ml": 0,
             "consumed_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "205")),
-            "formula": os.environ.get("GIORGOS_FORMULA_SCOOPS_PER_FEED", "5"),
+            "prepared_volume_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "205")),
+            "formula": os.environ.get("GIORGOS_FORMULA_SCOOPS_PER_FEED", "6"),
             "supplement": (
                 f'{os.environ.get("GIORGOS_MAXIJUL_SCOOPS_PER_FEED", "1")} κουταλιά '
                 f'({os.environ.get("GIORGOS_MAXIJUL_SCOOP_GRAMS", "5")} g)'
