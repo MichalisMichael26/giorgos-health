@@ -304,9 +304,10 @@
         </div>
         <div class="metric">
             <span>Maxijul · εκτ.</span>
-            <strong>{{ maxijul_48h.total_κουταλιές|floatformat:"-2" }}</strong>
+            <strong>{{ maxijul_48h.total_scoops|floatformat:"-2" }}</strong>
             <small>κουταλιές · 1 κουταλιά = 5 g · ≈ {{ maxijul_48h.kcal|floatformat:"-1" }} kcal</small>
         </div>
+        <div class="metric"><span>🔥 Εκτ. θερμίδες 48ώρου</span><strong>{% if energy_48h.has_data %}{{ energy_48h.kcal|floatformat:"-1" }} kcal{% else %}—{% endif %}</strong><small>Frisolac AC + Maxijul · {% if energy_48h.missing_count %}⚠️ μερικό: {{ energy_48h.missing_ml }} ml εκτός{% else %}για καταγεγραμμένη παρασκευή{% endif %}</small></div>
         <div class="metric">
             <span>Γλυκόζες</span>
             <strong>{{ glucose|length }}</strong>
@@ -416,14 +417,14 @@
 
     <section class="section allow-break">
         <h2>🍼 Γεύματα τελευταίων 48 ωρών</h2>
-        <p class="section-note">Οι θερμίδες Maxijul είναι εκτίμηση βάσει των καταχωρημένων κουταλιές και της ποσότητας που καταναλώθηκε.</p>
+        <p class="section-note">Οι kcal είναι εκτιμήσεις βάσει Frisolac AC, Maxijul, μεζούρων, τελικού όγκου και ποσότητας που καταναλώθηκε. Αν λείπει η παρασκευή δεν υπολογίζονται.</p>
         {% if meals %}
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
                         <th>Ημ/νία</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th>
-                        <th>Formula</th><th>Maxijul</th><th>Κατάσταση</th><th>Σημειώσεις</th>
+                        <th>Formula</th><th>Maxijul</th><th>🔥 kcal</th><th>Κατάσταση</th><th>Σημειώσεις</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -437,6 +438,7 @@
                         <td>{% if item.consumed_ml != None %}<strong>{{ item.consumed_ml }} ml</strong>{% else %}—{% endif %}</td>
                         <td>{{ item.formula|default:"—" }}</td>
                         <td>{% if item.supplement %}{{ item.supplement }} scoop{% else %}—{% endif %}</td>
+                        <td>{% if item.energy_estimate.kcal != None %}≈ {{ item.energy_estimate.kcal|floatformat:"-1" }}{% else %}—{% endif %}</td>
                         <td>{{ item.get_status_display }}</td>
                         <td>{{ item.notes|default:"—" }}</td>
                     </tr>
