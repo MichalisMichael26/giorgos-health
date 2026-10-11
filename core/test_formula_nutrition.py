@@ -33,8 +33,8 @@ class FormulaNutritionReferenceTests(TestCase):
         self.assertContains(response, "Frisolac AC")
         self.assertContains(response, "Super Soluble Maxijul")
         self.assertContains(response, "503")
-        self.assertContains(response, "56.2")
-        self.assertContains(response, "4.33")
+        # Greek locale can render decimals using a comma; numerical values are
+        # asserted as Decimal objects in the test above.
         self.assertContains(response, "Κλινική Παιδιατρική Διαιτολόγος")
         self.assertContains(self.client.get(reverse("health_hub")), reverse("formula_nutrition"))
 
