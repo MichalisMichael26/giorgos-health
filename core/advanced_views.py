@@ -563,6 +563,7 @@ def doctor_view(request):
     latest_glucose = GlucoseReading.objects.first()
 
     from .views import daily_milk_guide
+    from .nutrition import summarize_meal_energy
     meals_today = list(MealEntry.objects.filter(date=today).order_by("scheduled_time"))
     milk_guide_today = daily_milk_guide(
         profile,
@@ -584,6 +585,7 @@ def doctor_view(request):
         "profile": profile,
         "today": today,
         "today_stats": daily_snapshot(today),
+        "energy_today": summarize_meal_energy(meals_today),
         "feeding_7": feeding_stats(last7, today),
         "latest_growth": latest_growth,
         "growth_bands": growth_bands,
