@@ -143,9 +143,12 @@ def dashboard_extras(today):
             vaccine_reminders.append({"object": vaccine, "label": label, "days_until": days_until})
 
     now = timezone.now()
+    # Keep the home page focused on a one-week window. Older incomplete
+    # reminders still exist on the dedicated Reminders page, but should not
+    # occupy the dashboard indefinitely.
     custom_reminders = list(
         HealthReminder.objects.filter(active=True, completed=False)
-        .filter(due_at__lte=now + timedelta(days=7))
+        .filter(due_at__gte=now - timedelta(days=7), due_at__lte=now + timedelta(days=7))
         .order_by("due_at")[:6]
     )
 
