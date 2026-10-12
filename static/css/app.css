@@ -8098,3 +8098,95 @@ html.night .form-card::after {
     .diagnosis-gold-banner { align-items: flex-start; padding: 15px 16px; }
     .diagnosis-gold-icon { font-size: 26px; }
 }
+
+
+/* ===== Header logo visibility fix (Oct 2026) =====
+   The brand image must never shrink out of sight or be cropped by the
+   circular object-fit: cover used in an older header theme. */
+.topbar .brand {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 330px;
+    gap: 10px;
+}
+.topbar .brand-logo {
+    display: block;
+    width: 58px;
+    height: 58px;
+    flex: 0 0 58px;
+    box-sizing: border-box;
+    padding: 3px;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 16px;
+    border: 2px solid rgba(189, 214, 244, .88);
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(58, 87, 140, .13);
+}
+.topbar .brand-text {
+    min-width: 0;
+    overflow: hidden;
+}
+.topbar .brand-title {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* When the navigation is crowded, its links scroll rather than squeezing
+   the logo out of the header. */
+.topbar .desktop-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+.topbar .desktop-nav::-webkit-scrollbar {
+    display: none;
+}
+.topbar .header-global-search {
+    flex: 0 1 175px;
+    min-width: 0;
+    margin-left: 0;
+}
+.topbar .header-actions {
+    flex: 0 0 auto;
+}
+@media (max-width: 1180px) and (min-width: 721px) {
+    .topbar .brand {
+        max-width: 240px;
+    }
+    .topbar .brand-logo {
+        width: 48px;
+        height: 48px;
+        flex-basis: 48px;
+    }
+}
+@media (max-width: 720px) {
+    .topbar .brand {
+        flex: 1 1 auto;
+        max-width: none;
+    }
+    .topbar .brand-logo {
+        width: 50px;
+        height: 50px;
+        flex-basis: 50px;
+        border-radius: 14px;
+    }
+}
+@media (max-width: 360px) {
+    .topbar .brand-logo {
+        width: 44px;
+        height: 44px;
+        flex-basis: 44px;
+    }
+    .topbar .brand-title {
+        font-size: 16px;
+    }
+}
+html.night .topbar .brand-logo {
+    background: #fff;
+    border-color: rgba(166, 195, 239, .8);
+}
+/* ===== End header logo fix ===== */
