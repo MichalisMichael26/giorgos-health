@@ -1,10 +1,11 @@
-from datetime import date, time
+from datetime import date, time, timedelta
 from decimal import Decimal
 from types import SimpleNamespace
 
 from django.contrib.auth.models import User
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import MealEntry
 from .nutrition import estimate_meal_energy, summarize_meal_energy
@@ -104,3 +105,51 @@ class MealEnergyDisplayTests(TestCase):
         meal.refresh_from_db()
         self.assertEqual(meal.prepared_volume_ml, 180)
         self.assertEqual(meal.energy_estimate["kcal"], Decimal("43.6"))
+
+
+class MealEnergyChartTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("energy-chart-test", password="unit-test-password")
+        self.client.force_login(self.user)
+        today = timezone.localdate()
+        yesterday = today - timedelta(days=1)
+
+        # A fully documented oral/NG meal: only the combined consumed ml count.
+        MealEntry.objects.create(
+            date=yesterday, scheduled_time=time(12, 0),
+            formula="6", supplement="1 κουταλιά (5 g)",
+            consumed_ml=100, offered_ml=205, nasogastric_tube_used=True,
+            status="partial",
+        )
+        # An incomplete preparation on the following date means the entire
+        # daily calorie bar must be missing, not a misleading partial total.
+        MealEntry.objects.create(
+            date=today, scheduled_time=time(9, 0),
+            formula="6", supplement="1", consumed_ml=100,
+            status="partial",
+        )
+        MealEntry.objects.create(
+            date=today, scheduled_time=time(12, 0),
+            formula="unknown", supplement="1", consumed_ml=40,
+            status="partial",
+        )
+
+    def test_analytics_calories_for_every_supported_period(self):
+        for period in ("7", "30", "90", "all"):
+            with self.subTest(period=period):
+                response = self.client.get(reverse("analytics"), {"period": period})
+                self.assertEqual(response.status_code, 200)
+                chart = response.context["chart_data"]
+                self.assertEqual(chart["daily_kcal"][-2], 73.0)
+                self.assertIsNone(chart["daily_kcal"][-1])
+                self.assertEqual(chart["daily_kcal_missing_days"], 1)
+                self.assertContains(response, "Θερμίδες ανά ημέρα")
+
+    def test_feeding_performance_calories_and_missing_day(self):
+        response = self.client.get(reverse("feeding_performance"), {"period": "7"})
+        self.assertEqual(response.status_code, 200)
+        chart = response.context["chart_data"]
+        self.assertEqual(chart["kcal"][-2], 73.0)
+        self.assertIsNone(chart["kcal"][-1])
+        self.assertEqual(chart["kcal_missing_days"], 1)
+        self.assertContains(response, "Ελλιπή στοιχεία")

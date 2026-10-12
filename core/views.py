@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .access import is_owner_user, user_role
-from .nutrition import summarize_meal_energy, estimate_meal_energy
+from .nutrition import summarize_meal_energy, estimate_meal_energy, daily_energy_summaries
 
 from .feeding_timing import (
     current_feed_times,
@@ -891,8 +891,9 @@ def analytics(request):
     ml_by_date = defaultdict(int)
     for item in meals:
         ml_by_date[item.date] += item.consumed_ml or 0
+    energy_by_date = daily_energy_summaries(meals)
 
-    # For the daily-ml graph, use every calendar date in the requested period.
+    # For both daily charts, use every calendar date in the requested period.
     date_count = (today - start_date).days + 1
     dates = [start_date + timedelta(days=i) for i in range(date_count)]
 
@@ -901,6 +902,15 @@ def analytics(request):
         "period_label": period_label,
         "daily_labels": [d.strftime("%d/%m/%y") for d in dates],
         "daily_ml": [ml_by_date.get(d, 0) for d in dates],
+        "daily_kcal": [
+            float(energy_by_date[d]["kcal"])
+            if d in energy_by_date and energy_by_date[d]["complete"]
+            else None
+            for d in dates
+        ],
+        "daily_kcal_missing_days": sum(
+            1 for value in energy_by_date.values() if value["missing_count"] > 0
+        ),
         "glucose_labels": [
             f"{item.date.strftime('%d/%m/%y')} {item.time.strftime('%H:%M')}"
             for item in glucose

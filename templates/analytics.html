@@ -4,7 +4,7 @@
 <div class="page-head">
     <div>
         <h1>📊 Γραφήματα</h1>
-        <p class="muted">Παρακολούθηση τάσεων για γλυκόζη, σίτιση και ανάπτυξη · {{ period_label }}.</p>
+        <p class="muted">Παρακολούθηση τάσεων για γλυκόζη, σίτιση, θερμίδες και ανάπτυξη · {{ period_label }}.</p>
     </div>
     <div class="period-tabs">
         <a class="{% if period == '7' %}active{% endif %}" href="?period=7">7 ημέρες</a>
@@ -32,6 +32,19 @@
             <small>ml</small>
         </div>
         <div class="chart-wrap"><canvas id="mlChart"></canvas></div>
+    </section>
+
+    <section class="chart-card">
+        <div class="chart-card-head">
+            <div><span>🔥</span><h2>Θερμίδες ανά ημέρα</h2></div>
+            <small>kcal · εκτίμηση</small>
+        </div>
+        <div class="chart-wrap"><canvas id="kcalChart"></canvas></div>
+        <p class="chart-empty" id="kcalEmpty" hidden>Δεν υπάρχουν ημέρες με πλήρη διατροφικά στοιχεία για αυτή την περίοδο.</p>
+        <p class="muted">Εκτίμηση από τα ml που καταναλώθηκαν και τις καταγεγραμμένες ποσότητες Frisolac AC και Maxijul. Χωρίς στοιχεία δεν εμφανίζεται μηδενική τιμή.</p>
+        {% if chart_data.daily_kcal_missing_days %}
+        <p class="muted">Σε {{ chart_data.daily_kcal_missing_days }} ημέρα/ημέρες λείπουν στοιχεία και δεν εμφανίζεται μερικό σύνολο θερμίδων.</p>
+        {% endif %}
     </section>
 
     <section class="chart-card">
@@ -90,7 +103,7 @@
                     grid: { display: false }
                 },
                 y: {
-                    beginAtZero: unit === "ml",
+                    beginAtZero: unit === "ml" || unit === "kcal",
                     ticks: { color: nightMode() ? "#c6d1e3" : "#6c7892" },
                     grid: { color: nightMode() ? "rgba(255,255,255,.08)" : "rgba(80,100,140,.08)" }
                 }
@@ -136,6 +149,24 @@
         },
         options: commonOptions("ml")
     });
+
+    if (data.daily_kcal.some(value => value !== null && value !== undefined)) {
+        new Chart(document.getElementById("kcalChart"), {
+            type: "bar",
+            data: {
+                labels: data.daily_labels,
+                datasets: [{
+                    data: data.daily_kcal,
+                    borderRadius: 7,
+                    maxBarThickness: 34
+                }]
+            },
+            options: commonOptions("kcal")
+        });
+    } else {
+        document.getElementById("kcalChart").hidden = true;
+        document.getElementById("kcalEmpty").hidden = false;
+    }
 
     lineChart("weightChart", data.weight_labels, data.weight_values, "kg", "weightEmpty");
     lineChart("lengthChart", data.length_labels, data.length_values, "cm", "lengthEmpty");

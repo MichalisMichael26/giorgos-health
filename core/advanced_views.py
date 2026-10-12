@@ -30,6 +30,7 @@ from .mega_forms import DiaperWithPhotoForm, SymptomWithPhotoForm, ScannedProduc
 
 from .access import is_owner_user
 from .restriction_checks import baseline_restriction_checks
+from .nutrition import daily_energy_summaries
 from .feeding_timing import current_feed_times, meal_notify_minutes_before, feeding_interval_minutes
 from .models import (
     AuditLog,
@@ -517,6 +518,9 @@ def feeding_performance(request):
         start = today - timedelta(days=days - 1)
         label = f"{days} ημέρες"
     stats = feeding_stats(start, today)
+    energy_by_date = daily_energy_summaries(
+        MealEntry.objects.filter(date__range=(start, today))
+    )
 
     profile = get_profile()
     latest_growth = GrowthMeasurement.objects.first()
@@ -532,12 +536,20 @@ def feeding_performance(request):
     current = start
     while current <= today:
         day_stats = feeding_stats(current, current)
-        day_rows.append({"date": current, **day_stats})
+        energy = energy_by_date.get(current)
+        day_rows.append({
+            "date": current,
+            "kcal": float(energy["kcal"]) if energy and energy["complete"] else None,
+            "kcal_incomplete": bool(energy and energy["missing_count"] > 0),
+            **day_stats,
+        })
         current += timedelta(days=1)
 
     chart_data = {
         "labels": [row["date"].strftime("%d/%m") for row in day_rows],
         "consumed": [row["consumed_sum"] for row in day_rows],
+        "kcal": [row["kcal"] for row in day_rows],
+        "kcal_missing_days": sum(1 for row in day_rows if row["kcal_incomplete"]),
         "ratio": [row["intake_ratio"] or 0 for row in day_rows],
     }
     return render(

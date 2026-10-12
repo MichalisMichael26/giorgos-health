@@ -157,3 +157,19 @@ def summarize_meal_energy(meals):
         "complete": missing_count == 0 and count > 0,
         "has_data": count > 0,
     }
+
+def daily_energy_summaries(meals):
+    """Group meal-energy estimates by date, retaining incomplete-day status.
+
+    A day is chartable only when summarize_meal_energy reports complete=True.
+    This avoids plotting partial totals as if they were full daily intake.
+    """
+    from collections import defaultdict
+
+    by_date = defaultdict(list)
+    for meal in meals:
+        by_date[meal.date].append(meal)
+    return {
+        day: summarize_meal_energy(day_meals)
+        for day, day_meals in by_date.items()
+    }

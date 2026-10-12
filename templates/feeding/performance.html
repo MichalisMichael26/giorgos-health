@@ -67,7 +67,43 @@
 
 {{ chart_data|json_script:"feeding-chart-data" }}
 <section class="chart-card"><div class="chart-card-head"><div><span>📊</span><h2>Κατανάλωση ανά ημέρα</h2></div><small>{{ period_label }}</small></div><div class="chart-wrap"><canvas id="feedingMlChart"></canvas></div></section>
-<section class="panel"><div class="panel-head"><h2>Ημερήσια εικόνα</h2></div><div class="table-wrap"><table class="responsive-table"><thead><tr><th>Ημερομηνία</th><th>Γεύματα</th><th>Ήπιε</th><th>Μ.ό.</th><th>% προσφερόμενου</th></tr></thead><tbody>{% for row in day_rows %}<tr><td data-label="Ημερομηνία">{{ row.date|date:"d/m/Y" }}</td><td data-label="Γεύματα">{{ row.count }}</td><td data-label="Ήπιε">{{ row.consumed_sum }} ml</td><td data-label="Μ.ό.">{% if row.avg_consumed != None %}{{ row.avg_consumed }} ml{% else %}—{% endif %}</td><td data-label="Ποσοστό">{% if row.intake_ratio != None %}{{ row.intake_ratio }}%{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>
+<section class="chart-card">
+    <div class="chart-card-head"><div><span>🔥</span><h2>Θερμίδες ανά ημέρα</h2></div><small>kcal · εκτίμηση</small></div>
+    <div class="chart-wrap"><canvas id="feedingKcalChart"></canvas></div>
+    <p class="chart-empty" id="feedingKcalEmpty" hidden>Δεν υπάρχουν ημέρες με πλήρη διατροφικά στοιχεία για αυτή την περίοδο.</p>
+    <p class="muted">Υπολογισμός με βάση τα πραγματικά ml που καταναλώθηκαν, συμπεριλαμβανομένης της σίτισης με ρινογαστρικό. Οι ημέρες με ελλιπή στοιχεία παραμένουν κενές.</p>
+</section>
+<section class="panel"><div class="panel-head"><h2>Ημερήσια εικόνα</h2></div><div class="table-wrap"><table class="responsive-table"><thead><tr><th>Ημερομηνία</th><th>Γεύματα</th><th>Ήπιε</th><th>Μ.ό.</th><th>% προσφερόμενου</th><th>Θερμίδες</th></tr></thead><tbody>{% for row in day_rows %}<tr><td data-label="Ημερομηνία">{{ row.date|date:"d/m/Y" }}</td><td data-label="Γεύματα">{{ row.count }}</td><td data-label="Ήπιε">{{ row.consumed_sum }} ml</td><td data-label="Μ.ό.">{% if row.avg_consumed != None %}{{ row.avg_consumed }} ml{% else %}—{% endif %}</td><td data-label="Ποσοστό">{% if row.intake_ratio != None %}{{ row.intake_ratio }}%{% else %}—{% endif %}</td><td data-label="Θερμίδες">{% if row.kcal != None %}{{ row.kcal|floatformat:1 }} kcal{% elif row.kcal_incomplete %}Ελλιπή στοιχεία{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script>(function(){const node=document.getElementById('feeding-chart-data');if(!node||typeof Chart==='undefined')return;const d=JSON.parse(node.textContent);new Chart(document.getElementById('feedingMlChart'),{type:'bar',data:{labels:d.labels,datasets:[{data:d.consumed,borderRadius:7,maxBarThickness:34}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});})();</script>
+<script>
+(function () {
+    const node = document.getElementById("feeding-chart-data");
+    if (!node || typeof Chart === "undefined") return;
+    const data = JSON.parse(node.textContent);
+    const options = unit => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: context => `${context.parsed.y} ${unit}` } }
+        },
+        scales: { y: { beginAtZero: true } }
+    });
+    new Chart(document.getElementById("feedingMlChart"), {
+        type: "bar",
+        data: { labels: data.labels, datasets: [{ data: data.consumed, borderRadius: 7, maxBarThickness: 34 }] },
+        options: options("ml")
+    });
+    if (data.kcal.some(value => value !== null && value !== undefined)) {
+        new Chart(document.getElementById("feedingKcalChart"), {
+            type: "bar",
+            data: { labels: data.labels, datasets: [{ data: data.kcal, borderRadius: 7, maxBarThickness: 34 }] },
+            options: options("kcal")
+        });
+    } else {
+        document.getElementById("feedingKcalChart").hidden = true;
+        document.getElementById("feedingKcalEmpty").hidden = false;
+    }
+})();
+</script>
 {% endblock %}
