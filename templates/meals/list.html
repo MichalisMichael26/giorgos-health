@@ -19,7 +19,7 @@
             <thead>
                 <tr>
                     <th>Ημερομηνία</th><th>Προγραμματισμένη</th><th>Έναρξη</th><th>Τέλος</th>
-                    <th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th><th>🔥 kcal (εκτ.)</th><th>Formula</th><th>Maxijul (1 κουταλιά = 5 g)</th><th>Σχόλιο</th><th></th>
+                    <th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Συνολικά ml</th><th>Από στόμα</th><th>Μέσω σωλήνα</th><th>🔥 kcal (εκτ.)</th><th>Formula</th><th>Maxijul (1 κουταλιά = 5 g)</th><th>Σχόλιο</th><th></th>
                 </tr>
             </thead>
             <tbody>
@@ -34,7 +34,9 @@
                     <td data-label="Τέλος">{% if meal.finished_time %}<span class="module-chip module-chip--lilac">✅ {{ meal.finished_time|time:"H:i" }}</span>{% else %}—{% endif %}</td>
                     <td data-label="Προσφέρθηκαν">{% if meal.offered_ml != None %}<span class="meal-amount meal-amount--offered">🍼 {{ meal.offered_ml }} ml</span>{% else %}—{% endif %}</td>
                     <td data-label="Έμεινε">{% if meal.remaining_ml != None %}<span class="meal-amount meal-amount--remaining">📉 {{ meal.remaining_ml }} ml</span>{% else %}—{% endif %}</td>
-                    <td data-label="Ήπιε">{% if meal.consumed_ml != None %}<span class="meal-amount meal-amount--consumed">😋 {{ meal.consumed_ml }} ml</span>{% else %}—{% endif %}{% if meal.nasogastric_tube_used %}<span class="meal-ngt-badge" aria-label="Χρησιμοποιήθηκε ρινογαστρικός σωλήνας">🩺 Ρινογαστρικός σωλήνας</span>{% endif %}</td>
+                    <td data-label="Συνολικά">{% if meal.consumed_ml != None %}<span class="meal-amount meal-amount--consumed">😋 {{ meal.consumed_ml }} ml</span>{% else %}—{% endif %}</td>
+                    <td data-label="Από στόμα">{% if meal.oral_ml != None %}{{ meal.oral_ml }} ml{% else %}<span class="muted">Άγνωστο</span>{% endif %}</td>
+                    <td data-label="Μέσω σωλήνα">{% if meal.tube_ml != None %}{{ meal.tube_ml }} ml{% if meal.tube_route %}<small class="module-subvalue">{{ meal.get_tube_route_display }}</small>{% endif %}{% elif meal.nasogastric_tube_used %}<span class="meal-ngt-badge">Ρινογαστρικός · άγνωστα ml</span>{% else %}<span class="muted">Δεν διαχωρίστηκε</span>{% endif %}</td>
                     <td data-label="Θερμίδες">{% if meal.energy_estimate.kcal != None %}<strong>≈ {{ meal.energy_estimate.kcal|floatformat:"-1" }} kcal</strong><small class="module-subvalue">{{ meal.energy_estimate.carbs_g|floatformat:"-1" }} g υδατ.</small>{% else %}—{% endif %}</td>
                     <td data-label="Formula">{{ meal.formula|default:"—" }}{% if meal.prepared_volume_ml %}<small class="module-subvalue">Σύνολο παρασκευής {{ meal.prepared_volume_ml }} ml</small>{% endif %}</td>
                     <td data-label="Maxijul">{% if meal.supplement %}<span class="module-chip module-chip--peach">🥄 {{ meal.supplement }}</span>{% else %}—{% endif %}</td>
@@ -45,7 +47,7 @@
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="12"><div class="module-empty">🍼 Δεν υπάρχουν γεύματα ακόμη.</div></td></tr>
+                <tr><td colspan="14"><div class="module-empty">🍼 Δεν υπάρχουν γεύματα ακόμη.</div></td></tr>
             {% endfor %}
             </tbody>
         </table>
