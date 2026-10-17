@@ -74,6 +74,16 @@ def feeding_stats(start_date, end_date):
     offered_sum = sum(m.offered_ml or 0 for m in meals)
     consumed_sum = sum(m.consumed_ml or 0 for m in meals)
     avg_consumed = round(sum(consumed_values) / len(consumed_values), 1) if consumed_values else None
+    recorded_days = len({
+        m.date for m in meals if m.consumed_ml is not None and m.status != "missed"
+    })
+    daily_avg_ml = round(consumed_sum / recorded_days, 1) if recorded_days else None
+    tube_known_ml = sum(m.tube_ml or 0 for m in meals)
+    # Preserve uncertainty for pre-migration records.
+    split_unknown_count = sum(
+        1 for m in meals if m.consumed_ml is not None
+        and m.oral_ml is None and m.tube_ml is None
+    )
     intake_ratio = round(consumed_sum / offered_sum * 100, 1) if offered_sum else None
     completed = sum(1 for m in meals if m.status == "completed")
     partial = sum(1 for m in meals if m.status == "partial")
@@ -83,6 +93,10 @@ def feeding_stats(start_date, end_date):
         "offered_sum": offered_sum,
         "consumed_sum": consumed_sum,
         "avg_consumed": avg_consumed,
+        "daily_avg_ml": daily_avg_ml,
+        "recorded_days": recorded_days,
+        "tube_known_ml": tube_known_ml,
+        "split_unknown_count": split_unknown_count,
         "intake_ratio": intake_ratio,
         "completed": completed,
         "partial": partial,
