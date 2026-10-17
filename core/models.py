@@ -30,6 +30,17 @@ class MealEntry(models.Model):
     remaining_ml = models.PositiveIntegerField("Έμεινε (ml)", blank=True, null=True)
     prepared_volume_ml = models.PositiveIntegerField("Τελικός όγκος παρασκευής (ml)", blank=True, null=True, help_text="Τελικός όγκος όλου του παρασκευασμένου γάλακτος, όχι μόνο όσα προσφέρθηκαν.")
     nasogastric_tube_used = models.BooleanField("Ρινογαστρικός σωλήνας", default=False)
+    # Historical meals have unknown breakdown; never infer oral/tube amounts.
+    oral_ml = models.PositiveIntegerField("Από στόμα (ml)", blank=True, null=True)
+    tube_ml = models.PositiveIntegerField("Μέσω σωλήνα (ml)", blank=True, null=True)
+    TUBE_ROUTE_CHOICES = [
+        ("ngt", "Ρινογαστρικός σωλήνας"),
+        ("gastrostomy", "Γαστροστομία"),
+    ]
+    tube_route = models.CharField(
+        "Οδός σίτισης μέσω σωλήνα", max_length=16,
+        choices=TUBE_ROUTE_CHOICES, blank=True, default="",
+    )
     formula = models.CharField("Formula", max_length=120, blank=True)
     supplement = models.CharField("Maxijul (κουταλιές — 1 κουταλιά = 5 g)", max_length=120, blank=True)
     status = models.CharField(
