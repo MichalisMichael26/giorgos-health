@@ -54,8 +54,10 @@ class MealEntryForm(forms.ModelForm):
             "offered_ml",
             "remaining_ml",
             "consumed_ml",
+            "oral_ml",
+            "tube_ml",
+            "tube_route",
             "prepared_volume_ml",
-            "nasogastric_tube_used",
             "formula",
             "supplement",
             "status",
@@ -68,6 +70,9 @@ class MealEntryForm(forms.ModelForm):
             "formula": "Frisolac AC (κοφτές μεζούρες)",
             "prepared_volume_ml": "Τελικός όγκος παρασκευασμένου γάλακτος (ml)",
             "supplement": "Maxijul — 1 κουταλιά = 5 g",
+            "oral_ml": "Ποσότητα από στόμα (ml)",
+            "tube_ml": "Ποσότητα μέσω σωλήνα (ml)",
+            "tube_route": "Τρόπος χορήγησης μέσω σωλήνα",
         }
         widgets = {
             "date": DateInput(),
@@ -78,8 +83,9 @@ class MealEntryForm(forms.ModelForm):
             "offered_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "remaining_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "consumed_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
+            "oral_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
+            "tube_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "0", "step": "1"}),
             "prepared_volume_ml": forms.NumberInput(attrs={"inputmode": "numeric", "min": "1", "step": "1"}),
-            "nasogastric_tube_used": forms.CheckboxInput(),
             "formula": forms.TextInput(attrs={"inputmode": "decimal"}),
             "supplement": forms.TextInput(attrs={"inputmode": "decimal"}),
         }
@@ -95,8 +101,10 @@ class MealEntryForm(forms.ModelForm):
             "offered_ml",
             "remaining_ml",
             "consumed_ml",
+            "oral_ml",
+            "tube_ml",
+            "tube_route",
             "prepared_volume_ml",
-            "nasogastric_tube_used",
             "formula",
             "supplement",
             "status",
@@ -107,9 +115,9 @@ class MealEntryForm(forms.ModelForm):
         self.fields["formula"].help_text = "Πόσες κοφτές μεζούρες Frisolac AC βάλατε σε όλη την παρασκευή (1 = 4,33 g)."
         self.fields["supplement"].help_text = "Πόσες κουταλιές Super Soluble Maxijul στην παρασκευή (1 = 5 g). Αν δεν βάλατε, γράψτε 0."
 
-        self.fields["nasogastric_tube_used"].help_text = (
-            "Τσέκαρε μόνο αν χρησιμοποιήθηκε ρινογαστρικός σωλήνας σε αυτό το γεύμα."
-        )
+        self.fields["oral_ml"].help_text = "Πραγματικά ml από το στόμα. Βάλε 0 αν δεν ήπιε από το στόμα."
+        self.fields["tube_ml"].help_text = "Πραγματικά ml από ρινογαστρικό/γαστροστομία. Βάλε 0 αν δεν χρησιμοποιήθηκε."
+        self.fields["tube_route"].help_text = "Αν τα ml μέσω σωλήνα είναι πάνω από 0, επίλεξε ρινογαστρικό ή γαστροστομία."
         self.fields["finished_time"].help_text = (
             "Προαιρετική καταγραφή. Δεν αλλάζει την ώρα του επόμενου γεύματος."
         )
@@ -161,7 +169,52 @@ class MealEntryForm(forms.ModelForm):
             else:
                 cleaned["remaining_ml"] = offered - consumed
 
+        oral = cleaned.get("oral_ml")
+        tube = cleaned.get("tube_ml")
+        route = cleaned.get("tube_route") or ""
+        total = cleaned.get("consumed_ml")
+        split_supplied = oral is not None or tube is not None
+        legacy_unsplit = bool(
+            self.instance.pk and self.instance.oral_ml is None
+            and self.instance.tube_ml is None
+        )
+
+        if split_supplied:
+            oral = oral if oral is not None else 0
+            tube = tube if tube is not None else 0
+            cleaned["oral_ml"] = oral
+            cleaned["tube_ml"] = tube
+            if total is None:
+                cleaned["consumed_ml"] = oral + tube
+                total = oral + tube
+                if offered is not None and remaining is None and total <= offered:
+                    cleaned["remaining_ml"] = offered - total
+            if total is not None and oral + tube != total:
+                self.add_error(
+                    "oral_ml",
+                    "Το άθροισμα από στόμα + σωλήνα πρέπει να ισούται με τα συνολικά ml.",
+                )
+            if tube > 0 and route not in {"ngt", "gastrostomy"}:
+                self.add_error("tube_route", "Επίλεξε ρινογαστρικό ή γαστροστομία.")
+            if tube == 0:
+                cleaned["tube_route"] = ""
+        elif not legacy_unsplit and cleaned.get("status") != "missed" and total is not None:
+            self.add_error(
+                "oral_ml",
+                "Συμπλήρωσε τα ml από στόμα και από σωλήνα (0 αν δεν χρησιμοποιήθηκε).",
+            )
         return cleaned
+
+    def save(self, commit=True):
+        meal = super().save(commit=False)
+        if meal.oral_ml is not None or meal.tube_ml is not None:
+            meal.nasogastric_tube_used = (
+                (meal.tube_ml or 0) > 0 and meal.tube_route == "ngt"
+            )
+        if commit:
+            meal.save()
+            self.save_m2m()
+        return meal
 
 
 class GlucoseReadingForm(forms.ModelForm):
