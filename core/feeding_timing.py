@@ -10,6 +10,25 @@ DEFAULT_FEEDING_START_TIME = time(7, 30)
 DEFAULT_FEEDING_INTERVAL_MINUTES = 180
 DEFAULT_MEAL_NOTIFY_MINUTES_BEFORE = 12
 
+def default_meal_route(meal_time, consumed_ml):
+    """Convenience-only defaults for NEW meals, never a claim of actual intake.
+
+    The overnight period includes 07:30 exactly and starts at 22:00.
+    No recorded meal or clinician plan is changed by this helper.
+    """
+    if not meal_time:
+        return {"oral_ml": None, "tube_ml": None, "tube_route": ""}
+    if isinstance(meal_time, datetime):
+        meal_time = meal_time.time()
+    amount = max(0, int(consumed_ml or 0))
+    overnight = meal_time >= time(22, 0) or meal_time <= time(7, 30)
+    return {
+        "oral_ml": 0 if overnight else amount,
+        "tube_ml": amount if overnight else 0,
+        "tube_route": "ngt" if overnight and amount else "",
+    }
+
+
 
 def build_feed_times(start_time=DEFAULT_FEEDING_START_TIME, interval_minutes=DEFAULT_FEEDING_INTERVAL_MINUTES):
     """

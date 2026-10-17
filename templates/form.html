@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<div class="form-card pediatric-entry-form" id="entry-form-card">
+<div class="form-card pediatric-entry-form" id="entry-form-card" data-new-meal-route-defaults="{% if new_meal_route_defaults %}true{% else %}false{% endif %}">
     <div class="pediatric-form-heading">
         <span class="pediatric-form-icon" id="pediatric-form-icon">✨</span>
         <div>
@@ -54,6 +54,7 @@
     const oralInput = document.getElementById("id_oral_ml");
     const tubeInput = document.getElementById("id_tube_ml");
     const tubeRouteInput = document.getElementById("id_tube_route");
+    let autoRouteUpdate = null;
     if (oralInput && tubeInput) {
         const routeRow = tubeRouteInput ? tubeRouteInput.closest("p") : null;
         const note = document.createElement("small");
@@ -95,10 +96,58 @@
             }
             note.textContent = "Από στόμα " + oral + " ml + μέσω σωλήνα " + tube + " ml = " + total + " ml συνολικά.";
         }
+        // Defaults apply only to a new, unsubmitted meal. An edited existing
+        // record or an invalid POST must retain its explicitly entered amounts.
+        let autoRouteEnabled = formCard?.dataset.newMealRouteDefaults === "true";
+        let applyingRouteDefault = false;
+        const markManualSplit = function () {
+            if (!applyingRouteDefault) autoRouteEnabled = false;
+        };
+        oralInput.addEventListener("input", markManualSplit);
+        tubeInput.addEventListener("input", markManualSplit);
+        if (tubeRouteInput) tubeRouteInput.addEventListener("change", markManualSplit);
         oralInput.addEventListener("input", syncRouteTotals);
         tubeInput.addEventListener("input", syncRouteTotals);
         const offeredInput = document.getElementById("id_offered_ml");
         if (offeredInput) offeredInput.addEventListener("input", syncRouteTotals);
+
+        function applyAutomaticRoute() {
+            if (!autoRouteEnabled) return;
+            const scheduledInput = document.getElementById("id_scheduled_time");
+            const actualInput = document.getElementById("id_actual_time");
+            const sameAsScheduled = document.getElementById("id_same_as_scheduled");
+            const consumedInput = document.getElementById("id_consumed_ml");
+            const remainingInput = document.getElementById("id_remaining_ml");
+            const selectedTime = (
+                sameAsScheduled && !sameAsScheduled.checked && actualInput?.value
+                    ? actualInput.value : scheduledInput?.value
+            ) || "";
+            const match = selectedTime.match(/^(\d{1,2}):(\d{2})/);
+            if (!match || !consumedInput || consumedInput.value === "") return;
+            const hour = Number(match[1]), minute = Number(match[2]);
+            const amount = Number(consumedInput.value);
+            if (!Number.isInteger(amount) || amount < 0 ||
+                hour > 23 || minute > 59) return;
+            const minutes = hour * 60 + minute;
+            const overnight = minutes >= 22 * 60 || minutes <= 7 * 60 + 30;
+            applyingRouteDefault = true;
+            oralInput.value = overnight ? "0" : String(amount);
+            tubeInput.value = overnight ? String(amount) : "0";
+            if (tubeRouteInput) tubeRouteInput.value = overnight && amount > 0 ? "ngt" : "";
+            if (remainingInput && offeredInput && offeredInput.value !== "" &&
+                amount <= Number(offeredInput.value)) {
+                remainingInput.value = String(Number(offeredInput.value) - amount);
+            }
+            syncRouteVisibility();
+            applyingRouteDefault = false;
+            note.textContent = (overnight ? "🌙 Νυχτερινή" : "☀️ Ημερήσια") +
+                " προεπιλογή: " + amount + " ml " +
+                (overnight ? "μέσω σωλήνα" : "από το στόμα") +
+                ". Επιβεβαίωσε την πραγματική χορήγηση πριν την αποθήκευση.";
+        }
+
+        // Registered after the remainder calculation handlers below.
+        autoRouteUpdate = applyAutomaticRoute;
         syncRouteVisibility();
     }
 
@@ -241,7 +290,14 @@
         calculateConsumedFromRemaining();
     }
 
-
+    if (formCard?.dataset.newMealRouteDefaults === "true" && autoRouteUpdate) {
+        [scheduled, actual, sameBox, offeredMl, remainingMl, consumedMl]
+            .filter(Boolean).forEach(input => {
+                input.addEventListener("input", autoRouteUpdate);
+                input.addEventListener("change", autoRouteUpdate);
+            });
+        autoRouteUpdate();
+    }
 
     // Live energy preview for the meal being recorded. This is an estimate
     // from consumed ml, not a prescribed amount or an additional NG feed.

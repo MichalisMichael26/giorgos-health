@@ -1,4 +1,5 @@
-from datetime import time, timedelta
+from datetime import datetime, time, timedelta
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -6,6 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from .advanced_views import feeding_stats
+from .feeding_timing import default_meal_route
 from .forms import MealEntryForm
 from .models import MealEntry
 
@@ -96,3 +98,58 @@ class FeedingRouteStatsTests(TestCase):
         self.assertContains(response, "Μέσω σωλήνα")
         self.assertContains(response, "χωρίς κατανομή")
         self.assertEqual(response.context["stats"]["daily_avg_ml"], 115.0)
+
+
+class RouteDefaultsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user("defaults-test", password="defaults-test-pass")
+        self.client.force_login(self.user)
+
+    def test_boundary_night_starts_at_2200_and_includes_0730(self):
+        for at, expect_tube in (
+            (time(21, 59), False),
+            (time(22, 0), True),
+            (time(23, 59), True),
+            (time(0, 0), True),
+            (time(7, 29), True),
+            (time(7, 30), True),
+            (time(7, 31), False),
+            (time(12, 0), False),
+        ):
+            with self.subTest(at=at):
+                route = default_meal_route(at, 205)
+                self.assertEqual(route["tube_ml"], 205 if expect_tube else 0)
+                self.assertEqual(route["oral_ml"], 0 if expect_tube else 205)
+                self.assertEqual(route["tube_route"], "ngt" if expect_tube else "")
+
+    def test_initial_values_on_create_and_manual_edit_unaffected(self):
+        for at, tube_expected in ((time(7, 30), 205), (time(7, 31), 0)):
+            with self.subTest(at=at):
+                due = timezone.make_aware(
+                    datetime.combine(timezone.localdate(), at),
+                    timezone.get_current_timezone(),
+                )
+                with patch("core.views.next_scheduled_datetime", return_value=due):
+                    response = self.client.get(reverse("meal_create"))
+                self.assertEqual(response.status_code, 200)
+                initial = response.context["form"].initial
+                self.assertEqual(initial["tube_ml"], tube_expected)
+                self.assertEqual(initial["oral_ml"], 205 - tube_expected)
+                self.assertContains(response, 'data-new-meal-route-defaults="true"')
+
+        meal = MealEntry.objects.create(
+            date=timezone.localdate(), scheduled_time=time(7, 30),
+            consumed_ml=120, oral_ml=100, tube_ml=20, tube_route="ngt",
+        )
+        response = self.client.get(reverse("meal_edit", args=[meal.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-new-meal-route-defaults="false"')
+        self.assertEqual(response.context["form"].instance.oral_ml, 100)
+        self.assertEqual(response.context["form"].instance.tube_ml, 20)
+
+    def test_invalid_post_keeps_user_values(self):
+        data = meal_data(oral_ml="150", tube_ml="100")
+        response = self.client.post(reverse("meal_create"), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-new-meal-route-defaults="false"')
+        self.assertEqual(response.context["form"]["oral_ml"].value(), "150")
