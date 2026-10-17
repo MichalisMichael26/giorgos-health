@@ -49,23 +49,57 @@
         }
     }
 
-    // Keep the nasogastric option easy to see and tap on a phone.
-    const ngtMealCheckbox = document.getElementById("id_nasogastric_tube_used");
-    if (ngtMealCheckbox) {
-        const ngtMealRow = ngtMealCheckbox.closest("p");
-        if (ngtMealRow) {
-            ngtMealRow.classList.add("meal-ngt-choice");
-            function syncNgtChoice() {
-                ngtMealRow.classList.toggle("is-selected", ngtMealCheckbox.checked);
-            }
-            ngtMealCheckbox.addEventListener("change", syncNgtChoice);
-            ngtMealRow.addEventListener("click", function (event) {
-                if (event.target.closest("label, input, button, a, select, textarea")) return;
-                ngtMealCheckbox.checked = !ngtMealCheckbox.checked;
-                ngtMealCheckbox.dispatchEvent(new Event("change", {bubbles: true}));
-            });
-            syncNgtChoice();
+    // Explicit feeding routes. Only entered values can establish a breakdown;
+    // do not auto-fill historic unknown amounts when editing old entries.
+    const oralInput = document.getElementById("id_oral_ml");
+    const tubeInput = document.getElementById("id_tube_ml");
+    const tubeRouteInput = document.getElementById("id_tube_route");
+    if (oralInput && tubeInput) {
+        const routeRow = tubeRouteInput ? tubeRouteInput.closest("p") : null;
+        const note = document.createElement("small");
+        note.className = "meal-calculation-note";
+        note.setAttribute("aria-live", "polite");
+        (tubeInput.closest("p") || tubeInput).appendChild(note);
+
+        function syncRouteVisibility() {
+            const hasTube = tubeInput.value !== "" && Number(tubeInput.value) > 0;
+            if (routeRow) routeRow.hidden = !hasTube;
+            if (!hasTube && tubeRouteInput) tubeRouteInput.value = "";
         }
+        function syncRouteTotals() {
+            syncRouteVisibility();
+            if (oralInput.value === "" && tubeInput.value === "") {
+                note.textContent = "";
+                return;
+            }
+            const oral = oralInput.value === "" ? 0 : Number(oralInput.value);
+            const tube = tubeInput.value === "" ? 0 : Number(tubeInput.value);
+            if (!Number.isInteger(oral) || !Number.isInteger(tube) || oral < 0 || tube < 0) {
+                note.textContent = "⚠️ Συμπλήρωσε μη αρνητικά ακέραια ml.";
+                return;
+            }
+            const total = oral + tube;
+            const consumed = document.getElementById("id_consumed_ml");
+            const offered = document.getElementById("id_offered_ml");
+            const remaining = document.getElementById("id_remaining_ml");
+            if (offered && offered.value !== "" && total > Number(offered.value)) {
+                note.textContent = "⚠️ Η συνολική χορήγηση είναι μεγαλύτερη από τα προσφερθέντα ml.";
+                return;
+            }
+            if (consumed) {
+                consumed.value = String(total);
+                consumed.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+            if (remaining && offered && offered.value !== "") {
+                remaining.value = String(Number(offered.value) - total);
+            }
+            note.textContent = "Από στόμα " + oral + " ml + μέσω σωλήνα " + tube + " ml = " + total + " ml συνολικά.";
+        }
+        oralInput.addEventListener("input", syncRouteTotals);
+        tubeInput.addEventListener("input", syncRouteTotals);
+        const offeredInput = document.getElementById("id_offered_ml");
+        if (offeredInput) offeredInput.addEventListener("input", syncRouteTotals);
+        syncRouteVisibility();
     }
 
     const sameBox = document.getElementById("id_same_as_scheduled");
