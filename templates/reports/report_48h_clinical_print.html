@@ -417,13 +417,13 @@
 
     <section class="section allow-break">
         <h2>🍼 Γεύματα τελευταίων 48 ωρών</h2>
-        <p class="section-note">Οι kcal είναι εκτιμήσεις βάσει Frisolac AC, Maxijul, μεζούρων, τελικού όγκου και ποσότητας που καταναλώθηκε. Αν λείπει η παρασκευή δεν υπολογίζονται.</p>
+        <p class="section-note">Οι kcal είναι εκτιμήσεις βάσει Frisolac AC, Maxijul, μεζούρων, τελικού όγκου και ποσότητας που καταναλώθηκε. Τα συνολικά ml περιλαμβάνουν στόμα και σωλήνα μία φορά. Οι ιστορικές εγγραφές χωρίς διαχωρισμό σημειώνονται με —.</p>
         {% if meals %}
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>Ημ/νία</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Ήπιε</th>
+                        <th>Ημ/νία</th><th>Έναρξη</th><th>Τέλος</th><th>Προσφέρθηκαν</th><th>Έμεινε</th><th>Σύνολο</th><th>Στόμα</th><th>Σωλήνας</th>
                         <th>Formula</th><th>Maxijul</th><th>🔥 kcal</th><th>Κατάσταση</th><th>Σημειώσεις</th>
                     </tr>
                 </thead>
@@ -436,6 +436,8 @@
                         <td>{% if item.offered_ml != None %}{{ item.offered_ml }} ml{% else %}—{% endif %}</td>
                         <td>{% if item.remaining_ml != None %}{{ item.remaining_ml }} ml{% else %}—{% endif %}</td>
                         <td>{% if item.consumed_ml != None %}<strong>{{ item.consumed_ml }} ml</strong>{% else %}—{% endif %}</td>
+                        <td>{% if item.oral_ml != None %}{{ item.oral_ml }} ml{% else %}—{% endif %}</td>
+                        <td>{% if item.tube_ml != None %}{{ item.tube_ml }} ml{% if item.tube_route %} · {{ item.get_tube_route_display }}{% endif %}{% elif item.nasogastric_tube_used %}Ρινογαστρικός · άγνωστα ml{% else %}—{% endif %}</td>
                         <td>{{ item.formula|default:"—" }}</td>
                         <td>{% if item.supplement %}{{ item.supplement }} scoop{% else %}—{% endif %}</td>
                         <td>{% if item.energy_estimate.kcal != None %}≈ {{ item.energy_estimate.kcal|floatformat:"-1" }}{% else %}—{% endif %}</td>
