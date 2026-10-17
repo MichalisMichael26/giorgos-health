@@ -17,6 +17,7 @@ from .access import is_owner_user, user_role
 from .nutrition import summarize_meal_energy, estimate_meal_energy, daily_energy_summaries
 
 from .feeding_timing import (
+    default_meal_route,
     current_feed_times,
     latest_started_meal,
     meal_notify_minutes_before,
@@ -1591,6 +1592,8 @@ def meal_create(request):
     suggested_dt = next_scheduled_datetime(now_local)
     suggested_local = timezone.localtime(suggested_dt)
     suggested_time = suggested_local.time().replace(second=0, microsecond=0)
+    default_volume = int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "205"))
+    route_defaults = default_meal_route(suggested_time, default_volume)
 
     form = MealEntryForm(
         request.POST or None,
@@ -1599,10 +1602,11 @@ def meal_create(request):
             "scheduled_time": suggested_time,
             "actual_time": suggested_time,
             "same_as_scheduled": True,
-            "offered_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "205")),
+            "offered_ml": default_volume,
             "remaining_ml": 0,
-            "consumed_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "205")),
-            "prepared_volume_ml": int(os.environ.get("GIORGOS_PREPARED_FEED_ML", "205")),
+            "consumed_ml": default_volume,
+            **route_defaults,
+            "prepared_volume_ml": default_volume,
             "formula": os.environ.get("GIORGOS_FORMULA_SCOOPS_PER_FEED", "6"),
             "supplement": (
                 f'{os.environ.get("GIORGOS_MAXIJUL_SCOOPS_PER_FEED", "1")} κουταλιά '
@@ -1635,7 +1639,12 @@ def meal_create(request):
             "Το γεύμα αποθηκεύτηκε. Το επόμενο γεύμα παραμένει στη σταθερή προγραμματισμένη ώρα.",
         )
         return redirect("meal_list")
-    return render(request, "form.html", {"form": form, "title": "Νέο γεύμα"})
+    return render(request, "form.html", {
+        "form": form,
+        "title": "Νέο γεύμα",
+        # Do not overwrite a submitted (possibly invalid) manually edited split.
+        "new_meal_route_defaults": request.method == "GET",
+    })
 
 
 
