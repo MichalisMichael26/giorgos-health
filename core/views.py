@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from .access import is_owner_user, user_role
 from .nutrition import summarize_meal_energy, estimate_meal_energy, daily_energy_summaries
+from .feeding_routes import daily_route_totals
 
 from .feeding_timing import (
     default_meal_route,
@@ -893,6 +894,7 @@ def analytics(request):
     for item in meals:
         ml_by_date[item.date] += item.consumed_ml or 0
     energy_by_date = daily_energy_summaries(meals)
+    routes_by_date = daily_route_totals(meals)
 
     # For both daily charts, use every calendar date in the requested period.
     date_count = (today - start_date).days + 1
@@ -903,6 +905,10 @@ def analytics(request):
         "period_label": period_label,
         "daily_labels": [d.strftime("%d/%m/%y") for d in dates],
         "daily_ml": [ml_by_date.get(d, 0) for d in dates],
+        "daily_oral_ml": [routes_by_date[d]["oral"] for d in dates],
+        "daily_ngt_ml": [routes_by_date[d]["ngt"] for d in dates],
+        "daily_gastrostomy_ml": [routes_by_date[d]["gastrostomy"] for d in dates],
+        "daily_unknown_ml": [routes_by_date[d]["unknown"] for d in dates],
         "daily_kcal": [
             float(energy_by_date[d]["kcal"])
             if d in energy_by_date and energy_by_date[d]["complete"]
