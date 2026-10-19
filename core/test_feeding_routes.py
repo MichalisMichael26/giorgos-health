@@ -1,4 +1,5 @@
 from datetime import datetime, time, timedelta
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
@@ -8,6 +9,7 @@ from django.utils import timezone
 
 from .advanced_views import feeding_stats
 from .feeding_timing import default_meal_route
+from .feeding_routes import daily_route_totals
 from .forms import MealEntryForm
 from .models import MealEntry
 
@@ -98,6 +100,42 @@ class FeedingRouteStatsTests(TestCase):
         self.assertContains(response, "Μέσω σωλήνα")
         self.assertContains(response, "χωρίς κατανομή")
         self.assertEqual(response.context["stats"]["daily_avg_ml"], 115.0)
+
+
+    def test_daily_charts_separate_oral_ng_and_unknown_for_all_periods(self):
+        for period in ("7", "30", "90", "all"):
+            with self.subTest(period=period):
+                analytics = self.client.get(reverse("analytics"), {"period": period})
+                self.assertEqual(analytics.status_code, 200)
+                a = analytics.context["chart_data"]
+                self.assertEqual(a["daily_ml"][-2:], [150, 80])
+                self.assertEqual(a["daily_oral_ml"][-2:], [50, 50])
+                self.assertEqual(a["daily_ngt_ml"][-2:], [100, 0])
+                self.assertEqual(a["daily_gastrostomy_ml"][-2:], [0, 0])
+                self.assertEqual(a["daily_unknown_ml"][-2:], [0, 30])
+                self.assertContains(analytics, "Άγνωστη κατανομή")
+
+                performance = self.client.get(reverse("feeding_performance"), {"period": period})
+                self.assertEqual(performance.status_code, 200)
+                p = performance.context["chart_data"]
+                self.assertEqual(p["consumed"][-2:], [150, 80])
+                self.assertEqual(p["oral"][-2:], [50, 50])
+                self.assertEqual(p["ngt"][-2:], [100, 0])
+                self.assertEqual(p["gastrostomy"][-2:], [0, 0])
+                self.assertEqual(p["unknown"][-2:], [0, 30])
+                self.assertContains(performance, "Ρινογαστρικός")
+
+    def test_known_gastrostomy_and_invalid_legacy_splits_are_separate(self):
+        rows = [
+            SimpleNamespace(date=self.today, consumed_ml=90, oral_ml=20, tube_ml=70, tube_route="gastrostomy"),
+            SimpleNamespace(date=self.today, consumed_ml=50, oral_ml=20, tube_ml=20, tube_route="ngt"),
+            SimpleNamespace(date=self.today, consumed_ml=30, oral_ml=None, tube_ml=None, tube_route="ngt"),
+            SimpleNamespace(date=self.today, consumed_ml=25, oral_ml=0, tube_ml=25, tube_route=""),
+            SimpleNamespace(date=self.today, consumed_ml=None, oral_ml=None, tube_ml=None, tube_route=""),
+        ]
+        value = daily_route_totals(rows)[self.today]
+        self.assertEqual(value, {"oral": 20, "ngt": 0, "gastrostomy": 70, "unknown": 105})
+        self.assertEqual(sum(value.values()), 195)
 
 
 class RouteDefaultsTests(TestCase):
