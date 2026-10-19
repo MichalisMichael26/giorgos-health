@@ -66,7 +66,7 @@
 {% endif %}
 
 {{ chart_data|json_script:"feeding-chart-data" }}
-<section class="chart-card"><div class="chart-card-head"><div><span>📊</span><h2>Κατανάλωση ανά ημέρα</h2></div><small>{{ period_label }}</small></div><div class="chart-wrap"><canvas id="feedingMlChart"></canvas></div></section>
+<section class="chart-card"><div class="chart-card-head"><div><span>📊</span><h2>Κατανάλωση ανά ημέρα · από στόμα / σωλήνα</h2></div><small>{{ period_label }}</small></div><div class="chart-wrap"><canvas id="feedingMlChart"></canvas></div><p class="muted">Κάθε στήλη δείχνει το συνολικό γάλα της ημέρας. Οι διαφορετικές αποχρώσεις ξεχωρίζουν τη χορήγηση από στόμα, ρινογαστρικό, γαστροστομία και τις παλιές καταγραφές με άγνωστη κατανομή.</p></section>
 <section class="chart-card">
     <div class="chart-card-head"><div><span>🔥</span><h2>Θερμίδες ανά ημέρα</h2></div><small>kcal · εκτίμηση</small></div>
     <div class="chart-wrap"><canvas id="feedingKcalChart"></canvas></div>
@@ -75,14 +75,17 @@
 </section>
 <section class="panel">
     <div class="panel-head"><h2>Ημερήσια εικόνα</h2></div>
-    <p class="muted">Τα ml μέσω σωλήνα περιλαμβάνονται ήδη στα συνολικά ml, όχι δύο φορές. Σε παλιές καταγραφές μπορεί να μην γνωρίζουμε την κατανομή.</p>
-    <div class="table-wrap"><table class="responsive-table"><thead><tr><th>Ημερομηνία</th><th>Γεύματα</th><th>Συνολικά ml</th><th>Μέσω σωλήνα</th><th>Μ.ό.</th><th>% προσφερόμενου</th><th>Θερμίδες</th></tr></thead>
+    <p class="muted">Τα ml από στόμα και μέσω σωλήνα περιλαμβάνονται ήδη στα συνολικά ml, όχι δύο φορές. Όταν λείπουν στοιχεία παλαιότερου γεύματος δεν υποθέτουμε τον τρόπο χορήγησης.</p>
+    <div class="table-wrap"><table class="responsive-table"><thead><tr><th>Ημερομηνία</th><th>Γεύματα</th><th>Συνολικά ml</th><th>Από στόμα</th><th>Μέσω σωλήνα · Ρινογαστρικός</th><th>Γαστροστομία</th><th>Άγνωστη κατανομή</th><th>Μ.ό.</th><th>% προσφερόμενου</th><th>Θερμίδες</th></tr></thead>
     <tbody>{% for row in day_rows %}
         <tr>
             <td data-label="Ημερομηνία">{{ row.date|date:"d/m/Y" }}</td>
             <td data-label="Γεύματα">{{ row.count }}</td>
             <td data-label="Συνολικά ml">{{ row.consumed_sum }} ml</td>
-            <td data-label="Μέσω σωλήνα">{% if row.count == 0 %}—{% else %}{{ row.tube_known_ml }} ml{% if row.split_unknown_count %}<small class="module-subvalue">+ {{ row.split_unknown_count }} γεύμα(τα) χωρίς κατανομή</small>{% endif %}{% endif %}</td>
+            <td data-label="Από στόμα">{% if row.count == 0 %}—{% else %}{{ row.oral_known_ml }} ml{% endif %}</td>
+            <td data-label="Ρινογαστρικός">{% if row.count == 0 %}—{% else %}{{ row.ngt_known_ml }} ml{% endif %}</td>
+            <td data-label="Γαστροστομία">{% if row.count == 0 %}—{% else %}{{ row.gastrostomy_known_ml }} ml{% endif %}</td>
+            <td data-label="Άγνωστη κατανομή">{% if row.count == 0 %}—{% else %}{{ row.route_unknown_ml }} ml{% if row.split_unknown_count %}<small class="module-subvalue">{{ row.split_unknown_count }} γεύμα(τα) χωρίς κατανομή</small>{% endif %}{% endif %}</td>
             <td data-label="Μ.ό.">{% if row.avg_consumed != None %}{{ row.avg_consumed }} ml{% else %}—{% endif %}</td>
             <td data-label="Ποσοστό">{% if row.intake_ratio != None %}{{ row.intake_ratio }}%{% else %}—{% endif %}</td>
             <td data-label="Θερμίδες">{% if row.kcal != None %}{{ row.kcal|floatformat:1 }} kcal{% elif row.kcal_incomplete %}Ελλιπή στοιχεία{% else %}—{% endif %}</td>
@@ -104,10 +107,26 @@
         },
         scales: { y: { beginAtZero: true } }
     });
+    const routeOptions = options("ml");
+    routeOptions.plugins.legend = { display: true, position: "bottom" };
+    routeOptions.plugins.tooltip.callbacks.label = context =>
+        `${context.dataset.label}: ${context.parsed.y} ml`;
+    routeOptions.plugins.tooltip.callbacks.footer = contexts =>
+        contexts.length ? `Συνολικά: ${data.consumed[contexts[0].dataIndex]} ml` : "";
+    routeOptions.scales.x = { stacked: true };
+    routeOptions.scales.y.stacked = true;
     new Chart(document.getElementById("feedingMlChart"), {
         type: "bar",
-        data: { labels: data.labels, datasets: [{ data: data.consumed, borderRadius: 7, maxBarThickness: 34 }] },
-        options: options("ml")
+        data: {
+            labels: data.labels,
+            datasets: [
+                { label: "Από στόμα", data: data.oral, backgroundColor: "#0f9c98", stack: "intake", maxBarThickness: 34 },
+                { label: "Ρινογαστρικός", data: data.ngt, backgroundColor: "#6b5bd2", stack: "intake", maxBarThickness: 34 },
+                { label: "Γαστροστομία", data: data.gastrostomy, backgroundColor: "#e39b35", stack: "intake", maxBarThickness: 34 },
+                { label: "Άγνωστη κατανομή", data: data.unknown, backgroundColor: "#9ba4b2", stack: "intake", maxBarThickness: 34 }
+            ]
+        },
+        options: routeOptions
     });
     if (data.kcal.some(value => value !== null && value !== undefined)) {
         new Chart(document.getElementById("feedingKcalChart"), {

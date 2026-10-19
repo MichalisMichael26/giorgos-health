@@ -28,10 +28,11 @@
 
     <section class="chart-card">
         <div class="chart-card-head">
-            <div><span>🍼</span><h2>Συνολικά ml ανά ημέρα</h2></div>
+            <div><span>🍼</span><h2>Σίτιση ανά ημέρα · από στόμα / σωλήνα</h2></div>
             <small>ml</small>
         </div>
         <div class="chart-wrap"><canvas id="mlChart"></canvas></div>
+        <p class="muted">Το συνολικό ύψος κάθε στήλης είναι τα ml που καταναλώθηκαν εκείνη την ημέρα. Τα παλιότερα γεύματα χωρίς καταγεγραμμένο διαχωρισμό εμφανίζονται ως «Άγνωστη κατανομή».</p>
     </section>
 
     <section class="chart-card">
@@ -137,17 +138,26 @@
 
     lineChart("glucoseChart", data.glucose_labels, data.glucose_values, "mg/dL", "glucoseEmpty");
 
+    const feedingMlOptions = commonOptions("ml");
+    feedingMlOptions.plugins.legend = { display: true, position: "bottom" };
+    feedingMlOptions.plugins.tooltip.callbacks.label = ctx =>
+        `${ctx.dataset.label}: ${ctx.parsed.y} ml`;
+    feedingMlOptions.plugins.tooltip.callbacks.footer = items =>
+        items.length ? `Συνολικά: ${data.daily_ml[items[0].dataIndex]} ml` : "";
+    feedingMlOptions.scales.x.stacked = true;
+    feedingMlOptions.scales.y.stacked = true;
     new Chart(document.getElementById("mlChart"), {
         type: "bar",
         data: {
             labels: data.daily_labels,
-            datasets: [{
-                data: data.daily_ml,
-                borderRadius: 7,
-                maxBarThickness: 34
-            }]
+            datasets: [
+                { label: "Από στόμα", data: data.daily_oral_ml, backgroundColor: "#0f9c98", stack: "intake", maxBarThickness: 34 },
+                { label: "Ρινογαστρικός", data: data.daily_ngt_ml, backgroundColor: "#6b5bd2", stack: "intake", maxBarThickness: 34 },
+                { label: "Γαστροστομία", data: data.daily_gastrostomy_ml, backgroundColor: "#e39b35", stack: "intake", maxBarThickness: 34 },
+                { label: "Άγνωστη κατανομή", data: data.daily_unknown_ml, backgroundColor: "#9ba4b2", stack: "intake", maxBarThickness: 34 }
+            ]
         },
-        options: commonOptions("ml")
+        options: feedingMlOptions
     });
 
     if (data.daily_kcal.some(value => value !== null && value !== undefined)) {

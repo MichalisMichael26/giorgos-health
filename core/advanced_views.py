@@ -31,6 +31,7 @@ from .mega_forms import DiaperWithPhotoForm, SymptomWithPhotoForm, ScannedProduc
 from .access import is_owner_user
 from .restriction_checks import baseline_restriction_checks
 from .nutrition import daily_energy_summaries
+from .feeding_routes import daily_route_totals
 from .feeding_timing import current_feed_times, meal_notify_minutes_before, feeding_interval_minutes
 from .models import (
     AuditLog,
@@ -79,6 +80,11 @@ def feeding_stats(start_date, end_date):
     })
     daily_avg_ml = round(consumed_sum / recorded_days, 1) if recorded_days else None
     tube_known_ml = sum(m.tube_ml or 0 for m in meals)
+    routes = daily_route_totals(meals)
+    oral_known_ml = sum(day["oral"] for day in routes.values())
+    ngt_known_ml = sum(day["ngt"] for day in routes.values())
+    gastrostomy_known_ml = sum(day["gastrostomy"] for day in routes.values())
+    route_unknown_ml = sum(day["unknown"] for day in routes.values())
     # Preserve uncertainty for pre-migration records.
     split_unknown_count = sum(
         1 for m in meals if m.consumed_ml is not None
@@ -96,6 +102,10 @@ def feeding_stats(start_date, end_date):
         "daily_avg_ml": daily_avg_ml,
         "recorded_days": recorded_days,
         "tube_known_ml": tube_known_ml,
+        "oral_known_ml": oral_known_ml,
+        "ngt_known_ml": ngt_known_ml,
+        "gastrostomy_known_ml": gastrostomy_known_ml,
+        "route_unknown_ml": route_unknown_ml,
         "split_unknown_count": split_unknown_count,
         "intake_ratio": intake_ratio,
         "completed": completed,
@@ -562,9 +572,14 @@ def feeding_performance(request):
         })
         current += timedelta(days=1)
 
+    route_by_date = daily_route_totals(MealEntry.objects.filter(date__range=(start, today)))
     chart_data = {
         "labels": [row["date"].strftime("%d/%m") for row in day_rows],
         "consumed": [row["consumed_sum"] for row in day_rows],
+        "oral": [route_by_date[row["date"]]["oral"] for row in day_rows],
+        "ngt": [route_by_date[row["date"]]["ngt"] for row in day_rows],
+        "gastrostomy": [route_by_date[row["date"]]["gastrostomy"] for row in day_rows],
+        "unknown": [route_by_date[row["date"]]["unknown"] for row in day_rows],
         "kcal": [row["kcal"] for row in day_rows],
         "kcal_missing_days": sum(1 for row in day_rows if row["kcal_incomplete"]),
         "ratio": [row["intake_ratio"] or 0 for row in day_rows],
