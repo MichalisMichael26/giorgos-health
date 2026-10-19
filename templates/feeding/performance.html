@@ -76,7 +76,7 @@
 <section class="panel">
     <div class="panel-head"><h2>Ημερήσια εικόνα</h2></div>
     <p class="muted">Τα ml από στόμα και μέσω σωλήνα περιλαμβάνονται ήδη στα συνολικά ml, όχι δύο φορές. Όταν λείπουν στοιχεία παλαιότερου γεύματος δεν υποθέτουμε τον τρόπο χορήγησης.</p>
-    <div class="table-wrap"><table class="responsive-table"><thead><tr><th>Ημερομηνία</th><th>Γεύματα</th><th>Συνολικά ml</th><th>Από στόμα</th><th>Ρινογαστρικός</th><th>Γαστροστομία</th><th>Άγνωστη κατανομή</th><th>Μ.ό.</th><th>% προσφερόμενου</th><th>Θερμίδες</th></tr></thead>
+    <div class="table-wrap"><table class="responsive-table"><thead><tr><th>Ημερομηνία</th><th>Γεύματα</th><th>Συνολικά ml</th><th>Από στόμα</th><th>Μέσω σωλήνα · Ρινογαστρικός</th><th>Γαστροστομία</th><th>Άγνωστη κατανομή</th><th>Μ.ό.</th><th>% προσφερόμενου</th><th>Θερμίδες</th></tr></thead>
     <tbody>{% for row in day_rows %}
         <tr>
             <td data-label="Ημερομηνία">{{ row.date|date:"d/m/Y" }}</td>
