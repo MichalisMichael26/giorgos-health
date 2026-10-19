@@ -80,6 +80,11 @@ def feeding_stats(start_date, end_date):
     })
     daily_avg_ml = round(consumed_sum / recorded_days, 1) if recorded_days else None
     tube_known_ml = sum(m.tube_ml or 0 for m in meals)
+    routes = daily_route_totals(meals)
+    oral_known_ml = sum(day["oral"] for day in routes.values())
+    ngt_known_ml = sum(day["ngt"] for day in routes.values())
+    gastrostomy_known_ml = sum(day["gastrostomy"] for day in routes.values())
+    route_unknown_ml = sum(day["unknown"] for day in routes.values())
     # Preserve uncertainty for pre-migration records.
     split_unknown_count = sum(
         1 for m in meals if m.consumed_ml is not None
@@ -97,6 +102,10 @@ def feeding_stats(start_date, end_date):
         "daily_avg_ml": daily_avg_ml,
         "recorded_days": recorded_days,
         "tube_known_ml": tube_known_ml,
+        "oral_known_ml": oral_known_ml,
+        "ngt_known_ml": ngt_known_ml,
+        "gastrostomy_known_ml": gastrostomy_known_ml,
+        "route_unknown_ml": route_unknown_ml,
         "split_unknown_count": split_unknown_count,
         "intake_ratio": intake_ratio,
         "completed": completed,
