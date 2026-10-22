@@ -131,6 +131,31 @@
             </div>
         </section>
 
+        {% if medications_time_unknown %}
+        <section class="report-section">
+            <h3>💊 Φάρμακα με άγνωστη ώρα χορήγησης</h3>
+            <p class="muted">Οι καταχωρίσεις αυτές έχουν ημερομηνία εντός των ημερών που καλύπτει η αναφορά, αλλά δεν είναι βέβαιο ότι χορηγήθηκαν μέσα στο συγκεκριμένο κυλιόμενο 24ωρο. Δεν προσμετρώνται στο σύνολο χορηγήσεων 24ώρου.</p>
+            <div class="report-table-wrap">
+                <table class="report-table">
+                    <thead>
+                        <tr><th>Ημ/νία</th><th>Ώρα</th><th>Όνομα</th><th>Ποσότητα</th><th>Σημειώσεις</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in medications_time_unknown %}
+                        <tr>
+                            <td>{{ item.date|date:"d/m" }}</td>
+                            <td>Άγνωστη</td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }}</td>
+                            <td>{{ item.notes|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
         <footer class="report-footer">
             Η αναφορά δημιουργήθηκε από το Giorgos Health.
         </footer>
