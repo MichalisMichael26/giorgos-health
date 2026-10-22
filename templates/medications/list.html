@@ -64,8 +64,8 @@
 <tr>
     <td data-label="Ημέρα">{{ item.weekday_name }}</td>
     <td data-label="Ημερομηνία">{{ item.date|date:"d/m/Y" }}</td>
-    <td data-label="Ώρα">{{ item.time|time:"H:i" }}</td>
-    <td data-label="Όνομα">{{ item.name }}</td>
+    <td data-label="Ώρα">{% if item.time %}{{ item.time|time:"H:i" }}{% else %}<strong>Άγνωστη</strong>{% endif %}</td>
+    <td data-label="Όνομα">{{ item.name }}{% if not item.time and item.notes %}<small class="muted" style="display:block">{{ item.notes }}</small>{% endif %}</td>
     <td data-label="Ποσότητα">{{ item.dose|floatformat:"-2" }} {{ item.get_unit_display }}</td>
     <td data-label="Ενέργειες" class="row-actions">
         <a class="mini-action" href="{% url 'medication_edit' item.pk %}">Edit</a>
