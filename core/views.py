@@ -510,7 +510,7 @@ def build_history_days(start_date, end_date):
                 "extra": item.notes,
             })
 
-        timeline.sort(key=lambda item: item["time"])
+        timeline.sort(key=lambda item: item["time"] or time.max)
 
         days.append({
             "date": day_date,
