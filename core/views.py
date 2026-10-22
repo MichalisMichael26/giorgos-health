@@ -1222,9 +1222,16 @@ def _rolling_24h_data():
             glucose.append(item)
 
     medications = []
+    medications_time_unknown = []
     for item in MedicationEntry.objects.filter(
         date__range=(date_start, date_end)
     ).order_by("date", "time"):
+        if item.time is None:
+            # A date-only historical administration cannot be placed exactly
+            # inside a rolling 24-hour window. Preserve it in a separate,
+            # explicitly unverified section rather than inventing a time.
+            medications_time_unknown.append(item)
+            continue
         if start_dt <= _aware_event_datetime(item.date, item.time) <= end_dt:
             medications.append(item)
 
@@ -1244,6 +1251,7 @@ def _rolling_24h_data():
         "meals": meals,
         "glucose": glucose,
         "medications": medications,
+        "medications_time_unknown": medications_time_unknown,
         "latest_growth": latest_growth,
         "total_ml": total_ml,
         "maxijul_24h": maxijul_24h,
@@ -1446,6 +1454,7 @@ def report_24h_pdf(request):
     meals = report_data["meals"]
     glucose = report_data["glucose"]
     medications = report_data["medications"]
+    medications_time_unknown = report_data["medications_time_unknown"]
     latest_growth = report_data["latest_growth"]
     total_ml = report_data["total_ml"]
     maxijul_24h = report_data["maxijul_24h"]
@@ -1580,7 +1589,34 @@ def report_24h_pdf(request):
         ]))
         story.append(table)
 
-    if not meals and not glucose and not medications:
+    if medications_time_unknown:
+        story.append(Spacer(1, 4*mm))
+        story.append(Paragraph("Φάρμακα με άγνωστη ώρα χορήγησης", styles["heading"]))
+        story.append(Paragraph(
+            "Η ημερομηνία εμπίπτει στις ημέρες της αναφοράς, αλλά δεν είναι "
+            "δυνατή η επιβεβαίωση ότι η χορήγηση έγινε μέσα στο συγκεκριμένο "
+            "κυλιόμενο 24ωρο. Δεν συμπεριλαμβάνονται στον αριθμό χορηγήσεων 24ώρου.",
+            styles["small"],
+        ))
+        rows = [["Ημ/νία", "Ώρα", "Όνομα", "Ποσότητα"]]
+        for item in medications_time_unknown:
+            rows.append([
+                item.date.strftime("%d/%m"),
+                "Άγνωστη",
+                item.name,
+                f"{item.dose:g} {item.get_unit_display()}",
+            ])
+        table = Table(rows, colWidths=[30*mm, 25*mm, 75*mm, 40*mm], repeatRows=1)
+        table.setStyle(TableStyle([
+            ("FONTNAME", (0,0), (-1,-1), font_name),
+            ("FONTSIZE", (0,0), (-1,-1), 7.5),
+            ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#FFF6E4")),
+            ("GRID", (0,0), (-1,-1), 0.3, colors.HexColor("#E9E0D7")),
+            ("PADDING", (0,0), (-1,-1), 4),
+        ]))
+        story.append(table)
+
+    if not meals and not glucose and not medications and not medications_time_unknown:
         story.append(Paragraph("Δεν υπάρχουν καταχωρήσεις στο τελευταίο 24ωρο.", styles["body"]))
 
     doc.build(story)
