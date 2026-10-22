@@ -226,6 +226,7 @@ class MedicationEntry(models.Model):
     UNIT_CHOICES = [
         ("ml", "ml"),
         ("mg", "mg"),
+        ("IU", "IU"),
         ("g", "g"),
         ("drops", "Σταγόνες"),
         ("scoops", "Κουταλάκια"),
@@ -234,7 +235,7 @@ class MedicationEntry(models.Model):
     ]
 
     date = models.DateField("Ημερομηνία")
-    time = models.TimeField("Ώρα")
+    time = models.TimeField("Ώρα", blank=True, null=True)
     name = models.CharField("Φάρμακο / συμπλήρωμα", max_length=160)
     dose = models.DecimalField("Ποσότητα", max_digits=8, decimal_places=2)
     unit = models.CharField("Μονάδα", max_length=20, choices=UNIT_CHOICES, default="ml")
@@ -257,7 +258,8 @@ class MedicationEntry(models.Model):
         return greek_weekday(self.date)
 
     def __str__(self):
-        return f"{self.date} {self.time.strftime('%H:%M')} - {self.name}"
+        clock = self.time.strftime("%H:%M") if self.time else "ώρα άγνωστη"
+        return f"{self.date} {clock} - {self.name}"
 
 
 class MedicationPlan(models.Model):
