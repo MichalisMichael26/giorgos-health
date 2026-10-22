@@ -48,7 +48,7 @@
     <div class="timeline">
         {% for item in day.timeline %}
         <div class="timeline-item {{ item.kind }}">
-            <div class="timeline-time">{{ item.time|time:"H:i" }}</div>
+            <div class="timeline-time">{% if item.time %}{{ item.time|time:"H:i" }}{% else %}Ώρα άγνωστη{% endif %}</div>
             <div class="timeline-dot"></div>
             <div class="timeline-content">
                 <strong>{{ item.icon }} {{ item.title }}</strong>
