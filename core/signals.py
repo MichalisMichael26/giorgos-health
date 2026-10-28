@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timezone as datetime_timezone
 from decimal import Decimal
 
 from django.contrib.auth.signals import user_logged_in, user_logged_out
@@ -44,7 +44,14 @@ def _json_value(value):
         return value
     if isinstance(value, Decimal):
         return str(value)
-    if isinstance(value, (date, datetime, time)):
+    # Postgres returns aware datetimes in UTC, while locally built values may
+    # use Europe/Nicosia. Normalize before comparing audit snapshots so the
+    # same instant is not logged as a change on every reminder sync.
+    if isinstance(value, datetime):
+        if timezone.is_aware(value):
+            return value.astimezone(datetime_timezone.utc).isoformat()
+        return value.isoformat()
+    if isinstance(value, (date, time)):
         return value.isoformat()
     if isinstance(value, (bytes, bytearray, memoryview)):
         return "[binary data]"
