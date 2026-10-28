@@ -25,6 +25,7 @@ def _push_scheduler_loop():
 
     # Small startup delay gives migrations/deploy startup a moment to settle.
     time.sleep(8)
+    next_retention_run = 0.0
 
     while True:
         try:
@@ -36,6 +37,22 @@ def _push_scheduler_loop():
             logger.exception("Push scheduler cycle failed")
         finally:
             close_old_connections()
+
+        # Prune access records daily without adding another paid cron service.
+        # This never touches clinical records or the general audit table.
+        if time.monotonic() >= next_retention_run:
+            try:
+                close_old_connections()
+                from core.log_retention import prune_expired_doctor_access_logs
+
+                summary = prune_expired_doctor_access_logs()
+                logger.info("Doctor access retention: %s", summary)
+                next_retention_run = time.monotonic() + 24 * 60 * 60
+            except Exception:
+                logger.exception("Doctor access retention failed")
+                next_retention_run = time.monotonic() + 60 * 60
+            finally:
+                close_old_connections()
 
         time.sleep(interval)
 
