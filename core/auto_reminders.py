@@ -32,16 +32,26 @@ def _upsert_auto_reminder(source_key, defaults):
         or reminder.repeat_if_incomplete_minutes != defaults.get("repeat_if_incomplete_minutes", 0)
     )
 
+    # The sync is called frequently. Avoid writing identical values on
+    # every poll: repeated saves create DB churn and unnecessary audit logs.
+    changed_fields = []
     for field, value in defaults.items():
-        setattr(reminder, field, value)
+        if getattr(reminder, field) != value:
+            setattr(reminder, field, value)
+            changed_fields.append(field)
 
-    reminder.auto_generated = True
+    if not reminder.auto_generated:
+        reminder.auto_generated = True
+        changed_fields.append("auto_generated")
 
     if timing_changed:
-        reminder.push_notified_at = None
-        reminder.push_repeat_notified_at = None
+        for field in ("push_notified_at", "push_repeat_notified_at"):
+            if getattr(reminder, field) is not None:
+                setattr(reminder, field, None)
+                changed_fields.append(field)
 
-    reminder.save()
+    if changed_fields:
+        reminder.save(update_fields=changed_fields + ["updated_at"])
     return reminder
 
 
