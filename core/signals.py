@@ -2,7 +2,7 @@ from datetime import date, datetime, time, timezone as datetime_timezone
 from decimal import Decimal
 
 from django.contrib.auth.signals import user_logged_in, user_logged_out
-from django.db import OperationalError, ProgrammingError
+from django.db import OperationalError, ProgrammingError, transaction
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -78,14 +78,18 @@ def _write_log(action, instance, changes):
     if not changes:
         return
     try:
-        AuditLog.objects.create(
-            user=get_current_user(),
-            action=action,
-            model_name=instance._meta.verbose_name.title(),
-            object_id=str(instance.pk or ""),
-            object_repr=str(instance)[:255],
-            changes=changes,
-        )
+        # During initial migrations the audit table may not exist. A nested
+        # transaction/savepoint isolates that expected error, especially on
+        # PostgreSQL, without breaking the enclosing schema migration.
+        with transaction.atomic():
+            AuditLog.objects.create(
+                user=get_current_user(),
+                action=action,
+                model_name=instance._meta.verbose_name.title(),
+                object_id=str(instance.pk or ""),
+                object_repr=str(instance)[:255],
+                changes=changes,
+            )
     except (OperationalError, ProgrammingError):
         # The audit table may not exist yet while migrations are running.
         return
