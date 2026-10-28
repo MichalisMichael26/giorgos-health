@@ -1,0 +1,26 @@
+name: Giorgos storage regression checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  django-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DEBUG: "True"
+      ENABLE_PUSH_SCHEDULER: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Django system check
+        run: python manage.py check
+      - name: Test audit timezones and doctor log retention
+        run: python manage.py test core.test_log_retention core.test_dashboard_reminders --verbosity 2
