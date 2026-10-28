@@ -28,6 +28,7 @@ jobs:
       DEBUG: "True"
       ENABLE_PUSH_SCHEDULER: "false"
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/giorgos_test"
+      DJANGO_TSIAPPA_PASSWORD: "CI_test_account_only_do_not_use_2026!"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
