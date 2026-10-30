@@ -143,9 +143,11 @@ class RouteDefaultsTests(TestCase):
         self.user = User.objects.create_user("defaults-test", password="defaults-test-pass")
         self.client.force_login(self.user)
 
-    def test_boundary_night_starts_at_2200_and_includes_0730(self):
+    def test_boundary_gastrostomy_starts_at_1850_and_includes_0730(self):
         for at, expect_tube in (
-            (time(21, 59), False),
+            (time(18, 49), False),
+            (time(18, 50), True),
+            (time(21, 59), True),
             (time(22, 0), True),
             (time(23, 59), True),
             (time(0, 0), True),
@@ -158,10 +160,10 @@ class RouteDefaultsTests(TestCase):
                 route = default_meal_route(at, 205)
                 self.assertEqual(route["tube_ml"], 205 if expect_tube else 0)
                 self.assertEqual(route["oral_ml"], 0 if expect_tube else 205)
-                self.assertEqual(route["tube_route"], "ngt" if expect_tube else "")
+                self.assertEqual(route["tube_route"], "gastrostomy" if expect_tube else "")
 
     def test_initial_values_on_create_and_manual_edit_unaffected(self):
-        for at, tube_expected in ((time(7, 30), 205), (time(7, 31), 0)):
+        for at, tube_expected in ((time(18, 49), 0), (time(18, 50), 205), (time(7, 30), 205), (time(7, 31), 0)):
             with self.subTest(at=at):
                 due = timezone.make_aware(
                     datetime.combine(timezone.localdate(), at),
@@ -173,6 +175,7 @@ class RouteDefaultsTests(TestCase):
                 initial = response.context["form"].initial
                 self.assertEqual(initial["tube_ml"], tube_expected)
                 self.assertEqual(initial["oral_ml"], 205 - tube_expected)
+                self.assertEqual(initial["tube_route"], "gastrostomy" if tube_expected else "")
                 self.assertContains(response, 'data-new-meal-route-defaults="true"')
 
         meal = MealEntry.objects.create(
