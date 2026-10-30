@@ -129,11 +129,11 @@
             if (!Number.isInteger(amount) || amount < 0 ||
                 hour > 23 || minute > 59) return;
             const minutes = hour * 60 + minute;
-            const overnight = minutes >= 22 * 60 || minutes <= 7 * 60 + 30;
+            const overnight = minutes >= 18 * 60 + 50 || minutes <= 7 * 60 + 30;
             applyingRouteDefault = true;
             oralInput.value = overnight ? "0" : String(amount);
             tubeInput.value = overnight ? String(amount) : "0";
-            if (tubeRouteInput) tubeRouteInput.value = overnight && amount > 0 ? "ngt" : "";
+            if (tubeRouteInput) tubeRouteInput.value = overnight && amount > 0 ? "gastrostomy" : "";
             if (remainingInput && offeredInput && offeredInput.value !== "" &&
                 amount <= Number(offeredInput.value)) {
                 remainingInput.value = String(Number(offeredInput.value) - amount);
@@ -142,7 +142,7 @@
             applyingRouteDefault = false;
             note.textContent = (overnight ? "🌙 Νυχτερινή" : "☀️ Ημερήσια") +
                 " προεπιλογή: " + amount + " ml " +
-                (overnight ? "μέσω σωλήνα" : "από το στόμα") +
+                (overnight ? "μέσω γαστροστομίας" : "από το στόμα") +
                 ". Επιβεβαίωσε την πραγματική χορήγηση πριν την αποθήκευση.";
         }
 
